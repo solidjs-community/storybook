@@ -1,0 +1,116 @@
+{
+    "name": "@kachurun/storybook-solid-vite",
+    "version": "9.0.9",
+    "description": "SolidJS integration with Storybook",
+    "private": false,
+    "keywords": [
+        "storybook",
+        "solidjs",
+        "solid",
+        "storybook-addon",
+        "storybook-integration",
+        "component-library",
+        "ui-components",
+        "vite",
+        "solid-vite",
+        "solid-storybook",
+        "frontend",
+        "javascript",
+        "typescript"
+    ],
+    "homepage": "https://github.com/solidjs-community/storybook",
+    "bugs": {
+        "url": "https://github.com/solidjs-community/storybook/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/solidjs-community/storybook.git",
+        "directory": "packages/storybook-solid-vite"
+    },
+    "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/storybook"
+    },
+    "license": "MIT",
+    "exports": {
+        "./package.json": "./package.json",
+        "./renderer/package.json": "./renderer/package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        },
+        "./preset": {
+            "types": "./dist/preset.d.ts",
+            "require": "./dist/preset.js",
+            "import": "./dist/preset.mjs"
+        },
+        "./renderer": {
+            "types": "./dist/renderer/index.d.ts",
+            "import": "./dist/renderer/index.mjs",
+            "require": "./dist/renderer/index.js"
+        },
+        "./renderer/preset": "./dist/renderer/preset.js",
+        "./renderer/entry-preview.mjs": "./dist/renderer/entry-preview.mjs",
+        "./renderer/entry-preview-docs.mjs": "./dist/renderer/entry-preview-docs.mjs"
+    },
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**/*",
+        "README.md",
+        "*.js",
+        "*.d.ts"
+    ],
+    "scripts": {
+        "prepack": "bun run build",
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "postbuild": "bun run types",
+        "types": "tsc -b tsconfig.build.json",
+        "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"
+    },
+    "devDependencies": {
+        "@babel/standalone": "^7.26.2",
+        "@changesets/changelog-github": "^0.5.1",
+        "@changesets/cli": "^2.29.4",
+        "@flexbe/eslint-config": "^1.0.9",
+        "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.0",
+        "@storybook/builder-vite": "^9.0.0",
+        "@storybook/global": "^5.0.0",
+        "@tsconfig/strictest": "^2.0.5",
+        "@types/babel__standalone": "^7.1.9",
+        "@types/escodegen": "^0.0.10",
+        "@types/node": "^22.15.30",
+        "acorn": "^7.4.1",
+        "acorn-jsx": "^5.3.1",
+        "acorn-walk": "^7.2.0",
+        "es-toolkit": "^1.36.0",
+        "esbuild-plugin-solid": "^0.6.0",
+        "escodegen": "^2.1.0",
+        "eslint": "^9.28.0",
+        "expect-type": "^0.15.0",
+        "html-tags": "^3.1.0",
+        "prop-types": "^15.7.2",
+        "solid-js": "~1.9.0",
+        "storybook": "^9.0.0",
+        "ts-dedent": "^2.0.0",
+        "tsup": "^8.5.0",
+        "type-fest": "^4.41.0",
+        "typescript": "^5.8.3",
+        "vite": "^5.0.0 || ^6.0.0",
+        "vitest": "^3.2.2"
+    },
+    "peerDependencies": {
+        "solid-js": "*",
+        "vite": "^5.0.0 || ^6.0.0",
+        "vite-plugin-solid": "*",
+        "@storybook/builder-vite": "^9.0.0",
+        "storybook": "^9.0.0",
+        "typescript": ">= 4.9.x"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}
