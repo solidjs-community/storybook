@@ -59,9 +59,10 @@
     "types": "dist/index.d.ts",
     "files": [
         "dist/**/*",
+        "bin/**/*",
         "README.md",
-        "*.js",
-        "*.d.ts"
+        "preset.js",
+        "**/*.d.ts"
     ],
     "scripts": {
         "prepack": "bun run build",

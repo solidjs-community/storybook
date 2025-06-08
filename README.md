@@ -1,12 +1,10 @@
-# Storybook for SolidJS & Vite
+# Storybook for SolidJS
 
 [![npm version](https://img.shields.io/npm/v/@kachurun/storybook-solid-vite?style=flat-square)](https://www.npmjs.com/package/@kachurun/storybook-solid-vite)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/kachurun/create-solid-storybook/pulls)
 
 Community supported [Storybook](https://storybook.js.org/) **framework adapter** for [SolidJS](https://solidjs.com/), using Vite as the bundler.
-
-> This package is part of the [`create-solid-storybook`](https://github.com/kachurun/create-solid-storybook) project.
 
 ---
 
