@@ -1,6 +1,6 @@
 {
     "name": "@kachurun/storybook-solid-vite",
-    "version": "9.0.10",
+    "version": "9.0.11",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [
