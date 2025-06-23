@@ -43,11 +43,11 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
         typescriptPresent = true;
     }
     catch (e) {}
-
+    
+    // Use vite-plugin-react-docgen-typescript for docgen
     if (reactDocgenOption === 'react-docgen-typescript' && typescriptPresent) {
         const { default: reactDocgenTypescriptPlugin } = await import('@joshwooding/vite-plugin-react-docgen-typescript');
 
-        // 
         plugins.push(
             reactDocgenTypescriptPlugin({
                 ...reactDocgenTypescriptOptions,

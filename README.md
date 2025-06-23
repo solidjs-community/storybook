@@ -66,7 +66,7 @@ Open the provided URL in your browser to view your Storybook instance.
 ## 📦 Manual Installation
 You can set everything up manually.
 To do this:
-1. Copy the following files from [storybook-solid-template](https://github.com/solidjs-community/storybook/tree/main/packages/storybook-solid-template) to your project:
+1. Copy the following files from [storybook-solid-template](https://github.com/kachurun/create-solid-storybook/tree/main/packages/storybook-solid-template) to your project:
 
 - `.storybook/**`
 - `vitest.config.ts`
