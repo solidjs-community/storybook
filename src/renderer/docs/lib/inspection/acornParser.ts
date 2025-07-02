@@ -1,4 +1,5 @@
 import { Parser } from 'acorn';
+import type { Node as AcornNode } from 'acorn';
 import jsx from 'acorn-jsx';
 // @ts-ignore
 import { ancestor as acornWalkAncestor, base as acornWalkBase, simple as acornWalkSimple } from 'acorn-walk';
@@ -44,7 +45,7 @@ function calculateNodeDepth(node: estree.Expression): number {
     const depths: number[] = [];
 
     acornWalkAncestor(
-        node as acorn.Node,
+        node as AcornNode,
         {
             ObjectExpression(_: any, ancestors: estree.Node[]) {
                 depths.push(filterAncestors(ancestors).length);
@@ -83,12 +84,12 @@ function parseFunction(
 
     // If there is at least a JSXElement in the body of the function, then it's a React component.
     acornWalkSimple(
-        funcNode.body as acorn.Node,
+        funcNode.body as AcornNode,
         {
             JSXElement(node: any) {
                 innerJsxElementNode = node;
             },
-        },
+        } as any,
         ACORN_WALK_VISITORS
     );
 
@@ -119,12 +120,12 @@ function parseClass(
 
     // If there is at least a JSXElement in the body of the class, then it's a React component.
     acornWalkSimple(
-        classNode.body as unknown as acorn.Node,
+        classNode.body as unknown as AcornNode,
         {
             JSXElement(node: any) {
                 innerJsxElementNode = node;
             },
-        },
+        } as any,
         ACORN_WALK_VISITORS
     );
 

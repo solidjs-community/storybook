@@ -1,13 +1,5 @@
-# @kachurun/storybook-solid-vite
+# storybook-solidjs-vite
 
-## 9.0.11
+## 9.0.0
 
-### Patch Changes
-
-- becb4b5: fix: Better Readme
-
-## 9.0.10
-
-### Patch Changes
-
-- 6ca3c43: chore: new repo
+- Storybook v9 support

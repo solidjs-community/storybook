@@ -4,8 +4,8 @@
 [![SolidJS](https://img.shields.io/badge/SolidJS-2C4F7C?style=flat-square&logo=solid&logoColor=white)](https://solidjs.com)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
 
-[![npm version](https://img.shields.io/npm/v/@kachurun/storybook-solid-vite?style=flat-square)](https://www.npmjs.com/package/@kachurun/storybook-solid-vite)
-[![npm downloads](https://img.shields.io/npm/dw/@kachurun/storybook-solid-vite?style=flat-square)](https://www.npmjs.com/package/@kachurun/storybook-solid-vite)
+[![npm version](https://img.shields.io/npm/v/storybook-solidjs-vite?style=flat-square)](https://www.npmjs.com/package/storybook-solidjs-vite)
+[![npm downloads](https://img.shields.io/npm/dw/storybook-solidjs-vite?style=flat-square)](https://www.npmjs.com/package/storybook-solidjs-vite)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/solidjs-community/storybook/pulls)
 
@@ -74,7 +74,7 @@ To do this:
 2. Install the required dependencies:
 
 ```bash
-npm install storybook @kachurun/storybook-solid-vite @chromatic-com/storybook @storybook/addon-onboarding @storybook/addon-docs @storybook/addon-a11y @storybook/addon-links @storybook/addon-vitest @vitest/coverage-v8 playwright vitest @vitest/browser
+npm install storybook storybook-solidjs-vite @chromatic-com/storybook @storybook/addon-onboarding @storybook/addon-docs @storybook/addon-a11y @storybook/addon-links @storybook/addon-vitest @vitest/coverage-v8 playwright vitest @vitest/browser
 ```
 
 3. Add the necessary scripts to your `package.json`:
