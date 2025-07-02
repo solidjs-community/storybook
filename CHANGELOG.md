@@ -1,6 +1,6 @@
 # storybook-solidjs-vite
 
-## 9.1.0
+## 9.0.0
 
 ### Minor Changes
 

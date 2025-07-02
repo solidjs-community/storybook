@@ -1,6 +1,6 @@
 {
     "name": "storybook-solidjs-vite",
-    "version": "9.1.0",
+    "version": "9.0.0",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [
@@ -70,7 +70,9 @@
         "dev": "tsup --watch",
         "postbuild": "bun run types",
         "types": "tsc -b tsconfig.build.json",
-        "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"
+        "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules",
+        "version-packages": "changeset version",
+        "release": "changeset publish"
     },
     "devDependencies": {
         "@babel/standalone": "^7.27.7",
