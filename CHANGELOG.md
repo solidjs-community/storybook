@@ -1,5 +1,7 @@
 # storybook-solidjs-vite
 
-## 9.0.0
+## 9.1.0
 
-- Storybook v9 support
+### Minor Changes
+
+- a47cdca: Storybook v9 Support
