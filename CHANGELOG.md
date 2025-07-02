@@ -2,4 +2,6 @@
 
 ## 9.0.0
 
-- Storybook v9 support
+### Minor Changes
+
+- a47cdca: Storybook v9 Support
