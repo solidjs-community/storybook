@@ -22,7 +22,7 @@ const getAbsolutePath = (input: string): string => dirname(require.resolve(input
  */
 export const core: PresetProperty<'core', StorybookConfig> = {
     builder: getAbsolutePath('@storybook/builder-vite'),
-    renderer: getAbsolutePath('@kachurun/storybook-solid-vite/renderer'),
+    renderer: getAbsolutePath('storybook-solidjs-vite/renderer'),
 };
 
 /**
