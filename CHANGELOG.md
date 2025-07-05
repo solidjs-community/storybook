@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 9.0.2
+
+### Patch Changes
+
+- 7cd5760: chore: cleanup deps
+
 ## 9.0.1
 
 ### Patch Changes
