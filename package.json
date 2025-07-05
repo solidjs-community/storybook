@@ -1,6 +1,6 @@
 {
     "name": "storybook-solidjs-vite",
-    "version": "9.0.0",
+    "version": "9.0.1",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [
@@ -74,7 +74,6 @@
         "version-packages": "changeset version",
         "release": "changeset publish"
     },
-    
     "devDependencies": {
         "@babel/standalone": "^7.27.7",
         "@changesets/changelog-github": "^0.5.1",
@@ -103,7 +102,6 @@
         "vite": "^7.0.0",
         "@flexbe/eslint-config": "^1.0.11"
     },
-      
     "peerDependencies": {
         "solid-js": "^1.9.0",
         "storybook": "^9.0.0",
