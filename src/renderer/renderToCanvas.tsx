@@ -54,6 +54,7 @@ const renderSolidApp = (
     canvasElement: SolidRenderer['canvasElement']
 ) => {
     const { storyContext, storyFn, showMain, showException } = renderContext;
+    const isPortableStory = (storyContext as any)?.parameters?.__isPortableStory === true;
 
     const App: Component = () => {
         const Story = storyFn as Component<StoryContext<SolidRenderer>>;
@@ -62,13 +63,19 @@ const renderSolidApp = (
             showMain();
         });
 
-        return (
-            <ErrorBoundary
-                fallback={ (err: any) => {
-                    showException(err);
+        if (isPortableStory) {
+            // eslint-disable-next-line solid/components-return-once
+            return (
+                <Story { ...storyContext } />
+            );
+        }
 
-                    return err;
-                } }
+        return (
+            <ErrorBoundary fallback={ (err: any) => {
+                showException(err);
+
+                return err;
+            } }
             >
                 <Story { ...storyContext } />
             </ErrorBoundary>
