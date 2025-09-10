@@ -7,6 +7,8 @@
  */
 import { hasVitePlugins } from '@storybook/builder-vite';
 
+import { mergeConfig } from 'vite';
+
 import type { FrameworkOptions, StorybookConfig } from './types';
 import type { PresetProperty } from 'storybook/internal/types';
 
@@ -26,7 +28,8 @@ export const core: PresetProperty<'core', StorybookConfig> = {
  * @see https://storybook.js.org/docs/api/main-config/main-config-vite-final
  */
 export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }) => {
-    const plugins = [...(config?.plugins ?? [])];
+    const existPlugins = [...(config?.plugins ?? [])];
+    const plugins = [];
 
     // Add docgen plugin
     const framework = await presets.apply('framework');
@@ -48,11 +51,13 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
     }
 
     // Add solid plugin if not present
-    if (!(await hasVitePlugins(plugins, ['solid']))) {
-        plugins.unshift(
+    if (!(await hasVitePlugins(existPlugins, ['solid']))) {
+        plugins.push(
             await import('vite-plugin-solid').then(module => module.default())
         );
     }
 
-    return config;
+    return mergeConfig(config, {
+        plugins,
+    });
 };

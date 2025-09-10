@@ -1,5 +1,13 @@
 # storybook-solidjs-vite
 
+## 10.0.0-beta.0
+
+### Minor Changes
+
+- Support for Storybook 10 beta.2
+- Package now builds only in ESM format
+- Simplified configuration for docgen
+
 ## 9.0.2
 
 ### Patch Changes

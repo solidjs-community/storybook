@@ -112,6 +112,7 @@
         }
     },
     "publishConfig": {
-        "access": "public"
+        "access": "public",
+        "tag": "next"
     }
 }

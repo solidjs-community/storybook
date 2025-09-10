@@ -33,9 +33,4 @@ type StorybookConfigFramework = {
 };
 
 /** The interface for Storybook configuration in `main.ts` files. */
-export type StorybookConfig = Omit<
-    StorybookConfigBase,
-  keyof StorybookConfigVite | keyof StorybookConfigFramework
-> &
-StorybookConfigVite &
-StorybookConfigFramework;
+export type StorybookConfig = Omit<StorybookConfigBase, keyof StorybookConfigVite | keyof StorybookConfigFramework> & StorybookConfigVite & StorybookConfigFramework;
