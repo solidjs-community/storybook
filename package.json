@@ -1,6 +1,6 @@
 {
     "name": "storybook-solidjs-vite",
-    "version": "10.0.0-beta.0",
+    "version": "10.0.0-beta.2",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [
@@ -74,7 +74,7 @@
     },
     "dependencies": {
         "vite-plugin-solid": "^2.11.8",
-        "@storybook/builder-vite": "^9.1.1",
+        "@storybook/builder-vite": "next",
         "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.1",
         "@storybook/global": "^5.0.0"
     },
