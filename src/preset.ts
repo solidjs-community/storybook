@@ -1,6 +1,3 @@
-import { hasVitePlugins } from '@storybook/builder-vite';
-import { dirname } from 'path';
-
 /**
  * A preset is a configuration that enables developers to quickly set up and
  * customize their environment with a specific set of features, functionalities, or integrations.
@@ -8,12 +5,10 @@ import { dirname } from 'path';
  * @see https://storybook.js.org/docs/addons/writing-presets
  * @see https://storybook.js.org/docs/api/main-config/main-config
  */
+import { hasVitePlugins } from '@storybook/builder-vite';
 
-import type { StorybookConfig } from './types';
+import type { FrameworkOptions, StorybookConfig } from './types';
 import type { PresetProperty } from 'storybook/internal/types';
-
-// Helper for getting the location of dependencies.
-const getAbsolutePath = (input: string): string => dirname(require.resolve(input));
 
 /**
  * Configures Storybook's internal features.
@@ -21,8 +16,8 @@ const getAbsolutePath = (input: string): string => dirname(require.resolve(input
  * @see https://storybook.js.org/docs/api/main-config/main-config-core
  */
 export const core: PresetProperty<'core', StorybookConfig> = {
-    builder: getAbsolutePath('@storybook/builder-vite'),
-    renderer: getAbsolutePath('storybook-solidjs-vite/renderer'),
+    builder: import.meta.resolve('@storybook/builder-vite'),
+    renderer: import.meta.resolve('./renderer'),
 };
 
 /**
@@ -31,38 +26,31 @@ export const core: PresetProperty<'core', StorybookConfig> = {
  * @see https://storybook.js.org/docs/api/main-config/main-config-vite-final
  */
 export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }) => {
-    const { plugins = [] } = config;
+    const plugins = [...(config?.plugins ?? [])];
 
     // Add docgen plugin
-    const { reactDocgen: reactDocgenOption, reactDocgenTypescriptOptions } = await presets.apply<any>('typescript', {});
+    const framework = await presets.apply('framework');
+    const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
 
-    let typescriptPresent = false;
-
-    try {
-        require.resolve('typescript');
-        typescriptPresent = true;
-    }
-    catch (e) {}
-    
     // Use vite-plugin-react-docgen-typescript for docgen
-    if (reactDocgenOption === 'react-docgen-typescript' && typescriptPresent) {
-        const { default: reactDocgenTypescriptPlugin } = await import('@joshwooding/vite-plugin-react-docgen-typescript');
+    if (frameworkOptions.docgen !== false) {
+        const reactDocgenTypescriptPlugin = await import('@joshwooding/vite-plugin-react-docgen-typescript').then(module => module.default);
 
         plugins.push(
             reactDocgenTypescriptPlugin({
-                ...reactDocgenTypescriptOptions,
                 // We *need* this set so that RDT returns default values in the same format as react-docgen
                 savePropValueAsString: true,
+                shouldExtractLiteralValuesFromEnum: true,
+                propFilter: (prop: any) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
+                ...frameworkOptions.docgenOptions,
             })
         );
     }
 
     // Add solid plugin if not present
-    if (!(await hasVitePlugins(plugins, ['vite-plugin-solid']))) {
-        const { default: solidPlugin } = await import('vite-plugin-solid');
-
-        plugins.push(
-            solidPlugin()
+    if (!(await hasVitePlugins(plugins, ['solid']))) {
+        plugins.unshift(
+            await import('vite-plugin-solid').then(module => module.default())
         );
     }
 

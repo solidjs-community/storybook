@@ -1,6 +1,8 @@
 /* Configuration for default renderer. */
 import { enhanceArgTypes } from 'storybook/internal/docs-tools';
 
+import { configure } from 'storybook/test';
+
 import { solidReactivityDecorator } from './renderToCanvas';
 
 import type { Decorator } from './public-types';
@@ -17,8 +19,6 @@ export const argTypesEnhancers: ArgTypesEnhancer[] = [enhanceArgTypes];
 
 export const beforeAll = async() => {
     try {
-        const { configure } = await import('storybook/test');
-
         configure({
             unstable_advanceTimersWrapper: (cb: () => any) => cb(),
             asyncWrapper: async(cb: () => any) => {

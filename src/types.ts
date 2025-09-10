@@ -1,15 +1,18 @@
 import type { BuilderOptions, StorybookConfigVite } from '@storybook/builder-vite';
+import type { ParserOptions } from 'react-docgen-typescript';
 import type {
     CompatibleString,
     StorybookConfig as StorybookConfigBase,
 } from 'storybook/internal/types';
 
 
-type FrameworkName = CompatibleString<'@storybook/html-vite'>;
+type FrameworkName = CompatibleString<'storybook-solidjs-vite'>;
 type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;
+    docgen?: boolean;
+    docgenOptions?: ParserOptions;
 };
 
 type StorybookConfigFramework = {

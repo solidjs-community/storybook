@@ -1,6 +1,6 @@
 {
     "name": "storybook-solidjs-vite",
-    "version": "9.0.2",
+    "version": "10.0.0-beta.0",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [
@@ -27,41 +27,39 @@
         "url": "https://github.com/solidjs-community/storybook.git",
         "directory": "packages/storybook-solid-vite"
     },
-    "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/storybook"
-    },
     "license": "MIT",
+    "type": "module",
     "exports": {
-        "./package.json": "./package.json",
-        "./renderer/package.json": "./renderer/package.json",
         ".": {
             "types": "./dist/index.d.ts",
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js"
+            "default": "./dist/index.js"
         },
+        "./package.json": "./package.json",
         "./preset": {
             "types": "./dist/preset.d.ts",
-            "require": "./dist/preset.js",
-            "import": "./dist/preset.mjs"
+            "default": "./dist/preset.js"
         },
+        "./node": {
+            "types": "./dist/node/index.d.ts",
+            "default": "./dist/node/index.js"
+        },
+
         "./renderer": {
             "types": "./dist/renderer/index.d.ts",
-            "import": "./dist/renderer/index.mjs",
-            "require": "./dist/renderer/index.js"
+            "default": "./dist/renderer/index.js"
         },
+        "./renderer/package.json": "./renderer/package.json",
         "./renderer/preset": "./dist/renderer/preset.js",
-        "./renderer/entry-preview.mjs": "./dist/renderer/entry-preview.mjs",
-        "./renderer/entry-preview-docs.mjs": "./dist/renderer/entry-preview-docs.mjs"
+        "./renderer/entry-preview": "./dist/renderer/entry-preview.js",
+        "./renderer/entry-preview-argtypes": "./dist/renderer/entry-preview-argtypes.js",
+        "./renderer/entry-preview-docs": "./dist/renderer/entry-preview-docs.js"
     },
     "main": "dist/index.js",
-    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**/*",
         "bin/**/*",
         "README.md",
-        "preset.js",
         "**/*.d.ts"
     ],
     "scripts": {
@@ -71,7 +69,7 @@
         "postbuild": "bun run types",
         "types": "tsc -b tsconfig.build.json",
         "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules",
-        "version-packages": "changeset version",
+        "version": "changeset version",
         "release": "changeset publish"
     },
     "dependencies": {
