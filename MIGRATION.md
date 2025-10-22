@@ -70,8 +70,10 @@ typescript: {
 framework: {
     name: 'storybook-solidjs-vite',
     options: {
-        docgen: true, // Enable docgen (optional, defaults to true)
-        // docgenOptions: {}, // Optional react-docgen-typescript options
+        docgen: false // → docgen disabled
+        // docgen: true // docgen enabled
+        // docgen: undefined (default) // docgen enabled with default settings
+        // docgen: { tsconfig: '...', ... } // docgen enabled with custom options (see @joshwooding/vite-plugin-react-docgen-typescript for more details)
     },
 },
 ```
@@ -140,7 +142,7 @@ viteFinal: async (config) => {
 ```
 
 **After (v10):**
-You can use the `viteFinal` function if you want but I do recommend using `vite.config.ts` instead.
+You still can use the `viteFinal` function if you want, but I do recommend using `vite.config.ts` instead.
 
 ```typescript
 // vite.config.ts

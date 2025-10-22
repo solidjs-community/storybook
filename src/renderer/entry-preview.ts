@@ -1,21 +1,28 @@
 /* Configuration for default renderer. */
-import { enhanceArgTypes } from 'storybook/internal/docs-tools';
-
+import { global } from '@storybook/global';
 import { configure } from 'storybook/test';
 
 import { solidReactivityDecorator } from './renderToCanvas';
 
 import type { Decorator } from './public-types';
-import type { ArgTypesEnhancer } from 'storybook/internal/types';
 
-export { render } from './render';
-export { renderToCanvas } from './renderToCanvas';
-export { applyDecorators } from './applyDecorators';
-export { mount } from './mount';
+export const parameters = {
+    renderer: 'solid',
+};
 
-export const parameters = { renderer: 'solid' };
-export const decorators: Decorator[] = [solidReactivityDecorator];
-export const argTypesEnhancers: ArgTypesEnhancer[] = [enhanceArgTypes];
+export const decorators: Decorator[] = [
+    solidReactivityDecorator,
+    (story, context) => {
+        // @ts-expect-error this feature flag not available in global storybook types
+        if (context.tags?.includes('test-fn') && !global.FEATURES?.experimentalTestSyntax) {
+            throw new Error(
+                'To use the experimental test function, you must enable the experimentalTestSyntax feature flag. See https://storybook.js.org/docs/10/api/main-config/main-config-features#experimentalTestSyntax'
+            );
+        }
+
+        return story();
+    },
+];
 
 export const beforeAll = async() => {
     try {
@@ -52,3 +59,8 @@ function jestFakeTimersAreEnabled() {
 
     return false;
 }
+
+export { render } from './render';
+export { renderToCanvas } from './renderToCanvas';
+export { applyDecorators } from './applyDecorators';
+export { mount } from './mount';

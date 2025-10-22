@@ -5,14 +5,12 @@ import type {
     StorybookConfig as StorybookConfigBase,
 } from 'storybook/internal/types';
 
-
 type FrameworkName = CompatibleString<'storybook-solidjs-vite'>;
 type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;
-    docgen?: boolean;
-    docgenOptions?: ParserOptions;
+    docgen?: boolean | ParserOptions;
 };
 
 type StorybookConfigFramework = {
@@ -29,6 +27,14 @@ type StorybookConfigFramework = {
               name: BuilderName;
               options: BuilderOptions;
           };
+    };
+    features?: StorybookConfigBase['features'] & {
+        /**
+         * Enable the experimental `.test` function in CSF Next
+         *
+         * @see https://storybook.js.org/docs/10/api/main-config/main-config-features#experimentalTestSyntax
+         */
+        experimentalTestSyntax?: boolean;
     };
 };
 

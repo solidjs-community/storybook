@@ -35,18 +35,25 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
     const framework = await presets.apply('framework');
     const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
 
-    // Use vite-plugin-react-docgen-typescript for docgen
+    // Use @joshwooding/vite-plugin-react-docgen-typescript for docgen
     if (frameworkOptions.docgen !== false) {
         const reactDocgenTypescriptPlugin = await import('@joshwooding/vite-plugin-react-docgen-typescript').then(module => module.default);
 
+        // Default docgen options
+        const defaultDocgenOptions = {
+            // We *need* this set so that RDT returns default values in the same format as react-docgen
+            savePropValueAsString: true,
+            shouldExtractLiteralValuesFromEnum: true,
+            propFilter: (prop: any) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
+        };
+
+        // Merge with custom options if docgen is an object
+        const docgenOptions = typeof frameworkOptions.docgen === 'object'
+            ? { ...defaultDocgenOptions, ...frameworkOptions.docgen }
+            : defaultDocgenOptions;
+
         plugins.push(
-            reactDocgenTypescriptPlugin({
-                // We *need* this set so that RDT returns default values in the same format as react-docgen
-                savePropValueAsString: true,
-                shouldExtractLiteralValuesFromEnum: true,
-                propFilter: (prop: any) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
-                ...frameworkOptions.docgenOptions,
-            })
+            reactDocgenTypescriptPlugin(docgenOptions)
         );
     }
 
