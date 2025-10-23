@@ -93,10 +93,10 @@ interface SolidMeta<T extends SolidRenderer, MetaInput extends ComponentAnnotati
     // Required args don't need to be provided when the user uses an empty render
     story: (<
         TInput extends
-        (() => SolidRenderer['storyResult'])
-        | (StoryAnnotations<T, T['args']> & {
-            render?: () => SolidRenderer['storyResult'];
-        })
+            | (() => SolidRenderer['storyResult'])
+            | (StoryAnnotations<T, T['args']> & {
+                render?: () => SolidRenderer['storyResult'];
+            })
     >(
         story?: TInput
     ) => SolidStory<T, TInput extends () => SolidRenderer['storyResult'] ? { render: TInput } : TInput>) & (<
@@ -110,7 +110,7 @@ interface SolidMeta<T extends SolidRenderer, MetaInput extends ComponentAnnotati
         >
     >(
         story?: TInput
-    /** @ts-expect-error hard */
+        /** @ts-expect-error hard */
     ) => SolidStory<T, TInput>);
 }
 

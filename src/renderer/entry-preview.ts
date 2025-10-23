@@ -4,12 +4,19 @@ import { configure } from 'storybook/test';
 
 import { solidReactivityDecorator } from './renderToCanvas';
 
-import type { Decorator, SolidRenderer, StoryContext } from './public-types';
+import type { Args, Decorator, StoryContext } from './public-types';
+import type { StoryFnReturnType } from './types';
 
 
-import type { SolidRenderer } from './types';
-import type { BaseAnnotations } from 'storybook/internal/types';
+const _jestFakeTimersAreEnabled = () => {
+    // @ts-expect-error global jest
+    if (typeof jest !== 'undefined' && jest != null) {
+        // legacy timers or modern timers
+        return (setTimeout as any)._isMockFunction === true || Object.prototype.hasOwnProperty.call(setTimeout, 'clock');
+    }
 
+    return false;
+};
 
 export const parameters = {
     renderer: 'solid',
@@ -38,6 +45,7 @@ export const beforeAll = async() => {
 
                 await new Promise<void>((resolve) => {
                     setTimeout(() => resolve(), 0);
+
                     if (_jestFakeTimersAreEnabled()) {
                         // @ts-expect-error global jest
                         jest.advanceTimersByTime(0);
@@ -54,27 +62,15 @@ export const beforeAll = async() => {
     }
 };
 
-export const mount: BaseAnnotations<SolidRenderer>['mount'] = (context: StoryContext) => async(ui) => {
+export const mount = (context: StoryContext<Args>) => async(ui: StoryFnReturnType) => {
     if (ui != null) {
         context.originalStoryFn = () => ui;
     }
 
-    await context['renderToCanvas']();
+    await context.renderToCanvas();
 
     return context.canvas;
 };
 
-
-function _jestFakeTimersAreEnabled() {
-    // @ts-expect-error global jest
-    if (typeof jest !== 'undefined' && jest !== null) {
-        // legacy timers or modern timers
-        return (setTimeout as any)._isMockFunction === true || Object.prototype.hasOwnProperty.call(setTimeout, 'clock');
-    }
-
-    return false;
-}
-
-export { render } from './render';
-export { renderToCanvas } from './renderToCanvas';
+export { render, renderToCanvas } from './renderToCanvas';
 export { applyDecorators } from './applyDecorators';

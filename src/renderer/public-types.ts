@@ -1,5 +1,6 @@
 import type { SolidRenderer } from './types';
 import type { Component as ComponentType, ComponentProps } from 'solid-js';
+
 import type {
     AnnotatedStoryFn,
     Args,
@@ -9,10 +10,12 @@ import type {
     DecoratorFunction,
     LoaderFunction,
     ProjectAnnotations,
+    RenderContext as GenericRenderContext,
     StoryAnnotations,
     StoryContext as GenericStoryContext,
     StrictArgs,
 } from 'storybook/internal/types';
+
 import type { SetOptional, Simplify } from 'type-fest';
 
 export type { ArgTypes, Args, Parameters, StrictArgs } from 'storybook/internal/types';
@@ -65,7 +68,7 @@ export type StoryObj<TMetaOrCmpOrArgs = Args> = [TMetaOrCmpOrArgs] extends [
 // This performs a downcast to function types that are mocks, when a mock fn is given to meta args.
 export type AddMocks<TArgs, DefaultArgs> = Simplify<{
     [T in keyof TArgs]: T extends keyof DefaultArgs
-        ? DefaultArgs[T] extends ((...args: any) => any) & { mock: object }
+        ? DefaultArgs[T] extends (...args: any) => any & { mock: object } // allow any function with a mock object
             ? DefaultArgs[T]
             : TArgs[T]
         : TArgs[T];
@@ -73,5 +76,10 @@ export type AddMocks<TArgs, DefaultArgs> = Simplify<{
 
 export type Decorator<TArgs = StrictArgs> = DecoratorFunction<SolidRenderer, TArgs>;
 export type Loader<TArgs = StrictArgs> = LoaderFunction<SolidRenderer, TArgs>;
-export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<SolidRenderer, TArgs>;
 export type Preview = ProjectAnnotations<SolidRenderer>;
+export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<SolidRenderer, TArgs> & {
+    renderToCanvas: () => Promise<void>;
+};
+
+export type RenderContext = GenericRenderContext<SolidRenderer>;
+
