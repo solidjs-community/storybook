@@ -33,6 +33,25 @@ export function definePreview<Addons extends PreviewAddon<never>[]>(
         ],
     }) as SolidPreview<SolidRenderer & InferTypes<Addons>>;
 
+    // Add Component property to the story object
+    const _originalPreviewMeta = preview.meta.bind(preview);
+
+    preview.meta = (_input) => {
+        const meta = _originalPreviewMeta(_input);
+        const _originalMetaStory = meta.story.bind(meta);
+
+        meta.story = (__input: any) => {
+            const story = _originalMetaStory(__input);
+
+            // @ts-ignore this is a private property used only here
+            story.Component = story.__compose();
+
+            return story;
+        };
+
+        return meta;
+    };
+
     return preview;
 }
 

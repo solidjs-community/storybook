@@ -1,10 +1,15 @@
-/* Configuration for default renderer. */
+/* Configuration for default renderer (default preview.ts params) */
 import { global } from '@storybook/global';
 import { configure } from 'storybook/test';
 
 import { solidReactivityDecorator } from './renderToCanvas';
 
-import type { Decorator } from './public-types';
+import type { Decorator, SolidRenderer, StoryContext } from './public-types';
+
+
+import type { SolidRenderer } from './types';
+import type { BaseAnnotations } from 'storybook/internal/types';
+
 
 export const parameters = {
     renderer: 'solid',
@@ -33,7 +38,7 @@ export const beforeAll = async() => {
 
                 await new Promise<void>((resolve) => {
                     setTimeout(() => resolve(), 0);
-                    if (jestFakeTimersAreEnabled()) {
+                    if (_jestFakeTimersAreEnabled()) {
                         // @ts-expect-error global jest
                         jest.advanceTimersByTime(0);
                     }
@@ -49,12 +54,22 @@ export const beforeAll = async() => {
     }
 };
 
-function jestFakeTimersAreEnabled() {
+export const mount: BaseAnnotations<SolidRenderer>['mount'] = (context: StoryContext) => async(ui) => {
+    if (ui != null) {
+        context.originalStoryFn = () => ui;
+    }
+
+    await context['renderToCanvas']();
+
+    return context.canvas;
+};
+
+
+function _jestFakeTimersAreEnabled() {
     // @ts-expect-error global jest
     if (typeof jest !== 'undefined' && jest !== null) {
         // legacy timers or modern timers
-        return (setTimeout as any)._isMockFunction === true
-          || Object.prototype.hasOwnProperty.call(setTimeout, 'clock');
+        return (setTimeout as any)._isMockFunction === true || Object.prototype.hasOwnProperty.call(setTimeout, 'clock');
     }
 
     return false;
@@ -63,4 +78,3 @@ function jestFakeTimersAreEnabled() {
 export { render } from './render';
 export { renderToCanvas } from './renderToCanvas';
 export { applyDecorators } from './applyDecorators';
-export { mount } from './mount';

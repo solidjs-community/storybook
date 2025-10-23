@@ -5,13 +5,10 @@ import {
     extractComponentDescription,
 } from 'storybook/internal/docs-tools';
 
-
-import { sourceDecorator } from './docs/sourceDecorator';
-
 import type { Decorator, SolidRenderer } from './public-types';
 import type { ArgTypesEnhancer } from 'storybook/internal/types';
 
-export { applyDecorators } from './docs/applyDecorators';
+export { applyDecorators } from './applyDecorators';
 
 export const parameters = {
     docs: {
@@ -20,7 +17,7 @@ export const parameters = {
     },
 };
 
-export const decorators: Decorator[] = [sourceDecorator];
+export const decorators: Decorator[] = [];
 
 export const argTypesEnhancers: ArgTypesEnhancer<SolidRenderer>[] = [
     enhanceArgTypes,

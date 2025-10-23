@@ -73,7 +73,7 @@ framework: {
         docgen: false // → docgen disabled
         // docgen: true // docgen enabled
         // docgen: undefined (default) // docgen enabled with default settings
-        // docgen: { tsconfig: '...', ... } // docgen enabled with custom options (see @joshwooding/vite-plugin-react-docgen-typescript for more details)
+        // docgen: { tsconfig: '...', ... } // docgen enabled with custom options (see https://github.com/styleguidist/react-docgen-typescript#options for more details)
     },
 },
 ```

@@ -15,17 +15,6 @@ import type { RenderContext } from 'storybook/internal/types';
 const [store, setStore] = createStore({} as ComponentsData);
 
 /**
- * A decorator that ensures changing args updates the story.
- */
-export const solidReactivityDecorator: Decorator = (Story, context) => {
-    const storyId = context.canvasElement.id;
-
-    context.args = store[storyId]?.args || {};
-
-    return <Story { ...context.args } />;
-};
-
-/**
  * Resets an specific story store.
  */
 const cleanStoryStore = (storeId: string) => {
@@ -119,3 +108,15 @@ export async function renderToCanvas(
         renderSolidApp(storyId, renderContext, canvasElement);
     }
 }
+
+
+/**
+ * A decorator that ensures changing args updates the story.
+ */
+export const solidReactivityDecorator: Decorator = (Story, context) => {
+    const storyId = context.canvasElement.id;
+
+    context.args = store[storyId]?.args || {};
+
+    return <Story { ...context.args } />;
+};

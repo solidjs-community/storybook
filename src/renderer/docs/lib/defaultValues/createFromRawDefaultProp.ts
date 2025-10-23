@@ -149,7 +149,7 @@ export function createTypeResolvers(customResolvers: Partial<TypeResolvers> = {}
     };
 }
 
-// When react-docgen cannot provide a defaultValue we take it from the raw defaultProp.
+// When docgen cannot provide a defaultValue we take it from the raw defaultProp.
 // It works fine for types that are not transpiled. For the types that are transpiled, we can only provide partial support.
 // This means that:
 //   - The detail might not be available.
