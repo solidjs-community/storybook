@@ -37,7 +37,7 @@ export function setProjectAnnotations(
       | NamedOrDefaultProjectAnnotations<any>
       | NamedOrDefaultProjectAnnotations<any>[]
 ): NormalizedProjectAnnotations<SolidRenderer> {
-    setDefaultProjectAnnotations<SolidRenderer>(INTERNAL_DEFAULT_PROJECT_ANNOTATIONS as ProjectAnnotations<SolidRenderer>);
+    setDefaultProjectAnnotations<SolidRenderer>(INTERNAL_DEFAULT_PROJECT_ANNOTATIONS as unknown as ProjectAnnotations<SolidRenderer>);
 
     return originalSetProjectAnnotations(
         projectAnnotations

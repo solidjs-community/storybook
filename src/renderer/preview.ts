@@ -26,12 +26,12 @@ export function definePreview<Addons extends PreviewAddon<never>[]>(
     const preview = definePreviewBase({
         ...input,
         addons: [
-            solidAnnotations as PreviewAddon,
+            solidAnnotations as unknown as PreviewAddon<never>,
             solidArgTypesAnnotations,
             solidDocsAnnotations,
             ...(input.addons ?? []),
         ],
-    }) as SolidPreview<SolidRenderer & InferTypes<Addons>>;
+    }) as unknown as SolidPreview<SolidRenderer & InferTypes<Addons>>;
 
     // Add Component property to the story object
     const _originalPreviewMeta = preview.meta.bind(preview);

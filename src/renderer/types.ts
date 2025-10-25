@@ -22,8 +22,8 @@ export interface ShowErrorArgs {
 export type GlobalReactivityStore = {
     [key: string]: {
         args: Args;
-        rendered?: boolean;
-        disposeFn?: () => void;
+        rendered: boolean;
+        disposeFn: (() => void) | null;
     };
 };
 
