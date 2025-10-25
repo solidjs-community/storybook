@@ -5,8 +5,7 @@
  * @see https://storybook.js.org/docs/addons/writing-presets
  * @see https://storybook.js.org/docs/api/main-config/main-config
  */
-
-import { join } from 'path';
+import { fileURLToPath } from 'node:url';
 
 import type { PresetProperty } from 'storybook/internal/types';
 
@@ -25,7 +24,15 @@ export const previewAnnotations: PresetProperty<'previewAnnotations'> = async(
 
     return result
         .concat(input)
-        .concat([join(__dirname, 'entry-preview.mjs')])
-        .concat([join(__dirname, 'entry-preview-argtypes.mjs')])
-        .concat(docsEnabled ? [join(__dirname, 'entry-preview-docs.mjs')] : []);
+        .concat([
+            fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/entry-preview')),
+            fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/entry-preview-argtypes')),
+        ])
+        .concat(
+            docsEnabled
+                ? [
+                    fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/entry-preview-docs')),
+                ]
+                : []
+        );
 };

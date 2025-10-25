@@ -9,20 +9,22 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/solidjs-community/storybook/pulls)
 
-
 Community supported [Storybook](https://storybook.js.org/) **framework adapter** for [SolidJS](https://solidjs.com/), using Vite as the bundler.
 
 ---
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
-- [Maintainer](#maintainer)
+- [Storybook for SolidJS](#storybook-for-solidjs)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [✨ Features](#-features)
+  - [🚀 Getting Started](#-getting-started)
+  - [📦 Manual Installation](#-manual-installation)
+  - [⚙️ Configuration](#️-configuration)
+  - [🔄 Migration Guide](#-migration-guide)
+  - [🤝 Contributing](#-contributing)
+  - [👤 Maintainer](#-maintainer)
+  - [📖 License](#-license)
 
 ---
 
@@ -40,7 +42,6 @@ Community supported [Storybook](https://storybook.js.org/) **framework adapter**
 - **Accessibility (a11y)** — Built-in accessibility checks for your components.
 
 ---
-
 
 ## 🚀 Getting Started
 
@@ -64,8 +65,10 @@ Open the provided URL in your browser to view your Storybook instance.
 ---
 
 ## 📦 Manual Installation
+
 You can set everything up manually.
 To do this:
+
 1. Copy the following files from [storybook-solid-template](https://github.com/kachurun/create-solid-storybook/tree/main/packages/storybook-solid-template) to your project:
 
 - `.storybook/**`
@@ -101,6 +104,12 @@ npm run storybook
 - You can customize Vite and Storybook as usual. For advanced configuration, see the [Storybook Vite docs](https://storybook.js.org/docs/builders/vite).
 - Add your stories in `src/**/*.stories.tsx` or `src/**/*.stories.js`.
 - Use [Storybook Addons](https://storybook.js.org/addons) for extra features.
+
+---
+
+## 🔄 Migration Guide
+
+Migrating from version 9 to 10? Check out our [Migration Guide](./MIGRATION.md) for step-by-step instructions and breaking changes.
 
 ---
 
