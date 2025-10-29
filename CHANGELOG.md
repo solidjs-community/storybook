@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.1
+
+### Patch Changes
+
+- 30482d3: Fix #15
+
 ## 10.0.0-rc.0
 
 ### Patch Changes
