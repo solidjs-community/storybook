@@ -32,7 +32,7 @@ import type {
  *
  * @param projectAnnotations - E.g. (import projectAnnotations from '../.storybook/preview')
  */
-export function setProjectAnnotations(
+function setProjectAnnotations(
     projectAnnotations:
       | NamedOrDefaultProjectAnnotations<any>
       | NamedOrDefaultProjectAnnotations<any>[]
@@ -43,3 +43,8 @@ export function setProjectAnnotations(
         projectAnnotations
     ) as NormalizedProjectAnnotations<SolidRenderer>;
 }
+
+export {
+    INTERNAL_DEFAULT_PROJECT_ANNOTATIONS,
+    setProjectAnnotations,
+};
