@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.3
+
+### Patch Changes
+
+- c07a6b8: chore: Update package files and build config
+
 ## 10.0.2
 
 ### Patch Changes
