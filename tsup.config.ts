@@ -18,6 +18,7 @@ export default defineConfig((options) => {
         ],
         format: ['esm'],
         outDir: 'dist',
+        clean: true,
         dts: false,
         external: [
             '@storybook/builder-vite',

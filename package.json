@@ -60,10 +60,11 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
-        "dist/**/*",
-        "bin/**/*",
         "README.md",
-        "**/*.d.ts"
+        "dist/**/*",
+        "**/*.d.ts",
+        "preset.js",
+        "preview.js"
     ],
     "scripts": {
         "prepack": "bun run build",
@@ -72,7 +73,7 @@
         "postbuild": "bun run types",
         "types": "tsc -b tsconfig.build.json",
         "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules",
-        "version": "changeset version",
+        "version": "changeset",
         "release": "changeset publish",
         "release:next": "changeset publish --tag next"
     },
