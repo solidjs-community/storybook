@@ -51,7 +51,7 @@ const _updateReactiveArgs = (storyId: string, context: StoryContext<Args>) => {
  * A decorator that ensures changing args updates the story.
  */
 export const solidReactivityDecorator: Decorator = (Story, context) => {
-    const storyId = context.canvasElement.id;
+    const storyId = context.id || context.canvasElement?.id;
 
     // Ignore rerendering the story if it's already rendered
     if (_isStoryRendered(storyId)) {
@@ -137,7 +137,7 @@ const _renderStory = (
  * Called each time component should be mounted or updated.
  */
 export const mount = (context: StoryContext<Args>) => {
-    const storyId = context.canvasElement.id;
+    const storyId = context.id || context.canvasElement?.id;
     const { forceRemount } = context;
 
     return async(ui: StoryFnReturnType) => {
@@ -183,7 +183,7 @@ export async function renderToCanvas(
     renderContext: RenderContext,
     canvasElement: SolidRenderer['canvasElement']
 ) {
-    const storyId = canvasElement.id;
+    const storyId = renderContext.id || canvasElement?.id;
 
     // Render story
     _renderStory(storyId, renderContext, canvasElement);
