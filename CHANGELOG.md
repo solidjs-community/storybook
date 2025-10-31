@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.2
+
+### Patch Changes
+
+- 2bd67c2: Fix storybook tests
+
 ## 10.0.1
 
 ### Patch Changes
