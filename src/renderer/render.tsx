@@ -23,13 +23,39 @@ const [globals, setGlobals] = createStore<Globals>({});
  */
 const _isStoryRendered = (storyId: string) => Boolean(store[storyId]?.rendered);
 
+const _resetStoryStore = (storyId: string) => {
+    setStore({
+        [storyId]: {
+            args: {},
+            rendered: false,
+            disposeFn: null,
+        },
+    });
+};
+
+/**
+ * Helper to safely set a value on the story store.
+ * Ensures the store entry exists before setting the value.
+ */
+const _setStoryValue = <K extends keyof NonNullable<GlobalReactivityStore[string]>>(
+    storyId: string,
+    key: K,
+    value: NonNullable<GlobalReactivityStore[string]>[K]
+) => {
+    if (!store[storyId]) {
+        _resetStoryStore(storyId);
+    }
+
+    setStore(storyId, key, () => value);
+};
+
 /**
  * Updates the reactive args for the story.
  */
 const _updateReactiveArgs = (storyId: string, context: StoryContext<Args>) => {
     const { args, globals } = context;
 
-    setStore(storyId, 'args', () => args);
+    _setStoryValue(storyId, 'args', args);
 
     // Update globals as well
     setGlobals(produce((state) => {
@@ -64,16 +90,6 @@ export const solidReactivityDecorator: Decorator = (Story, context) => {
     return <Story { ...context.args } />;
 };
 
-
-const _resetStoryStore = (storyId: string) => {
-    setStore({
-        [storyId]: {
-            args: {},
-            rendered: false,
-            disposeFn: null,
-        },
-    });
-};
 
 /**
  * Disposes an specific story.
@@ -120,8 +136,8 @@ const _renderStory = (
 
         const disposeFn = solidRender(() => <App />, canvasElement);
 
-        setStore(storyId, 'disposeFn', () => disposeFn);
-        setStore(storyId, 'rendered', true);
+        _setStoryValue(storyId, 'disposeFn', disposeFn);
+        _setStoryValue(storyId, 'rendered', true);
     }
     // Story is already rendered, but we need to re-run the story function
     // to pick up changes in decorators and global settings (like measure tool)
