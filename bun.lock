@@ -5,7 +5,7 @@
       "name": "storybook-solidjs-vite",
       "dependencies": {
         "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.1",
-        "@storybook/builder-vite": "next",
+        "@storybook/builder-vite": "^10.0.0",
         "@storybook/global": "^5.0.0",
         "vite-plugin-solid": "^2.11.8",
       },
@@ -33,7 +33,7 @@
       },
       "peerDependencies": {
         "solid-js": "^1.9.0",
-        "storybook": "next",
+        "storybook": "^10.0.0",
         "typescript": ">= 4.9.x",
         "vite": "^5.0.0 || ^6.0.0 || ^7.0.0",
       },
@@ -337,9 +337,9 @@
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.52.5", "", { "os": "win32", "cpu": "x64" }, "sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg=="],
 
-    "@storybook/builder-vite": ["@storybook/builder-vite@10.0.0-rc.0", "", { "dependencies": { "@storybook/csf-plugin": "10.0.0-rc.0", "ts-dedent": "^2.0.0" }, "peerDependencies": { "storybook": "^10.0.0-rc.0", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-P7tl9Wg2Zzzxm07m1As0O2u1raNSuP4DQrDtFDJsTim5tIGU9jIz7Q2bMdvys8TG9vbLeizKa9U0ShrkE/Yerg=="],
+    "@storybook/builder-vite": ["@storybook/builder-vite@10.0.2", "", { "dependencies": { "@storybook/csf-plugin": "10.0.2", "ts-dedent": "^2.0.0" }, "peerDependencies": { "storybook": "^10.0.2", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-VPCsSdY7AYFnB2GRfRkcBmRA8RQo7I15PTEoIuQg5pF9qDQpz6ykMR8mK5j0TtRXshQjen4HyKv6lYTfmEMdUA=="],
 
-    "@storybook/csf-plugin": ["@storybook/csf-plugin@10.0.0-rc.0", "", { "dependencies": { "unplugin": "^2.3.5" }, "peerDependencies": { "esbuild": "*", "rollup": "*", "storybook": "^10.0.0-rc.0", "vite": "*", "webpack": "*" }, "optionalPeers": ["esbuild", "rollup", "vite", "webpack"] }, "sha512-PNJsNAES3jAnn4WsBYYFquppzlFI7FurwZgOPbhDW80g2gSZlAGMBiIp9Y+DzN3TvN9LKkuT/UsYnb0oMPuRGQ=="],
+    "@storybook/csf-plugin": ["@storybook/csf-plugin@10.0.2", "", { "dependencies": { "unplugin": "^2.3.5" }, "peerDependencies": { "esbuild": "*", "rollup": "*", "storybook": "^10.0.2", "vite": "*", "webpack": "*" }, "optionalPeers": ["esbuild", "rollup", "vite", "webpack"] }, "sha512-fiDTgZQa6/vCIMDWm5b/Dy+8/YGHX7bHqdINTtdKRJlrZgxFOainYczR6kyf5nyu9RQouEX0NgSXvKLS0HyCyw=="],
 
     "@storybook/global": ["@storybook/global@5.0.0", "", {}, "sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ=="],
 
