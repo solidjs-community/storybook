@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.4
+
+### Patch Changes
+
+- dadba20: Fix error with story render
+
 ## 10.0.3
 
 ### Patch Changes
