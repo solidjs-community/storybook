@@ -19,7 +19,10 @@ export default defineConfig((options) => {
         format: ['esm'],
         outDir: 'dist',
         clean: true,
-        dts: false,
+        dts: {
+            resolve: true,
+        },
+        tsconfig: 'tsconfig.json',
         external: [
             '@storybook/builder-vite',
         ],

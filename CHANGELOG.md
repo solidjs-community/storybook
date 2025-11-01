@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.5
+
+### Patch Changes
+
+- a8fbb10: chore: Refactor type imports and fix build config for declarations
+
 ## 10.0.4
 
 ### Patch Changes

@@ -3,7 +3,9 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
+    "declaration": true,
     "emitDeclarationOnly": true,
+    "composite": false,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "lib": ["ESNext", "DOM"]
