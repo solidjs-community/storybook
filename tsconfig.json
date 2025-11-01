@@ -1,15 +1,30 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
     "declaration": true,
-    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "composite": false,
+
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "allowJs": true,
+
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
+
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "lib": ["ESNext", "DOM"]
+
+    "rootDir": "src",
+    "outDir": "dist",
+    "emitDeclarationOnly": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "node_modules"]
 }
