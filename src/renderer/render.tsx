@@ -4,9 +4,9 @@ import { ErrorBoundary, onMount } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 import { render as solidRender } from 'solid-js/web';
 
-import type { Decorator, RenderContext } from './public-types';
+import type { Decorator, RenderContext, StoryContext } from './public-types';
 
-import type { GlobalReactivityStore, SolidRenderer, StoryContext, StoryFnReturnType } from './types';
+import type { GlobalReactivityStore, SolidRenderer, StoryFnReturnType } from './types';
 import type { Component } from 'solid-js';
 import type { Args, ArgsStoryFn, Globals } from 'storybook/internal/types';
 

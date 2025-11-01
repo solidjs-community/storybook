@@ -5,7 +5,8 @@ import {
     extractComponentDescription,
 } from 'storybook/internal/docs-tools';
 
-import type { Decorator, SolidRenderer } from './public-types';
+import type { Decorator } from './public-types';
+import type { SolidRenderer } from './types';
 import type { ArgTypesEnhancer } from 'storybook/internal/types';
 
 export { applyDecorators } from './applyDecorators';
