@@ -1,6 +1,6 @@
 {
     "name": "storybook-solidjs-vite",
-    "version": "10.0.4",
+    "version": "10.0.5",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [
@@ -70,8 +70,6 @@
         "prepack": "bun run build",
         "build": "tsup",
         "dev": "tsup --watch",
-        "postbuild": "bun run types",
-        "types": "tsc -b tsconfig.build.json",
         "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules",
         "version": "changeset && changeset version",
         "release": "changeset publish",
