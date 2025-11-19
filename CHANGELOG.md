@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.6
+
+### Patch Changes
+
+- 5b1cb90: Reactivity fix (?)
+
 ## 10.0.5
 
 ### Patch Changes
