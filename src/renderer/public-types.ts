@@ -1,3 +1,4 @@
+import type { IS_SOLID_JSX_FLAG } from './applyDecorators';
 import type { SolidRenderer } from './types';
 import type { Component as ComponentType, ComponentProps } from 'solid-js';
 
@@ -74,7 +75,12 @@ export type AddMocks<TArgs, DefaultArgs> = Simplify<{
         : TArgs[T];
 }>;
 
-export type Decorator<TArgs = StrictArgs> = DecoratorFunction<SolidRenderer, TArgs>;
+export type Decorator<TArgs = StrictArgs> = DecoratorFunction<SolidRenderer, TArgs> & {
+    // If decorator return JSX - user probably don't want to run it again on each update
+    //  this flag prevents it from being called again
+    [IS_SOLID_JSX_FLAG]?: boolean;
+};
+
 export type Loader<TArgs = StrictArgs> = LoaderFunction<SolidRenderer, TArgs>;
 export type Preview = ProjectAnnotations<SolidRenderer>;
 export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<SolidRenderer, TArgs> & {

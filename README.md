@@ -107,6 +107,58 @@ npm run storybook
 
 ---
 
+## 🎨 Decorators
+
+### `createDecorator` and `createJSXDecorator` helpers
+
+Storybook re-executes decorator code and story code on every change (e.g., when args or globals change). However, SolidJS uses fine-grained reactivity, which means components run once and effects/tracking scopes re-run when dependencies change. SolidJS doesn't require re-executing the component function itself on every update.
+
+This mismatch causes issues: when decorators that return JSX are re-executed, they create duplicate DOM elements, leading to double-rendering. The `createJSXDecorator` helper marks decorators so they're only executed once, preventing this issue.
+
+**Use `createDecorator`** for decorators that don't return JSX (e.g., they only call `Story()`). This ensures type safety only.
+
+**Use `createJSXDecorator`** for decorators that return JSX elements. This ensures type safety and prevents double-rendering by marking them to be executed only once on initial render.
+
+**Example: Decorator that returns JSX**
+
+```tsx
+import { createJSXDecorator } from 'storybook-solidjs-vite';
+
+export const solidDecorator = createJSXDecorator((Story, context) => {
+  return (
+    <main>
+      <Story />
+    </main>
+  );
+});
+```
+
+**Example: Decorator that doesn't return JSX**
+
+```tsx
+import { createDecorator } from 'storybook-solidjs-vite';
+
+export const regularDecorator = createDecorator((Story) => {
+  return Story();
+});
+```
+
+### Manual Flag Assignment
+
+You can also manually mark decorators as JSX-returning by setting the flag directly:
+
+```tsx
+import { IS_SOLID_JSX_FLAG } from 'storybook-solidjs-vite';
+
+export const myDecorator = (Story, context) => {
+  return <div><Story /></div>;
+};
+
+myDecorator[IS_SOLID_JSX_FLAG] = true;
+```
+
+---
+
 ## 🔄 Migration Guide
 
 Migrating from version 9 to 10? Check out our [Migration Guide](./MIGRATION.md) for step-by-step instructions and breaking changes.

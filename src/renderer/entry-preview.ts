@@ -2,7 +2,6 @@
 import { global } from '@storybook/global';
 import { configure } from 'storybook/test';
 
-import { solidReactivityDecorator } from './render';
 
 import type { Decorator } from './public-types';
 
@@ -11,8 +10,7 @@ export const parameters = {
 };
 
 export const decorators: Decorator[] = [
-    solidReactivityDecorator,
-    (story, context) => {
+    (StoryFn, context) => {
         // @ts-expect-error this feature flag not available in global storybook types
         if (context.tags?.includes('test-fn') && !global.FEATURES?.experimentalTestSyntax) {
             throw new Error(
@@ -20,7 +18,7 @@ export const decorators: Decorator[] = [
             );
         }
 
-        return story();
+        return StoryFn();
     },
 ];
 

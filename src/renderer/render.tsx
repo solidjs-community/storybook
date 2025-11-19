@@ -4,7 +4,7 @@ import { ErrorBoundary, onCleanup, onMount } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 import { render as solidRender } from 'solid-js/web';
 
-import type { Decorator, RenderContext, StoryContext } from './public-types';
+import type { RenderContext, StoryContext } from './public-types';
 
 import type { GlobalReactivityStore, SolidRenderer, StoryFnReturnType } from './types';
 import type { Component } from 'solid-js';
@@ -21,7 +21,7 @@ const [globals, setGlobals] = createStore<Globals>({});
 /**
  * Checks if the story store exists
  */
-const _isStoryRendered = (storyId: string) => Boolean(store[storyId]?.rendered);
+export const isStoryRendered = (storyId: string) => Boolean(store[storyId]?.rendered);
 
 const _resetStoryStore = (storyId: string) => {
     setStore({
@@ -52,44 +52,28 @@ const _setStoryValue = <K extends keyof NonNullable<GlobalReactivityStore[string
 /**
  * Updates the reactive args for the story.
  */
-const _updateReactiveArgs = (storyId: string, context: StoryContext<Args>) => {
-    const { args, globals } = context;
-
-    _setStoryValue(storyId, 'args', args);
+const _makeObservable = (storyId: string, context: StoryContext<Args>) => {
+    _setStoryValue(storyId, 'args', context.args);
 
     // Update globals as well
     setGlobals(produce((state) => {
-        Object.keys(globals).forEach((key) => {
-            state[key] = globals[key];
+        Object.keys(context.globals).forEach((key) => {
+            state[key] = context.globals[key];
         });
 
         Object.keys(state).forEach((key) => {
-            if (!globals[key]) {
+            if (!context.globals[key]) {
                 delete state[key];
             }
         });
 
         return state;
     }));
-};
 
-/**
- * A decorator that ensures changing args updates the story.
- */
-export const solidReactivityDecorator: Decorator = (Story, context) => {
-    const storyId = context.id || context.canvasElement?.id;
-
-    // Ignore rerendering the story if it's already rendered
-    if (_isStoryRendered(storyId)) {
-        return;
-    }
-
+    // Put the ref to observed globals and args back into the context
     context.globals = globals;
     context.args = store[storyId]?.args || {};
-
-    return <Story { ...context.args } />;
 };
-
 
 /**
  * Disposes an specific story.
@@ -108,10 +92,10 @@ const _renderStory = (
     renderContext: RenderContext,
     canvasElement: SolidRenderer['canvasElement']
 ) => {
-    const { storyContext, storyFn: Story, showMain, showException } = renderContext;
+    const { storyContext, storyFn: StoryFn, showMain, showException } = renderContext;
 
     // Story is rendered and store data is created
-    if (!_isStoryRendered(storyId)) {
+    if (!isStoryRendered(storyId)) {
         const App: Component = () => {
             onMount(() => {
                 showMain();
@@ -123,7 +107,7 @@ const _renderStory = (
             });
 
             if (storyContext?.parameters?.['__isPortableStory']) {
-                return <Story />;
+                return <StoryFn />;
             }
 
             return (
@@ -133,7 +117,7 @@ const _renderStory = (
                     return err;
                 } }
                 >
-                    <Story />
+                    <StoryFn />
                 </ErrorBoundary>
             );
         };
@@ -142,12 +126,12 @@ const _renderStory = (
 
         _setStoryValue(storyId, 'disposeFn', disposeFn);
     }
-    // Story is already rendered, but we need to re-run the story function
-    // to pick up changes in decorators and global settings (like measure tool)
-    // StoryFn here its `like React` component which render whole document with all decorators so we must re-run it every time something updates
-    // Thank to reactivity decorator which won't run any real user code/decorators for this rerenders
+    // The story is already rendered, but we need to re-run the story function
+    // to pick up changes in decorators and global settings (like the measure tool).
+    // Here, StoryFn its a chain of decorators which works like a React component, which re-renders each time something updates.
+    // Thanks to the applyDecorators function, story/decorator functions are not re-run if the story is already rendered and contains JSX.
     else {
-        Story();
+        StoryFn();
     }
 };
 
@@ -170,12 +154,12 @@ export const mount = (context: StoryContext<Args>) => {
         }
 
         // Reset story store if story is not rendered or should be remounted
-        if (!_isStoryRendered(storyId) || forceRemount) {
+        if (!isStoryRendered(storyId) || forceRemount) {
             _resetStoryStore(storyId);
         }
 
-        // Update reactive args and globals
-        _updateReactiveArgs(storyId, context);
+        // Update reactive args and globals and put observed globals and args back into the context
+        _makeObservable(storyId, context);
 
         // Call internal renderToCanvas function
         //  which later calls renderToCanvas defined below
