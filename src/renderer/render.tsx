@@ -1,6 +1,6 @@
 /* eslint-disable solid/components-return-once */
 /* eslint-disable solid/reactivity */
-import { ErrorBoundary, onMount } from 'solid-js';
+import { ErrorBoundary, onCleanup, onMount } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 import { render as solidRender } from 'solid-js/web';
 
@@ -115,20 +115,24 @@ const _renderStory = (
         const App: Component = () => {
             onMount(() => {
                 showMain();
+                _setStoryValue(storyId, 'rendered', true);
+            });
+
+            onCleanup(() => {
+                _setStoryValue(storyId, 'rendered', false);
             });
 
             if (storyContext?.parameters?.['__isPortableStory']) {
                 return <Story />;
             }
 
-            const onError = (err: any) => {
-                showException(err);
-
-                return err;
-            };
-
             return (
-                <ErrorBoundary fallback={ onError }>
+                <ErrorBoundary fallback={ (err: any) => {
+                    showException(err);
+
+                    return err;
+                } }
+                >
                     <Story />
                 </ErrorBoundary>
             );
@@ -137,7 +141,6 @@ const _renderStory = (
         const disposeFn = solidRender(() => <App />, canvasElement);
 
         _setStoryValue(storyId, 'disposeFn', disposeFn);
-        _setStoryValue(storyId, 'rendered', true);
     }
     // Story is already rendered, but we need to re-run the story function
     // to pick up changes in decorators and global settings (like measure tool)

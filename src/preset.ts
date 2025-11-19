@@ -64,7 +64,20 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
         );
     }
 
+    // Exclude renderer from dependency optimization to prevent double evaluation
+    // The renderer module contains module-level state (stores) that should only be initialized once
+    // When optimizeDeps pre-bundles the renderer, it can cause the module to be evaluated twice,
+    // creating duplicate store instances. Excluding it ensures it's only evaluated once at runtime.
+    const optimizeDeps = {
+        ...config.optimizeDeps,
+        exclude: [
+            ...(config.optimizeDeps?.exclude ?? []),
+            'storybook-solidjs-vite',
+        ],
+    };
+
     return mergeConfig(config, {
         plugins,
+        optimizeDeps,
     });
 };
