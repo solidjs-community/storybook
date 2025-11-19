@@ -1,7 +1,7 @@
 import { createComponent } from 'solid-js';
 import { defaultDecorateStory } from 'storybook/preview-api';
 
-import { isStoryRendered } from './render';
+import { getStoryId, isStoryRendered } from './render';
 
 import type { Decorator } from './public-types';
 import type { SolidRenderer } from './types';
@@ -40,7 +40,7 @@ export const applyDecorators = (
 
             return (StoryFn, context) => {
                 if (isJSX) {
-                    const storyId = context.id || context.canvasElement?.id;
+                    const storyId = getStoryId(context);
 
                     if (storyId && isStoryRendered(storyId)) {
                         return StoryFn(context);
@@ -53,7 +53,7 @@ export const applyDecorators = (
     );
 
     return defaultDecorateStory((context) => {
-        const storyId = context.id || context.canvasElement?.id;
+        const storyId = getStoryId(context);
 
         if (storyId && isStoryRendered(storyId)) {
             return null;

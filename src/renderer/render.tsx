@@ -18,6 +18,17 @@ import type { Args, ArgsStoryFn, Globals } from 'storybook/internal/types';
 const [store, setStore] = createStore({} as GlobalReactivityStore);
 const [globals, setGlobals] = createStore<Globals>({});
 
+
+/**
+ * Extracts the story ID from a context object.
+ */
+export const getStoryId = (context: { id?: string; canvasElement?: { id?: string } }): string | undefined => {
+    // Canvas element has higher priority than story ID 
+    //  because we could have same story rendered on the same page but with different canvas elements
+    //   e.g in autodocs
+    return context.canvasElement?.id || context.id;
+};
+
 /**
  * Checks if the story store exists
  */
@@ -140,8 +151,12 @@ const _renderStory = (
  * Called each time component should be mounted or updated.
  */
 export const mount = (context: StoryContext<Args>) => {
-    const storyId = context.id || context.canvasElement?.id;
+    const storyId = getStoryId(context);
     const { forceRemount } = context;
+
+    if (!storyId) {
+        throw new Error('Story ID is required');
+    }
 
     return async(ui: StoryFnReturnType) => {
         if (ui != null) {
@@ -186,7 +201,11 @@ export async function renderToCanvas(
     renderContext: RenderContext,
     canvasElement: SolidRenderer['canvasElement']
 ) {
-    const storyId = renderContext.id || canvasElement?.id;
+    const storyId = getStoryId({ ...renderContext, canvasElement });
+
+    if (!storyId) {
+        throw new Error('Story ID is required');
+    }
 
     // Render story
     _renderStory(storyId, renderContext, canvasElement);
