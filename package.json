@@ -64,7 +64,8 @@
         "dist/**/*",
         "**/*.d.ts",
         "preset.js",
-        "preview.js"
+        "preview.js",
+        "template/**/*"
     ],
     "scripts": {
         "prepack": "bun run build",
