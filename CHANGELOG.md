@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.9
+
+### Patch Changes
+
+- a148c37: chore: Added template files for storybook native CLI
+
 ## 10.0.8
 
 ### Patch Changes
