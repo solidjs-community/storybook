@@ -77,7 +77,7 @@ To do this:
 2. Install the required dependencies:
 
 ```bash
-npm install storybook storybook-solidjs-vite @chromatic-com/storybook @storybook/addon-onboarding @storybook/addon-docs @storybook/addon-a11y @storybook/addon-links @storybook/addon-vitest @vitest/coverage-v8 playwright vitest @vitest/browser
+npm install storybook storybook-solidjs-vite @chromatic-com/storybook @storybook/addon-onboarding @storybook/addon-docs @storybook/addon-a11y @storybook/addon-links @storybook/addon-vitest @vitest/coverage-v8 playwright vitest @vitest/browser @vitest/browser-playwright
 ```
 
 3. Add the necessary scripts to your `package.json`:
