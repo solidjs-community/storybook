@@ -128,8 +128,8 @@
         "access": "public"
     },
     "simple-git-hooks": {
-        "pre-commit": "bunx --no-install lint-staged",
-        "commit-msg": "bunx --no-install commitlint --edit \"$1\""
+        "pre-commit": "bunx --no-install is-ci || bunx --no-install lint-staged",
+        "commit-msg": "bunx --no-install is-ci || bunx --no-install commitlint --edit \"$1\""
     },
     "lint-staged": {
         "*.{js,mjs,jsx,ts,tsx}": [
