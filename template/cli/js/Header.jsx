@@ -1,6 +1,5 @@
 import { mergeProps } from 'solid-js';
 
-import { Button } from './Button';
 import './header.css';
 
 export const Header = (_props) => {

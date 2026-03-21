@@ -1,7 +1,7 @@
+import { createDefaultValue, createDefaultValueFromRawDefaultProp } from '../lib/defaultValues';
 import { createType } from './createType';
 import { rawDefaultPropTypeResolvers } from './rawDefaultPropResolvers';
 import { keepOriginalDefinitionOrder } from './sortProps';
-import { createDefaultValue, createDefaultValueFromRawDefaultProp } from '../lib/defaultValues';
 
 import type { ExtractedProp, PropDef } from 'storybook/internal/docs-tools';
 

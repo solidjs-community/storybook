@@ -1,13 +1,11 @@
 import { createSummaryValue } from 'storybook/internal/docs-tools';
 
 import { ELEMENT_CAPTION, FUNCTION_CAPTION } from '../lib/captions';
-
 import { createTypeResolvers, extractFunctionName } from '../lib/defaultValues';
 import {
     getPrettyElementIdentifier,
     getPrettyFuncIdentifier,
 } from '../lib/defaultValues/prettyIdentifier';
-
 import { inspectValue } from '../lib/inspection';
 
 import type { TypeResolver } from '../lib/defaultValues';

@@ -1,17 +1,16 @@
 import {
-    setDefaultProjectAnnotations,
     setProjectAnnotations as originalSetProjectAnnotations,
+    setDefaultProjectAnnotations,
 } from 'storybook/preview-api';
 
 import * as INTERNAL_DEFAULT_PROJECT_ANNOTATIONS from './entry-preview';
-
-import type { SolidRenderer } from './types';
 
 import type {
     NamedOrDefaultProjectAnnotations,
     NormalizedProjectAnnotations,
     ProjectAnnotations,
 } from 'storybook/internal/types';
+import type { SolidRenderer } from './types';
 
 /**
  * Function that sets the globalConfig of your storybook. The global config is the preview module of

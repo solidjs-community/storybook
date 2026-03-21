@@ -1,7 +1,7 @@
 import {
-    TypeSystem,
     extractComponentProps,
     hasDocgen,
+    TypeSystem,
     type PropDef,
 } from 'storybook/internal/docs-tools';
 

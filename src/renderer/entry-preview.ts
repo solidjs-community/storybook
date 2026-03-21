@@ -2,7 +2,6 @@
 import { global } from '@storybook/global';
 import { configure } from 'storybook/test';
 
-
 import type { Decorator } from './public-types';
 
 export const parameters = {
@@ -50,5 +49,5 @@ export const beforeAll = async() => {
 };
 
 
-export { mount, render, renderToCanvas } from './render';
 export { applyDecorators } from './applyDecorators';
+export { mount, render, renderToCanvas } from './render';

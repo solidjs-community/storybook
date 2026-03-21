@@ -6,7 +6,6 @@ import {
 
 import { ELEMENT_CAPTION, FUNCTION_CAPTION } from '../captions';
 import { generateCode } from '../generateCode';
-
 import { InspectionType, inspectValue } from '../inspection';
 import { isHtmlTag } from '../isHtmlTag';
 import { generateArray } from './generateArray';
@@ -80,7 +79,7 @@ export function createDefaultValue(defaultValue: string): PropDefaultValue | nul
                 return null;
         }
     }
-    catch (e) {
+    catch(e) {
         console.error(e);
     }
 

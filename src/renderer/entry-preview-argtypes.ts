@@ -2,8 +2,8 @@ import { enhanceArgTypes, extractComponentDescription } from 'storybook/internal
 
 import { extractArgTypes } from './extractArgTypes';
 
-import type { SolidRenderer } from './types';
 import type { ArgTypesEnhancer } from 'storybook/internal/types';
+import type { SolidRenderer } from './types';
 
 export const parameters = {
     docs: {

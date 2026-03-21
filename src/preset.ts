@@ -6,11 +6,10 @@
  * @see https://storybook.js.org/docs/api/main-config/main-config
  */
 import { hasVitePlugins } from '@storybook/builder-vite';
-
 import { mergeConfig } from 'vite';
 
-import type { FrameworkOptions, StorybookConfig } from './types';
 import type { PresetProperty } from 'storybook/internal/types';
+import type { FrameworkOptions, StorybookConfig } from './types';
 
 /**
  * Configures Storybook's internal features.

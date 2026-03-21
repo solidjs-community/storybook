@@ -1,11 +1,12 @@
 import { Parser } from 'acorn';
-import type { Node as AcornNode } from 'acorn';
 import jsx from 'acorn-jsx';
 // @ts-ignore
 import { ancestor as acornWalkAncestor, base as acornWalkBase, simple as acornWalkSimple } from 'acorn-walk';
 
 import { InspectionType } from './types';
 
+import type { Node as AcornNode } from 'acorn';
+import type estree from 'estree';
 import type {
     InspectionArray,
     InspectionClass,
@@ -17,7 +18,6 @@ import type {
     InspectionObject,
     InspectionUnknown,
 } from './types';
-import type estree from 'estree';
 
 
 interface ParsingResult<T> {
@@ -159,7 +159,7 @@ function parseJsxElement(jsxElementNode: any): ParsingResult<InspectionElement> 
 
 function parseCall(callNode: estree.CallExpression): ParsingResult<InspectionObject> | null {
     const identifierNode
-    = callNode.callee.type === 'MemberExpression' ? callNode.callee.property : callNode.callee;
+        = callNode.callee.type === 'MemberExpression' ? callNode.callee.property : callNode.callee;
 
     const identifierName = extractIdentifierName(identifierNode);
 

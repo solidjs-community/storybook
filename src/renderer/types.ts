@@ -1,9 +1,8 @@
 import type { Component, JSXElement } from 'solid-js';
-
 import type { Args, Canvas, WebRenderer } from 'storybook/internal/types';
 
-export type { RenderContext } from 'storybook/internal/types';
 export type { StoryContext } from './public-types';
+export type { RenderContext } from 'storybook/internal/types';
 
 export type StoryFnReturnType = JSXElement;
 

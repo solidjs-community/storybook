@@ -1,7 +1,4 @@
-import type { IS_SOLID_JSX_FLAG } from './applyDecorators';
-import type { SolidRenderer } from './types';
-import type { Component as ComponentType, ComponentProps } from 'solid-js';
-
+import type { ComponentProps, Component as ComponentType } from 'solid-js';
 import type {
     AnnotatedStoryFn,
     Args,
@@ -9,17 +6,18 @@ import type {
     ArgsStoryFn,
     ComponentAnnotations,
     DecoratorFunction,
+    RenderContext as GenericRenderContext,
+    StoryContext as GenericStoryContext,
     LoaderFunction,
     ProjectAnnotations,
-    RenderContext as GenericRenderContext,
     StoryAnnotations,
-    StoryContext as GenericStoryContext,
     StrictArgs,
 } from 'storybook/internal/types';
-
 import type { SetOptional, Simplify } from 'type-fest';
+import type { IS_SOLID_JSX_FLAG } from './applyDecorators';
+import type { SolidRenderer } from './types';
 
-export type { ArgTypes, Args, Parameters, StrictArgs } from 'storybook/internal/types';
+export type { Args, ArgTypes, Parameters, StrictArgs } from 'storybook/internal/types';
 export type { SolidRenderer };
 
 /**
@@ -53,8 +51,8 @@ export type StoryObj<TMetaOrCmpOrArgs = Args> = [TMetaOrCmpOrArgs] extends [
     }
 ]
     ? Simplify<
-      (Component extends ComponentType<any> ? ComponentProps<Component> : unknown) &
-      ArgsFromMeta<SolidRenderer, TMetaOrCmpOrArgs>
+      (Component extends ComponentType<any> ? ComponentProps<Component> : unknown)
+      & ArgsFromMeta<SolidRenderer, TMetaOrCmpOrArgs>
     > extends infer TArgs
         ? StoryAnnotations<
             SolidRenderer,

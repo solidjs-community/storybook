@@ -1,5 +1,4 @@
 import { parse } from './acornParser';
-
 import { InspectionType } from './types';
 
 import type { InspectionResult } from './types';
@@ -10,7 +9,7 @@ export function inspectValue(value: string): InspectionResult {
 
         return { ...parsingResult };
     }
-    catch (e) {
+    catch(e) {
     // do nothing.
     }
 

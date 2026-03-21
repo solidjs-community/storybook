@@ -7,7 +7,6 @@ import {
 } from 'storybook/internal/docs-tools';
 
 import { ELEMENT_CAPTION, FUNCTION_CAPTION, OBJECT_CAPTION } from '../captions';
-
 import { inspectValue } from '../inspection';
 import { isHtmlTag } from '../isHtmlTag';
 import { generateArray } from './generateArray';
@@ -107,7 +106,7 @@ const functionResolver: TypeResolver = (rawDefaultProp, propDef) => {
                 }
             }
         }
-        catch (e) {
+        catch(e) {
             // do nothing
         }
     }
@@ -176,7 +175,7 @@ export function createDefaultValueFromRawDefaultProp(
                 return typeResolvers.default(rawDefaultProp, propDef);
         }
     }
-    catch (e) {
+    catch(e) {
         console.error(e);
     }
 

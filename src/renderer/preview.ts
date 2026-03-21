@@ -4,8 +4,6 @@ import * as solidAnnotations from './entry-preview';
 import * as solidArgTypesAnnotations from './entry-preview-argtypes';
 import * as solidDocsAnnotations from './entry-preview-docs';
 
-import type { AddMocks } from './public-types';
-import type { SolidRenderer } from './types';
 import type { Component } from 'solid-js';
 import type { AddonTypes, InferTypes, Meta, Preview, PreviewAddon, Story } from 'storybook/internal/csf';
 import type {
@@ -17,8 +15,9 @@ import type {
     Renderer,
     StoryAnnotations,
 } from 'storybook/internal/types';
-
 import type { OmitIndexSignature, SetOptional, Simplify, UnionToIntersection } from 'type-fest';
+import type { AddMocks } from './public-types';
+import type { SolidRenderer } from './types';
 
 export function definePreview<Addons extends PreviewAddon<never>[]>(
     input: { addons: Addons } & ProjectAnnotations<SolidRenderer & InferTypes<Addons>>
@@ -73,13 +72,13 @@ export interface SolidPreview<T extends AddonTypes> extends Preview<SolidRendere
       'decorators' | 'component' | 'args' | 'render'
         >
     ) => SolidMeta<
-      SolidRenderer &
-      T & {
+      SolidRenderer
+      & T & {
           args: Simplify<
           TArgs & Simplify<OmitIndexSignature<DecoratorsArgs<SolidRenderer & T, Decorators>>>
           >;
       },
-        { args: Partial<TArgs> extends TMetaArgs ? Record<string, never> : TMetaArgs }
+      { args: Partial<TArgs> extends TMetaArgs ? Record<string, never> : TMetaArgs }
     >;
 }
 

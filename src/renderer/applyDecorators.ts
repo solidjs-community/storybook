@@ -3,9 +3,9 @@ import { defaultDecorateStory } from 'storybook/preview-api';
 
 import { getStoryId, isStoryRendered } from './render';
 
+import type { DecoratorFunction, LegacyStoryFn } from 'storybook/internal/types';
 import type { Decorator } from './public-types';
 import type { SolidRenderer } from './types';
-import type { DecoratorFunction, LegacyStoryFn } from 'storybook/internal/types';
 
 /**
  * Flag used to mark decorators that return JSX elements.

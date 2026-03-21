@@ -1,4 +1,5 @@
 import { mergeProps, splitProps } from 'solid-js';
+
 import './button.css';
 
 /** Primary UI component for user interaction */

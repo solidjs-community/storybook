@@ -1,11 +1,6 @@
 import { createSummaryValue, isTooLongForTypeSummary } from 'storybook/internal/docs-tools';
 
 import {
-    generateFuncSignature,
-    generateShortFuncSignature,
-    toMultilineSignature,
-} from './generateFuncSignature';
-import {
     ARRAY_CAPTION,
     CLASS_CAPTION,
     CUSTOM_CAPTION,
@@ -14,12 +9,16 @@ import {
     OBJECT_CAPTION,
 } from '../lib/captions';
 import { generateCode, generateObjectCode } from '../lib/generateCode';
-
 import { InspectionType, inspectValue } from '../lib/inspection';
 import { isHtmlTag } from '../lib/isHtmlTag';
+import {
+    generateFuncSignature,
+    generateShortFuncSignature,
+    toMultilineSignature,
+} from './generateFuncSignature';
 
-import type { InspectionArray, InspectionElement, InspectionObject } from '../lib/inspection';
 import type { DocgenPropType, ExtractedProp, PropType } from 'storybook/internal/docs-tools';
+import type { InspectionArray, InspectionElement, InspectionObject } from '../lib/inspection';
 
 const MAX_FUNC_LENGTH = 150;
 
@@ -372,7 +371,7 @@ function generateType(type: DocgenPropType, extractedProp: ExtractedProp): TypeD
                 return createTypeDef({ name: type.name, short: type.name, compact: type.name });
         }
     }
-    catch (e) {
+    catch(e) {
         console.error(e);
     }
 
@@ -426,7 +425,7 @@ export function createType(extractedProp: ExtractedProp): PropType | null {
                 return null;
         }
     }
-    catch (e) {
+    catch(e) {
         console.error(e);
     }
 
