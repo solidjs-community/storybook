@@ -24,7 +24,7 @@ export const LoggedIn = {
     user: {
       name: "Jane Doe",
     },
-  },
+    },
 };
 
 export const LoggedOut = {};
