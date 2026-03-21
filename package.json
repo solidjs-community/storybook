@@ -25,7 +25,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/solidjs-community/storybook.git",
+        "url": "git+https://github.com/solidjs-community/storybook.git",
         "directory": "packages/storybook-solid-vite"
     },
     "license": "MIT",

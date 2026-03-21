@@ -20,6 +20,11 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        
+      - name: Update npm to latest
+        env:
+          SKIP_INSTALL_SIMPLE_GIT_HOOKS: "true"
+        run: bun install -g npm@latest
 
       - name: Install dependencies
         env:
