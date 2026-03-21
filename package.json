@@ -68,6 +68,7 @@
         "template/**/*"
     ],
     "scripts": {
+        "prepare": "simple-git-hooks",
         "prepack": "bun run build",
         "build": "tsup",
         "dev": "tsup --watch",
@@ -103,7 +104,11 @@
         "tsup": "^8.5.1",
         "type-fest": "^5.5.0",
         "typescript": "^5.9.3",
-        "vitest": "^4.1.0"
+        "vitest": "^4.1.0",
+        "@commitlint/cli": "^20.5.0",
+        "@commitlint/config-conventional": "^20.5.0",
+        "lint-staged": "^16.4.0",
+        "simple-git-hooks": "^2.13.1"
     },
     "peerDependencies": {
         "solid-js": "^1.9.0",
@@ -118,5 +123,67 @@
     },
     "publishConfig": {
         "access": "public"
+    },
+    "simple-git-hooks": {
+        "pre-commit": "bunx --no-install lint-staged",
+        "commit-msg": "bunx --no-install commitlint --edit \"$1\""
+    },
+    "lint-staged": {
+        "*.{js,mjs,jsx,ts,tsx}": [
+            "eslint --fix --max-warnings=9999 --quiet"
+        ]
+    },
+    "commitlint": {
+        "extends": [
+            "@commitlint/config-conventional"
+        ],
+        "rules": {
+            "type-enum": [
+                2,
+                "always",
+                [
+                    "feat",
+                    "fix",
+                    "chore",
+                    "refactor",
+                    "docs",
+                    "test",
+                    "ci",
+                    "perf",
+                    "revert"
+                ]
+            ],
+            "type-case": [
+                2,
+                "always",
+                "lower-case"
+            ],
+            "type-empty": [
+                2,
+                "never"
+            ],
+            "subject-empty": [
+                2,
+                "never"
+            ],
+            "subject-min-length": [
+                1,
+                "always",
+                4
+            ],
+            "body-max-line-length": [
+                1,
+                "always",
+                250
+            ],
+            "subject-case": [
+                2,
+                "never",
+                [
+                    "pascal-case",
+                    "upper-case"
+                ]
+            ]
+        }
     }
 }
