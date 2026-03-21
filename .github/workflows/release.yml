@@ -21,6 +21,8 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
+        env:
+          SKIP_INSTALL_SIMPLE_GIT_HOOKS: "true"
         run: bun install --frozen-lockfile
 
       - name: Check build
