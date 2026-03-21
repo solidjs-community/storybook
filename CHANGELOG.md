@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.11
+
+### Patch Changes
+
+- ca78176: Test Bump Version Action #1
+
 ## 10.0.10
 
 ### Patch Changes
