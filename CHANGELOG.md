@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.10
+
+### Patch Changes
+
+- 9c29c1f: Add vite v8 to peerDependencies
+
 ## 10.0.9
 
 ### Patch Changes
