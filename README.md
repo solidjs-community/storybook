@@ -9,122 +9,64 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/solidjs-community/storybook/pulls)
 
-Community supported [Storybook](https://storybook.js.org/) **framework adapter** for [SolidJS](https://solidjs.com/), using Vite as the bundler.
+[Storybook](https://storybook.js.org/) **framework adapter** for [SolidJS](https://solidjs.com/), using Vite.
 
----
-
-## 📋 Table of Contents
-
-- [Storybook for SolidJS](#storybook-for-solidjs)
-  - [📋 Table of Contents](#-table-of-contents)
-  - [✨ Features](#-features)
-  - [🚀 Getting Started](#-getting-started)
-  - [📦 Manual Installation](#-manual-installation)
-  - [⚙️ Configuration](#️-configuration)
-  - [🔄 Migration Guide](#-migration-guide)
-  - [🤝 Contributing](#-contributing)
-  - [👤 Maintainer](#-maintainer)
-  - [📖 License](#-license)
+Adds SolidJS support to Storybook.
 
 ---
 
 ## ✨ Features
 
-- **Fast Vite-powered** — Lightning-fast Storybook experience using Vite.
-- **SolidJS Native** — Out-of-the-box support for Solid components and JSX.
-- **Latest Storybook Support** — Built for and tested with the newest Storybook version.
-- **TypeScript-First** — Full TypeScript support for your components and stories.
-- **Addon Ecosystem** — Works with popular Storybook addons (Docs, Controls, Actions, Links, etc.).
-- **ArgTypes from TypeScript** — Prop tables and controls generated directly from your TypeScript types.
-- **Integrated Testing** — Built-in support for component and story testing with Vitest and Playwright.
-- **Hot Reload** — Instant updates as you edit components, powered by Vite.
-- **MDX & Docs** — Write rich documentation alongside your stories using MDX.
-- **Accessibility (a11y)** — Built-in accessibility checks for your components.
+- SolidJS support out of the box
+- Vite-powered builder
+- TypeScript-first setup
+- ArgTypes generation from TypeScript
+- Compatible with Storybook addons
+- Integrated testing (Vitest, Playwright)
 
 ---
 
 ## 🚀 Getting Started
 
-The fastest way to start using Storybook with SolidJS:
+Run in your project:
 
 ```bash
-npx create-solid-storybook <folder-name>
+npx create-storybook --type=solid
 ```
 
-Replace `<folder-name>` with your desired project directory name. This will generate a SolidJS project pre-configured with Storybook 9 and all essential addons.
-
-Then run:
+Then start Storybook:
 
 ```bash
-cd <folder-name>
-npm run storybook
+bun run storybook
 ```
 
-Open the provided URL in your browser to view your Storybook instance.
-
----
-
-## 📦 Manual Installation
-
-You can set everything up manually.
-To do this:
-
-1. Copy the following files from [storybook-solid-template](https://github.com/kachurun/create-solid-storybook/tree/main/packages/storybook-solid-template) to your project:
-
-- `.storybook/**`
-- `vitest.config.ts`
-
-2. Install the required dependencies:
-
-```bash
-npm install storybook storybook-solidjs-vite @chromatic-com/storybook @storybook/addon-onboarding @storybook/addon-docs @storybook/addon-a11y @storybook/addon-links @storybook/addon-vitest @vitest/coverage-v8 playwright vitest @vitest/browser @vitest/browser-playwright
-```
-
-3. Add the necessary scripts to your `package.json`:
-
-```json
-"scripts": {
-  "build": "storybook build",
-  "storybook": "storybook dev -p 6006"
-}
-```
-
-4. Create your stories in `stories/` (or use examples from the template's `stories` folder)
-
-5. Start Storybook:
-
-```bash
-npm run storybook
-```
+Open the URL shown in the terminal.
 
 ---
 
 ## ⚙️ Configuration
 
-- You can customize Vite and Storybook as usual. For advanced configuration, see the [Storybook Vite docs](https://storybook.js.org/docs/builders/vite).
-- Add your stories in `src/**/*.stories.tsx` or `src/**/*.stories.js`.
-- Use [Storybook Addons](https://storybook.js.org/addons) for extra features.
+You can customize Vite and Storybook as usual.
+
+- Add stories in `src/**/*.stories.tsx` or `src/**/*.stories.js`
+- Use Storybook addons for additional functionality
 
 ---
 
 ## 🎨 Decorators
 
-### `createDecorator` and `createJSXDecorator` helpers
+Storybook re-executes decorator and story code on updates (e.g. args, globals). SolidJS uses fine-grained reactivity and does not require re-running component functions.
 
-Storybook re-executes decorator code and story code on every change (e.g., when args or globals change). However, SolidJS uses fine-grained reactivity, which means components run once and effects/tracking scopes re-run when dependencies change. SolidJS doesn't require re-executing the component function itself on every update.
+This mismatch can cause duplicate DOM elements when decorators return JSX.
 
-This mismatch causes issues: when decorators that return JSX are re-executed, they create duplicate DOM elements, leading to double-rendering. The `createJSXDecorator` helper marks decorators so they're only executed once, preventing this issue.
+### createJSXDecorator
 
-**Use `createDecorator`** for decorators that don't return JSX (e.g., they only call `Story()`). This ensures type safety only.
-
-**Use `createJSXDecorator`** for decorators that return JSX elements. This ensures type safety and prevents double-rendering by marking them to be executed only once on initial render.
-
-**Example: Decorator that returns JSX**
+Use for decorators that return JSX. Ensures they run only once.
 
 ```tsx
 import { createJSXDecorator } from 'storybook-solidjs-vite';
 
-export const solidDecorator = createJSXDecorator((Story, context) => {
+export const decorator = createJSXDecorator((Story) => {
   return (
     <main>
       <Story />
@@ -133,35 +75,35 @@ export const solidDecorator = createJSXDecorator((Story, context) => {
 });
 ```
 
-**Example: Decorator that doesn't return JSX**
+### createDecorator
+
+Use for decorators that do not return JSX.
 
 ```tsx
 import { createDecorator } from 'storybook-solidjs-vite';
 
-export const regularDecorator = createDecorator((Story) => {
+export const decorator = createDecorator((Story) => {
   return Story();
 });
 ```
 
-### Manual Flag Assignment
-
-You can also manually mark decorators as JSX-returning by setting the flag directly:
+### Manual flag
 
 ```tsx
 import { IS_SOLID_JSX_FLAG } from 'storybook-solidjs-vite';
 
-export const myDecorator = (Story, context) => {
+export const decorator = (Story) => {
   return <div><Story /></div>;
 };
 
-myDecorator[IS_SOLID_JSX_FLAG] = true;
+decorator[IS_SOLID_JSX_FLAG] = true;
 ```
 
 ---
 
-## 🔄 Migration Guide
+## 🔄 Migration from v9
 
-Migrating from version 9 to 10? Check out our [Migration Guide](./MIGRATION.md) for step-by-step instructions and breaking changes.
+Migrating from version 9 to 10? Check out [Migration Guide](./MIGRATION.md) for step-by-step instructions and breaking changes.
 
 ---
 
