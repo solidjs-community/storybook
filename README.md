@@ -13,8 +13,6 @@
 
 Adds SolidJS support to Storybook.
 
----
-
 ## ✨ Features
 
 - SolidJS support out of the box
@@ -23,8 +21,6 @@ Adds SolidJS support to Storybook.
 - ArgTypes generation from TypeScript
 - Compatible with Storybook addons
 - Integrated testing (Vitest, Playwright)
-
----
 
 ## 🚀 Getting Started
 
@@ -42,8 +38,6 @@ bun run storybook
 
 Open the URL shown in the terminal.
 
----
-
 ## ⚙️ Configuration
 
 You can customize Vite and Storybook as usual.
@@ -51,7 +45,35 @@ You can customize Vite and Storybook as usual.
 - Add stories in `src/**/*.stories.tsx` or `src/**/*.stories.js`
 - Use Storybook addons for additional functionality
 
----
+### TypeScript docgen
+
+TypeScript props for docs and controls are generated with [@joshwooding/vite-plugin-react-docgen-typescript](https://github.com/joshwooding/vite-plugin-react-docgen-typescript).
+
+Configure it with framework.options.docgen in .storybook/main.ts.
+
+`false` — disable docgen
+`true` (default) — enable docgen with the default configuration
+`object` — override default configuration
+
+```ts
+import type { StorybookConfig } from 'storybook-solidjs-vite';
+
+const config: StorybookConfig = {
+  framework: {
+    name: 'storybook-solidjs-vite',
+    options: {
+      docgen: {
+        savePropValueAsString: true,
+        shouldExtractLiteralValuesFromEnum: true,
+        propFilter: (prop: any) =>
+          prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
+      },
+    },
+  },
+};
+
+export default config;
+```
 
 ## 🎨 Decorators
 
@@ -99,28 +121,20 @@ export const decorator = (Story) => {
 decorator[IS_SOLID_JSX_FLAG] = true;
 ```
 
----
-
 ## 🔄 Migration from v9
 
-Migrating from version 9 to 10? Check out [Migration Guide](./MIGRATION.md) for step-by-step instructions and breaking changes.
-
----
+Check out [Migration Guide](./MIGRATION.md) for the instructions and breaking changes.
 
 ## 🤝 Contributing
 
 Contributions, issues and feature requests are welcome! Feel free to [open an issue](https://github.com/solidjs-community/storybook/issues) or submit a PR.
 
----
+## 📖 License
+
+MIT
 
 ## 👤 Maintainer
 
 <img src="https://github.com/kachurun.png" width="100" height="100" alt="@kachurun's avatar" style="border-radius: 50%;">
 
 Maintained with ❤️ by [@kachurun](https://github.com/kachurun)
-
----
-
-## 📖 License
-
-MIT
