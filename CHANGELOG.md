@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.12
+
+### Patch Changes
+
+- b1e9733: Update deps
+
 ## 10.0.11
 
 ### Patch Changes
