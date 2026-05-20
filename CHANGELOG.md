@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.0.13
+
+### Patch Changes
+
+- 28dd848: Component type fix
+
 ## 10.0.12
 
 ### Patch Changes
