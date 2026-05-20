@@ -46,12 +46,12 @@ export type StoryFn<TCmpOrArgs = Args> = [TCmpOrArgs] extends [ComponentType<any
 export type StoryObj<TMetaOrCmpOrArgs = Args> = [TMetaOrCmpOrArgs] extends [
     {
         render?: ArgsStoryFn<SolidRenderer, any>;
-        component?: infer Component;
+        component?: infer Cmp;
         args?: infer DefaultArgs;
     }
 ]
     ? Simplify<
-      (Component extends ComponentType<any> ? ComponentProps<Component> : unknown)
+      (Cmp extends ComponentType<any> ? ComponentProps<Cmp> : unknown)
       & ArgsFromMeta<SolidRenderer, TMetaOrCmpOrArgs>
     > extends infer TArgs
         ? StoryAnnotations<
