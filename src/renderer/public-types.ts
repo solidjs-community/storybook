@@ -1,8 +1,5 @@
 /**
- * Public API for story authors (`Meta`, `StoryObj`, `Decorator`, decorator helpers, etc.).
- *
- * Re-exported from `storybook-solidjs-vite` for use in `.stories.ts` files.
- * Compile-time types and small runtime helpers only — not used by Storybook preview internals directly.
+ * Shared Solid renderer types (no imports from `preview.ts` or `index.ts`).
  */
 import type { Component, ComponentProps } from 'solid-js';
 import type {
@@ -41,19 +38,6 @@ export interface SolidRenderer extends WebRenderer {
     storyResult: StoryFnReturnType;
     mount: (ui?: StoryFnReturnType) => Promise<Canvas>;
 }
-
-export interface ShowErrorArgs {
-    title: string;
-    description: string;
-}
-
-export type GlobalReactivityStore = {
-    [key: string]: {
-        args: Args;
-        rendered: boolean;
-        disposeFn: (() => void) | null;
-    };
-};
 
 /**
  * Metadata to configure the stories for a component.
@@ -121,19 +105,3 @@ export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<SolidRenderer
 };
 
 export type RenderContext = GenericRenderContext<SolidRenderer>;
-
-/** Use for decorators that do not return JSX (e.g. they only call `Story()`). */
-export const createDecorator = (
-    decorator: DecoratorFunction<SolidRenderer>
-): Decorator => {
-    return decorator as Decorator;
-};
-
-/** Use for decorators that return JSX. Ensures they run only once per story mount. */
-export const createJSXDecorator = (
-    decorator: DecoratorFunction<SolidRenderer>
-): Decorator => {
-    (decorator as Decorator)[IS_SOLID_JSX_FLAG] = true;
-
-    return decorator as Decorator;
-};

@@ -19,7 +19,7 @@ import type {
 } from 'storybook/internal/types';
 import type { OmitIndexSignature, SetOptional, Simplify, UnionToIntersection } from 'type-fest';
 import type { SolidVersion } from '../framework/types';
-import type { AddMocks, SolidComponent, SolidRenderer } from './public-api';
+import type { AddMocks, SolidComponent, SolidRenderer } from './public-types';
 
 type DefinePreviewInput<Addons extends PreviewAddon<never>[]> = {
     addons: Addons;

@@ -1,51 +1,117 @@
-/* Configuration for default renderer (default preview.ts params) */
-import { global } from '@storybook/global';
-import { configure } from 'storybook/test';
+import {
+    createComponent,
+    ErrorBoundary,
+    onCleanup,
+    onMount,
+} from 'solid-js';
+import { reconcile, createStore as solidCreateStore } from 'solid-js/store';
+import { render as solidRender } from 'solid-js/web';
 
-import type { Decorator } from '../public-api';
+import { createApplyDecorators } from '../shared/apply-decorators.ts';
+import { createStoryState, getStoryId } from '../shared/story-store';
 
-export const parameters = {
-    renderer: 'solid',
+import type { Args } from 'storybook/internal/types';
+import type { RenderContext, SolidComponent, SolidRenderer, StoryContext, StoryFnReturnType } from '../public-types';
+
+export * from '../shared/preview-annotations';
+
+// Story state to control rendered stories and do not remount already rendered stories
+const createStore = <T extends object>(initial: T) => {
+    const [state, setStore] = solidCreateStore<T>(initial);
+
+    const setState = (update: T | ((prev: T) => T)) => {
+        const next = typeof update === 'function' ? update(state) : update;
+
+        setStore(reconcile(next));
+    };
+
+    return [state, setState] as const;
 };
 
-export const decorators: Decorator[] = [
-    (StoryFn, context) => {
-        // @ts-expect-error this feature flag not available in global storybook types
-        if (context.tags?.includes('test-fn') && !global.FEATURES?.experimentalTestSyntax) {
-            throw new Error(
-                'To use the experimental test function, you must enable the experimentalTestSyntax feature flag. See https://storybook.js.org/docs/10/api/main-config/main-config-features#experimentalTestSyntax'
-            );
+const storyStore = createStoryState(createStore);
+
+/** Wraps the story fn with decorators, JSX decorators skip re-render when the story is already mounted. */
+export const applyDecorators = createApplyDecorators(storyStore, createComponent);
+
+/** Mounts or updates the story in the preview canvas. Returns cleanup when the story changes. */
+export const renderToCanvas = async(
+    renderContext: RenderContext,
+    canvasElement: SolidRenderer['canvasElement']
+) => {
+    const storyId = getStoryId({ ...renderContext, canvasElement });
+
+    if (!storyId) {
+        throw new Error('Story ID is required');
+    }
+
+    const { storyContext, storyFn: StoryFn, showMain, showException } = renderContext;
+    const Story = StoryFn as SolidComponent;
+
+    if (!storyStore.isStoryRendered(storyId)) {
+        const App: SolidComponent = () => {
+            onMount(() => {
+                showMain();
+                storyStore.setRendered(storyId, true);
+            });
+
+            onCleanup(() => {
+                storyStore.setRendered(storyId, false);
+            });
+
+            if (storyContext?.parameters?.['__isPortableStory']) {
+                return createComponent(Story, {});
+            }
+
+            return createComponent(ErrorBoundary, {
+                fallback: (err: Error) => {
+                    showException(err);
+
+                    return err as any;
+                },
+                children: createComponent(Story, {}),
+            });
+        };
+
+        const disposeFn = solidRender(() => createComponent(App, {}), canvasElement);
+
+        storyStore.setDisposeFn(storyId, disposeFn);
+    }
+    else {
+        StoryFn();
+    }
+
+    return () => {
+        storyStore.disposeStory(storyId);
+        storyStore.resetStory(storyId);
+    };
+};
+
+/** Play/mount API: sync reactive args and globals, then render via `renderToCanvas`. */
+export const mount = (context: StoryContext<Args>) => {
+    const storyId = getStoryId(context);
+    const { forceRemount } = context;
+
+    if (!storyId) {
+        throw new Error('Story ID is required');
+    }
+
+    return async(ui: StoryFnReturnType) => {
+        if (ui != null) {
+            context.originalStoryFn = () => ui;
         }
 
-        return StoryFn();
-    },
-];
+        if (forceRemount) {
+            storyStore.disposeStory(storyId);
+        }
 
-export const beforeAll = async() => {
-    try {
-        configure({
-            unstable_advanceTimersWrapper: (cb: () => any) => cb(),
-            asyncWrapper: async(cb: () => any) => {
-                const result = await cb();
+        if (!storyStore.isStoryRendered(storyId) || forceRemount) {
+            storyStore.resetStory(storyId);
+        }
 
-                await new Promise<void>((resolve) => {
-                    setTimeout(() => resolve(), 0);
+        storyStore.makeContextReactive(context);
 
-                    // @ts-expect-error global jest
-                    if (typeof jest !== 'undefined' && jest != null && ((setTimeout as any)._isMockFunction === true || Object.prototype.hasOwnProperty.call(setTimeout, 'clock'))) {
-                        // @ts-expect-error global jest
-                        jest!.advanceTimersByTime(0);
-                    }
-                });
+        await context.renderToCanvas();
 
-                return result;
-            },
-            eventWrapper: (cb: () => any) => cb(),
-        });
-    }
-    catch {
-        // storybook/test might not be available; noop
-    }
+        return context.canvas;
+    };
 };
-
-export { applyDecorators, mount, render, renderToCanvas } from './render';

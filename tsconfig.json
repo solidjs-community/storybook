@@ -28,6 +28,7 @@
     "include": [
         "src/**/*.ts",
         "src/**/*.tsx",
+        "src/**/*.d.ts",
         "template/**/*.ts",
         "template/**/*.tsx",
         "tsup.config.ts"
