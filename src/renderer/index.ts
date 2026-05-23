@@ -1,6 +1,8 @@
-import './globals';
+import { global } from '@storybook/global';
 
-export { createDecorator, createJSXDecorator, IS_SOLID_JSX_FLAG } from './applyDecorators';
-export * from './portable-stories';
+if (global.window) {
+    global.window.STORYBOOK_ENV = 'solid';
+}
+
 export { definePreview } from './preview';
-export * from './public-types';
+export * from './public-api';

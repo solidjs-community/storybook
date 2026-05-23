@@ -18,7 +18,7 @@ import type { FrameworkOptions, StorybookConfig } from './types';
  */
 export const core: PresetProperty<'core', StorybookConfig> = {
     builder: import.meta.resolve('@storybook/builder-vite'),
-    renderer: import.meta.resolve('./renderer'),
+    renderer: import.meta.resolve('storybook-solidjs-vite/renderer/preset'),
 };
 
 /**
@@ -30,7 +30,6 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
     const existPlugins = [...(config?.plugins ?? [])];
     const plugins = [];
 
-    // Add docgen plugin
     const framework = await presets.apply('framework');
     const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
 
@@ -40,7 +39,7 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
 
         // Default docgen options
         const defaultDocgenOptions = {
-            // We *need* this set so that RDT returns default values in the same format as react-docgen
+            // We *need* this set so that RDT returns default values in the format as react-docgen
             savePropValueAsString: true,
             shouldExtractLiteralValuesFromEnum: true,
             propFilter: (prop: any) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
@@ -56,7 +55,7 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
         );
     }
 
-    // Add solid plugin if not present
+    // Add solid plugin if not present (should be installed as a peer dependency)
     if (!(await hasVitePlugins(existPlugins, ['solid']))) {
         plugins.push(
             await import('vite-plugin-solid').then(module => module.default())

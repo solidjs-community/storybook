@@ -1,3 +1,3 @@
-export * from './node';
+export * from './framework/node';
 export * from './renderer';
-export * from './types';
+export type { FrameworkConfig, FrameworkOptions, SolidVersion, StorybookConfig } from './framework/types';

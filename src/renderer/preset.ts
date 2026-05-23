@@ -7,7 +7,10 @@
  */
 import { fileURLToPath } from 'node:url';
 
+import { resolveEntryPreviewPath, resolveSolidVersion } from '../framework/solidVersion';
+
 import type { PresetProperty } from 'storybook/internal/types';
+import type { FrameworkConfig } from '../framework/types';
 
 /**
  * Add additional scripts to run in the story preview.
@@ -21,11 +24,14 @@ export const previewAnnotations: PresetProperty<'previewAnnotations'> = async(
     const docsConfig = await options.presets.apply('docs', {}, options);
     const docsEnabled = Object.keys(docsConfig).length > 0;
     const result: string[] = [];
+    const framework = await options.presets.apply('framework');
+    const solidVersion = resolveSolidVersion(framework as FrameworkConfig, options.configDir);
+    const entryPreview = resolveEntryPreviewPath(solidVersion);
 
     return result
         .concat(input)
         .concat([
-            fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/entry-preview')),
+            fileURLToPath(import.meta.resolve(entryPreview)),
             fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/entry-preview-argtypes')),
         ])
         .concat(

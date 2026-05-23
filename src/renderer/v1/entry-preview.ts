@@ -2,7 +2,7 @@
 import { global } from '@storybook/global';
 import { configure } from 'storybook/test';
 
-import type { Decorator } from './public-types';
+import type { Decorator } from '../public-api';
 
 export const parameters = {
     renderer: 'solid',
@@ -48,6 +48,4 @@ export const beforeAll = async() => {
     }
 };
 
-
-export { applyDecorators } from './applyDecorators';
-export { mount, render, renderToCanvas } from './render';
+export { applyDecorators, mount, render, renderToCanvas } from './render';

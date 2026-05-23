@@ -1,10 +1,12 @@
+/**
+ * CSF Next `definePreview` helper.
+ */
 import { definePreview as definePreviewBase } from 'storybook/internal/csf';
 
-import * as solidAnnotations from './entry-preview';
-import * as solidArgTypesAnnotations from './entry-preview-argtypes';
-import * as solidDocsAnnotations from './entry-preview-docs';
+import * as solidDocsAnnotations from './docs/entry-preview';
+import * as solidArgTypesAnnotations from './docs/entry-preview-argtypes';
+import * as solidAnnotationsV1 from './v1/entry-preview';
 
-import type { Component } from 'solid-js';
 import type { AddonTypes, InferTypes, Meta, Preview, PreviewAddon, Story } from 'storybook/internal/csf';
 import type {
     Args,
@@ -16,19 +18,36 @@ import type {
     StoryAnnotations,
 } from 'storybook/internal/types';
 import type { OmitIndexSignature, SetOptional, Simplify, UnionToIntersection } from 'type-fest';
-import type { AddMocks } from './public-types';
-import type { SolidRenderer } from './types';
+import type { SolidVersion } from '../framework/types';
+import type { AddMocks, SolidComponent, SolidRenderer } from './public-api';
+
+type DefinePreviewInput<Addons extends PreviewAddon<never>[]> = {
+    addons: Addons;
+    /** Must match `framework.options.solidVersion` in `.storybook/main.ts`. Defaults to `1`. */
+    solidVersion?: SolidVersion;
+} & ProjectAnnotations<SolidRenderer & InferTypes<Addons>>;
+
+function solidEntryPreviewAnnotations(solidVersion: SolidVersion = 1) {
+    if (solidVersion === 1) {
+        return solidAnnotationsV1;
+    }
+
+    return {};
+}
 
 export function definePreview<Addons extends PreviewAddon<never>[]>(
-    input: { addons: Addons } & ProjectAnnotations<SolidRenderer & InferTypes<Addons>>
+    input: DefinePreviewInput<Addons>
 ): SolidPreview<SolidRenderer & InferTypes<Addons>> {
+    const { solidVersion = 1, addons, ...projectAnnotations } = input;
+    const solidAnnotations = solidEntryPreviewAnnotations(solidVersion);
+
     const preview = definePreviewBase({
-        ...input,
+        ...projectAnnotations,
         addons: [
             solidAnnotations as unknown as PreviewAddon<never>,
             solidArgTypesAnnotations,
             solidDocsAnnotations,
-            ...(input.addons ?? []),
+            ...(addons ?? []),
         ],
     }) as unknown as SolidPreview<SolidRenderer & InferTypes<Addons>>;
 
@@ -64,7 +83,7 @@ export interface SolidPreview<T extends AddonTypes> extends Preview<SolidRendere
     >(
         meta: {
             render?: ArgsStoryFn<SolidRenderer & T, TArgs>;
-            component?: Component<TArgs>;
+            component?: SolidComponent<TArgs>;
             decorators?: Decorators | Decorators[];
             args?: TMetaArgs;
         } & Omit<
@@ -115,5 +134,5 @@ interface SolidMeta<T extends SolidRenderer, MetaInput extends ComponentAnnotati
 
 export interface SolidStory<T extends SolidRenderer, TInput extends StoryAnnotations<T, T['args']>>
     extends Story<T, TInput> {
-    Component: Component<Partial<T['args']>>;
+    Component: SolidComponent<Partial<T['args']>>;
 }

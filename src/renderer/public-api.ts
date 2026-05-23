@@ -1,9 +1,16 @@
-import type { ComponentProps, Component as ComponentType } from 'solid-js';
+/**
+ * Public API for story authors (`Meta`, `StoryObj`, `Decorator`, decorator helpers, etc.).
+ *
+ * Re-exported from `storybook-solidjs-vite` for use in `.stories.ts` files.
+ * Compile-time types and small runtime helpers only — not used by Storybook preview internals directly.
+ */
+import type { Component, ComponentProps } from 'solid-js';
 import type {
     AnnotatedStoryFn,
     Args,
     ArgsFromMeta,
     ArgsStoryFn,
+    Canvas,
     ComponentAnnotations,
     DecoratorFunction,
     RenderContext as GenericRenderContext,
@@ -12,21 +19,49 @@ import type {
     ProjectAnnotations,
     StoryAnnotations,
     StrictArgs,
+    WebRenderer,
 } from 'storybook/internal/types';
 import type { SetOptional, Simplify } from 'type-fest';
-import type { IS_SOLID_JSX_FLAG } from './applyDecorators';
-import type { SolidRenderer } from './types';
 
 export type { Args, ArgTypes, Parameters, StrictArgs } from 'storybook/internal/types';
-export type { SolidRenderer };
+
+/**
+ * Marks decorators that return JSX so they are not re-run on every Storybook update.
+ * Prefer `createJSXDecorator` over setting this flag manually.
+ */
+export const IS_SOLID_JSX_FLAG = '__isJSX';
+
+export type SolidComponent<P extends Record<string, any> = Record<string, any>> = Component<P>;
+export type SolidComponentProps<T extends SolidComponent> = ComponentProps<T>;
+
+export type StoryFnReturnType = ReturnType<SolidComponent>;
+
+export interface SolidRenderer extends WebRenderer {
+    component: SolidComponent;
+    storyResult: StoryFnReturnType;
+    mount: (ui?: StoryFnReturnType) => Promise<Canvas>;
+}
+
+export interface ShowErrorArgs {
+    title: string;
+    description: string;
+}
+
+export type GlobalReactivityStore = {
+    [key: string]: {
+        args: Args;
+        rendered: boolean;
+        disposeFn: (() => void) | null;
+    };
+};
 
 /**
  * Metadata to configure the stories for a component.
  *
  * @see [Default export](https://storybook.js.org/docs/api/csf#default-export)
  */
-export type Meta<TCmpOrArgs = Args> = [TCmpOrArgs] extends [ComponentType<any>]
-    ? ComponentAnnotations<SolidRenderer, ComponentProps<TCmpOrArgs>>
+export type Meta<TCmpOrArgs = Args> = [TCmpOrArgs] extends [SolidComponent<any>]
+    ? ComponentAnnotations<SolidRenderer, SolidComponentProps<TCmpOrArgs>>
     : ComponentAnnotations<SolidRenderer, TCmpOrArgs>;
 
 /**
@@ -34,8 +69,8 @@ export type Meta<TCmpOrArgs = Args> = [TCmpOrArgs] extends [ComponentType<any>]
  *
  * @see [Named Story exports](https://storybook.js.org/docs/api/csf#named-story-exports)
  */
-export type StoryFn<TCmpOrArgs = Args> = [TCmpOrArgs] extends [ComponentType<any>]
-    ? AnnotatedStoryFn<SolidRenderer, ComponentProps<TCmpOrArgs>>
+export type StoryFn<TCmpOrArgs = Args> = [TCmpOrArgs] extends [SolidComponent<any>]
+    ? AnnotatedStoryFn<SolidRenderer, SolidComponentProps<TCmpOrArgs>>
     : AnnotatedStoryFn<SolidRenderer, TCmpOrArgs>;
 
 /**
@@ -51,7 +86,7 @@ export type StoryObj<TMetaOrCmpOrArgs = Args> = [TMetaOrCmpOrArgs] extends [
     }
 ]
     ? Simplify<
-      (Cmp extends ComponentType<any> ? ComponentProps<Cmp> : unknown)
+      (Cmp extends SolidComponent<any> ? SolidComponentProps<Cmp> : unknown)
       & ArgsFromMeta<SolidRenderer, TMetaOrCmpOrArgs>
     > extends infer TArgs
         ? StoryAnnotations<
@@ -60,8 +95,8 @@ export type StoryObj<TMetaOrCmpOrArgs = Args> = [TMetaOrCmpOrArgs] extends [
             SetOptional<TArgs, keyof TArgs & keyof DefaultArgs>
         >
         : never
-    : [TMetaOrCmpOrArgs] extends [ComponentType<any>]
-        ? StoryAnnotations<SolidRenderer, ComponentProps<TMetaOrCmpOrArgs>>
+    : [TMetaOrCmpOrArgs] extends [SolidComponent<any>]
+        ? StoryAnnotations<SolidRenderer, SolidComponentProps<TMetaOrCmpOrArgs>>
         : StoryAnnotations<SolidRenderer, TMetaOrCmpOrArgs>;
 
 // This performs a downcast to function types that are mocks, when a mock fn is given to meta args.
@@ -87,3 +122,18 @@ export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<SolidRenderer
 
 export type RenderContext = GenericRenderContext<SolidRenderer>;
 
+/** Use for decorators that do not return JSX (e.g. they only call `Story()`). */
+export const createDecorator = (
+    decorator: DecoratorFunction<SolidRenderer>
+): Decorator => {
+    return decorator as Decorator;
+};
+
+/** Use for decorators that return JSX. Ensures they run only once per story mount. */
+export const createJSXDecorator = (
+    decorator: DecoratorFunction<SolidRenderer>
+): Decorator => {
+    (decorator as Decorator)[IS_SOLID_JSX_FLAG] = true;
+
+    return decorator as Decorator;
+};

@@ -1,21 +1,19 @@
-import { solidPlugin } from 'esbuild-plugin-solid';
 import { defineConfig } from 'tsup';
 
 export default defineConfig((options) => {
     return {
-        entry: [
-            // framework
-            'src/index.ts',
-            'src/preset.ts',
-            'src/node/index.ts',
-            // renderer
-            'src/renderer/index.ts',
-            'src/renderer/preview.ts',
-            'src/renderer/preset.ts',
-            'src/renderer/entry-preview.ts',
-            'src/renderer/entry-preview-argtypes.ts',
-            'src/renderer/entry-preview-docs.ts',
-        ],
+        entry: {
+            index: 'src/index.ts',
+            'framework/preset': 'src/framework/preset.ts',
+            'framework/node': 'src/framework/node.ts',
+            'renderer/playwright': 'src/renderer/playwright.ts',
+            'renderer/index': 'src/renderer/index.ts',
+            'renderer/preview': 'src/renderer/preview.ts',
+            'renderer/preset': 'src/renderer/preset.ts',
+            'renderer/docs/entry-preview-argtypes': 'src/renderer/docs/entry-preview-argtypes.ts',
+            'renderer/docs/entry-preview': 'src/renderer/docs/entry-preview.ts',
+            'renderer/v1/entry-preview': 'src/renderer/v1/entry-preview.ts',
+        },
         format: ['esm'],
         outDir: 'dist',
         clean: true,
@@ -25,10 +23,14 @@ export default defineConfig((options) => {
         tsconfig: 'tsconfig.json',
         external: [
             '@storybook/builder-vite',
+            '@storybook/global',
+            /^@solidjs\//,
+            'solid-js',
+            /^solid-js\//,
+            /^storybook\//,
+            'vite-plugin-solid',
         ],
-        jsx: 'preserve',
         sourcemap: true,
         treeshake: !options.watch,
-        esbuildPlugins: [solidPlugin()],
     };
 });
