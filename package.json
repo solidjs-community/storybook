@@ -37,6 +37,16 @@
             "code": "./src/index.ts",
             "default": "./dist/index.js"
         },
+        "./next": {
+            "types": "./dist/next.d.ts",
+            "code": "./src/next.ts",
+            "default": "./dist/next.js"
+        },
+        "./next/preset": {
+            "types": "./dist/framework/preset.d.ts",
+            "code": "./src/framework/preset.ts",
+            "default": "./dist/framework/preset.js"
+        },
         "./preset": {
             "types": "./dist/framework/preset.d.ts",
             "code": "./src/framework/preset.ts",
@@ -52,35 +62,30 @@
             "code": "./src/renderer/playwright.ts",
             "default": "./dist/renderer/playwright.js"
         },
-        "./preview": {
-            "types": "./dist/renderer/preview.d.ts",
-            "code": "./src/renderer/preview.ts",
-            "default": "./dist/renderer/preview.js"
-        },
         "./renderer": {
-            "types": "./dist/renderer/index.d.ts",
+            "types": "./dist/renderer.d.ts",
             "code": "./src/renderer/index.ts",
-            "default": "./dist/renderer/index.js"
+            "default": "./dist/renderer.js"
         },
-        "./renderer/preset": {
-            "types": "./dist/renderer/preset.d.ts",
-            "code": "./src/renderer/preset.ts",
-            "default": "./dist/renderer/preset.js"
-        },
-        "./renderer/entry-preview-v1": {
-            "types": "./dist/renderer/v1/entry-preview.d.ts",
+        "./entry-preview/solid-1": {
+            "types": "./dist/entry-preview/solid-1.d.ts",
             "code": "./src/renderer/v1/entry-preview.ts",
-            "default": "./dist/renderer/v1/entry-preview.js"
+            "default": "./dist/entry-preview/solid-1.js"
         },
-        "./renderer/entry-preview-argtypes": {
-            "types": "./dist/renderer/docs/entry-preview-argtypes.d.ts",
+        "./entry-preview/solid-2": {
+            "types": "./dist/entry-preview/solid-2.d.ts",
+            "code": "./src/renderer/v2/entry-preview.ts",
+            "default": "./dist/entry-preview/solid-2.js"
+        },
+        "./entry-preview/argtypes": {
+            "types": "./dist/entry-preview/argtypes.d.ts",
             "code": "./src/renderer/docs/entry-preview-argtypes.ts",
-            "default": "./dist/renderer/docs/entry-preview-argtypes.js"
+            "default": "./dist/entry-preview/argtypes.js"
         },
-        "./renderer/entry-preview-docs": {
-            "types": "./dist/renderer/docs/entry-preview.d.ts",
+        "./entry-preview/docs": {
+            "types": "./dist/entry-preview/docs.d.ts",
             "code": "./src/renderer/docs/entry-preview.ts",
-            "default": "./dist/renderer/docs/entry-preview.js"
+            "default": "./dist/entry-preview/docs.js"
         }
     },
     "main": "dist/index.js",
@@ -130,7 +135,10 @@
         "html-tags": "^5.1.0",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
-        "solid-js": "^1.9.9",
+        "@solidjs/web": "next",
+        "solid-js": "^1.9.13",
+        "solid-js-v1": "npm:solid-js@^1.9.13",
+        "solid-js-v2": "npm:solid-js@next",
         "storybook": "^10.4.0",
         "ts-dedent": "^2.2.0",
         "tsup": "^8.5.1",

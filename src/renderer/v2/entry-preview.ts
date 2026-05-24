@@ -1,11 +1,10 @@
+import { render as solidRender } from '@solidjs/web';
 import {
     createComponent,
-    ErrorBoundary,
-    onCleanup,
-    onMount,
-} from 'solid-js-v1';
-import { reconcile, createStore as solidCreateStore } from 'solid-js-v1/store';
-import { render as solidRender } from 'solid-js-v1/web';
+    Errored,
+    onSettled,
+    createStore as solidCreateStore,
+} from 'solid-js-v2';
 
 import { createApplyDecorators } from '../shared/apply-decorators.ts';
 import { createStoryState, getStoryId } from '../shared/story-store';
@@ -15,21 +14,23 @@ import type { RenderContext, SolidComponent, SolidRenderer, StoryContext, StoryF
 
 export * from '../shared/preview-annotations';
 
-// Story state to control rendered stories and do not remount already rendered stories
 const createStore = <T extends object>(initial: T) => {
-    const [state, setStore] = solidCreateStore<T>(initial);
+    const [state, setStore] = solidCreateStore(initial as any);
 
     const setState = (update: (prev: T) => T) => {
-        setStore(reconcile(update(state)));
+        setStore(() => update(state as unknown as T));
     };
 
-    return [state, setState] as const;
+    return [state as T, setState] as const;
 };
 
 const storyStore = createStoryState(createStore);
 
 /** Wraps the story fn with decorators, JSX decorators skip re-render when the story is already mounted. */
-export const applyDecorators = createApplyDecorators(storyStore, createComponent);
+export const applyDecorators = createApplyDecorators(
+    storyStore,
+    createComponent as Parameters<typeof createApplyDecorators>[1]
+);
 
 /** Mounts or updates the story in the preview canvas. Returns cleanup when the story changes. */
 export const renderToCanvas = async(
@@ -46,29 +47,31 @@ export const renderToCanvas = async(
     const Story = StoryFn as SolidComponent;
 
     if (!storyStore.isStoryRendered(storyId)) {
-        const App: SolidComponent = () => {
-            onMount(() => {
+        const App = (() => {
+            onSettled(() => {
                 showMain();
                 storyStore.setRendered(storyId, true);
-            });
 
-            onCleanup(() => {
-                storyStore.setRendered(storyId, false);
+                return () => {
+                    storyStore.setRendered(storyId, false);
+                };
             });
 
             if (storyContext?.parameters?.['__isPortableStory']) {
                 return createComponent(Story, {});
             }
 
-            return createComponent(ErrorBoundary, {
-                fallback: (err: Error) => {
-                    showException(err);
+            return createComponent(Errored, {
+                fallback: (err: () => unknown, _reset: () => void) => {
+                    const error = err() as Error;
 
-                    return err as any;
+                    showException(error);
+
+                    return error as any;
                 },
                 children: createComponent(Story, {}),
             });
-        };
+        }) as SolidComponent;
 
         const disposeFn = solidRender(() => createComponent(App, {}), canvasElement);
 

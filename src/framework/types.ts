@@ -5,7 +5,7 @@ import type {
     StorybookConfig as StorybookConfigBase,
 } from 'storybook/internal/types';
 
-type FrameworkName = CompatibleString<'storybook-solidjs-vite'>;
+type FrameworkName = CompatibleString<'storybook-solidjs-vite' | 'storybook-solidjs-vite/next'>;
 type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
 export type SolidVersion = 1 | 2;
@@ -13,8 +13,6 @@ export type SolidVersion = 1 | 2;
 export type FrameworkOptions = {
     builder?: BuilderOptions;
     docgen?: boolean | ParserOptions;
-    /** Solid major version (1 or 2). Auto-detected from `solid-js` when omitted. */
-    solidVersion?: SolidVersion;
 };
 
 /** Value of the `framework` field in `.storybook/main.ts` (and from `presets.apply('framework')`). */

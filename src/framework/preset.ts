@@ -8,6 +8,8 @@
 import { hasVitePlugins } from '@storybook/builder-vite';
 import { mergeConfig } from 'vite';
 
+import { mergeSolidDedupe } from './solidVersion';
+
 import type { PresetProperty } from 'storybook/internal/types';
 import type { FrameworkOptions, StorybookConfig } from './types';
 
@@ -18,7 +20,7 @@ import type { FrameworkOptions, StorybookConfig } from './types';
  */
 export const core: PresetProperty<'core', StorybookConfig> = {
     builder: import.meta.resolve('@storybook/builder-vite'),
-    renderer: import.meta.resolve('storybook-solidjs-vite/renderer/preset'),
+    renderer: import.meta.resolve('storybook-solidjs-vite/renderer'),
 };
 
 /**
@@ -55,7 +57,6 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
         );
     }
 
-    // Add solid plugin if not present (should be installed as a peer dependency)
     if (!(await hasVitePlugins(existPlugins, ['solid']))) {
         plugins.push(
             await import('vite-plugin-solid').then(module => module.default())
@@ -77,5 +78,9 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
     return mergeConfig(config, {
         plugins,
         optimizeDeps,
+        resolve: {
+            ...config.resolve,
+            dedupe: mergeSolidDedupe(config.resolve?.dedupe),
+        },
     });
 };

@@ -3,7 +3,7 @@ import { enhanceArgTypes, extractComponentDescription } from 'storybook/internal
 import { extractArgTypes } from './extractArgTypes';
 
 import type { ArgTypesEnhancer } from 'storybook/internal/types';
-import type { SolidRenderer } from '../public-types';
+import type { SolidRenderer } from '../shared/public-types';
 
 export const parameters = {
     docs: {

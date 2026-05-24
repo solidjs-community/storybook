@@ -3,7 +3,7 @@ import { createComponent } from 'solid-js';
 import { configure } from 'storybook/test';
 
 import type { ArgsStoryFn } from 'storybook/internal/types';
-import type { SolidRenderer } from '../public-types';
+import type { SolidRenderer } from './public-types';
 
 if (global.window) {
     global.window.STORYBOOK_ENV = 'solid';

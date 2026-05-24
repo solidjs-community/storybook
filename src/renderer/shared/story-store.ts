@@ -1,8 +1,8 @@
 import type { Args, Globals, StoryContext as InternalStoryContext } from 'storybook/internal/types';
-import type { SolidRenderer } from '../public-types';
+import type { SolidRenderer } from './public-types';
 
-/** Update store from a snapshot or `(prev) => next` (version layer applies reconcile/produce). */
-type SetStoreFn<T extends object> = (update: T | ((prev: T) => T)) => void;
+/** Update store via `(prev) => next` (version layer applies reconcile/draft setter). */
+type SetStoreFn<T extends object> = (update: (prev: T) => T) => void;
 
 /** Reactive store tuple returned by `createStore` (state + setter). */
 type SolidStore<T extends object> = readonly [
