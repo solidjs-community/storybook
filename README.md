@@ -15,10 +15,11 @@ Adds SolidJS support to Storybook.
 
 ## ✨ Features
 
-- SolidJS support out of the box
+- Solid 1 and Solid 2 support
 - Vite-powered builder
 - TypeScript-first setup
 - ArgTypes generation from TypeScript
+- [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) factory API (optional)
 - Compatible with Storybook addons
 - Integrated testing (Vitest, Playwright)
 
@@ -44,6 +45,77 @@ You can customize Vite and Storybook as usual.
 
 - Add stories in `src/**/*.stories.tsx` or `src/**/*.stories.js`
 - Use Storybook addons for additional functionality
+
+### Solid 1
+
+On Solid 1, import from `storybook-solidjs-vite` in config, preview, and stories:
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from 'storybook-solidjs-vite';
+
+const config: StorybookConfig = {
+  framework: 'storybook-solidjs-vite',
+};
+
+export default config;
+```
+
+```ts
+// .storybook/preview.tsx & stories
+import type { Preview, Meta, StoryObj } from 'storybook-solidjs-vite';
+```
+
+### Solid 2
+
+On Solid 2, use `storybook-solidjs-vite/next` in preview and stories — the types there match the Solid 2 renderer:
+
+```ts
+import type { Preview, Meta, StoryObj } from 'storybook-solidjs-vite/next';
+```
+
+Imports without `/next` often still run, but TypeScript may complain because those types describe the Solid 1 renderer.
+
+In `main.ts` either framework name is fine: `storybook-solidjs-vite` reads the major version from your installed `solid-js`, and `storybook-solidjs-vite/next` forces Solid 2.
+
+```ts
+framework: 'storybook-solidjs-vite'
+framework: 'storybook-solidjs-vite/next'
+```
+
+### CSF Next
+
+[CSF Next](https://storybook.js.org/docs/api/csf/csf-next) works on Solid 1 and Solid 2.
+
+```ts
+// .storybook/main.ts
+import { defineMain } from 'storybook-solidjs-vite/node';
+
+export default defineMain({
+  framework: { name: 'storybook-solidjs-vite' },
+});
+```
+
+```ts
+// .storybook/preview.tsx
+import { definePreview } from 'storybook-solidjs-vite';
+// for Solid 2, use:
+// import { definePreview } from 'storybook-solidjs-vite/next';
+```
+
+```ts
+// src/Button.stories.ts
+import preview from '../.storybook/preview';
+import { Button } from './Button';
+
+const meta = preview.meta({
+  component: Button,
+});
+
+export const Primary = meta.story({
+  args: { label: 'Button' },
+});
+```
 
 ### TypeScript docgen
 
@@ -77,13 +149,13 @@ export default config;
 
 ## 🎨 Decorators
 
-Storybook re-executes decorator and story code on updates (e.g. args, globals). SolidJS uses fine-grained reactivity and does not require re-running component functions.
+On args or globals changes, Storybook re-runs decorators and stories — the same model as React, where each update calls your functions again. Solid updates through fine-grained signals and usually does not need that.
 
-This mismatch can cause duplicate DOM elements when decorators return JSX.
+If a decorator returns JSX, the extra runs can leave duplicate nodes in the DOM.
 
 ### createJSXDecorator
 
-Use for decorators that return JSX. Ensures they run only once.
+Use for decorators that return JSX. Ensures they run only once per story mount.
 
 ```tsx
 import { createJSXDecorator } from 'storybook-solidjs-vite';
