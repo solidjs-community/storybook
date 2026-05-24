@@ -26,8 +26,8 @@ type InferArgs<TArgs, T, Decorators> = Simplify<
 type InferSolidTypes<T, TArgs, Decorators> = SolidRenderer
   & T & { args: Simplify<InferArgs<TArgs, T, Decorators>> };
 
-export type DefinePreviewInput<Addons extends PreviewAddon<never>[]> = {
-    addons: Addons;
+export type DefinePreviewInput<Addons extends PreviewAddon<never>[] = []> = {
+    addons?: Addons;
 } & ProjectAnnotations<SolidRenderer & InferTypes<Addons>>;
 
 /** @ts-expect-error We cannot implement the meta faithfully here, but that is okay. */
@@ -94,7 +94,7 @@ export interface SolidStory<T extends SolidRenderer, TInput extends StoryAnnotat
 }
 
 export const definePreview = createDefinePreviewBase(solidAnnotations as never) as unknown as <
-    Addons extends PreviewAddon<never>[]
+    Addons extends PreviewAddon<never>[] = []
 >(
     input: DefinePreviewInput<Addons>
 ) => SolidPreview<SolidRenderer & InferTypes<Addons>>;

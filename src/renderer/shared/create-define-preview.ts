@@ -7,8 +7,8 @@ import type { PreviewAddon } from 'storybook/internal/csf';
 import type { ProjectAnnotations } from 'storybook/internal/types';
 
 export function createDefinePreview(solidAnnotations: PreviewAddon<never>) {
-    return function definePreview<Addons extends PreviewAddon<never>[]>(
-        input: { addons: Addons } & ProjectAnnotations<any>
+    return function definePreview<Addons extends PreviewAddon<never>[] = []>(
+        input: { addons?: Addons } & ProjectAnnotations<any>
     ) {
         const { addons, ...projectAnnotations } = input;
 
