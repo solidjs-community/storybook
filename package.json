@@ -34,38 +34,67 @@
         "./package.json": "./package.json",
         ".": {
             "types": "./dist/index.d.ts",
+            "code": "./src/index.ts",
             "default": "./dist/index.js"
         },
-        "./preview": {
-            "types": "./dist/renderer/preview.d.ts",
-            "default": "./dist/renderer/preview.js"
+        "./next": {
+            "types": "./dist/next.d.ts",
+            "code": "./src/next.ts",
+            "default": "./dist/next.js"
+        },
+        "./next/preset": {
+            "types": "./dist/framework/preset.d.ts",
+            "code": "./src/framework/preset.ts",
+            "default": "./dist/framework/preset.js"
         },
         "./preset": {
-            "types": "./dist/preset.d.ts",
-            "default": "./dist/preset.js"
+            "types": "./dist/framework/preset.d.ts",
+            "code": "./src/framework/preset.ts",
+            "default": "./dist/framework/preset.js"
         },
         "./node": {
-            "types": "./dist/node/index.d.ts",
-            "default": "./dist/node/index.js"
+            "types": "./dist/framework/node.d.ts",
+            "code": "./src/framework/node.ts",
+            "default": "./dist/framework/node.js"
         },
-        "./renderer/package.json": "./renderer/package.json",
+        "./experimental-playwright": {
+            "types": "./dist/renderer/playwright.d.ts",
+            "code": "./src/renderer/playwright.ts",
+            "default": "./dist/renderer/playwright.js"
+        },
         "./renderer": {
-            "types": "./dist/renderer/index.d.ts",
-            "default": "./dist/renderer/index.js"
+            "types": "./dist/renderer.d.ts",
+            "code": "./src/renderer/index.ts",
+            "default": "./dist/renderer.js"
         },
-        "./renderer/preset": "./dist/renderer/preset.js",
-        "./renderer/entry-preview": "./dist/renderer/entry-preview.js",
-        "./renderer/entry-preview-argtypes": "./dist/renderer/entry-preview-argtypes.js",
-        "./renderer/entry-preview-docs": "./dist/renderer/entry-preview-docs.js"
+        "./entry-preview/solid-1": {
+            "types": "./dist/entry-preview/solid-1.d.ts",
+            "code": "./src/renderer/v1/entry-preview.ts",
+            "default": "./dist/entry-preview/solid-1.js"
+        },
+        "./entry-preview/solid-2": {
+            "types": "./dist/entry-preview/solid-2.d.ts",
+            "code": "./src/renderer/v2/entry-preview.ts",
+            "default": "./dist/entry-preview/solid-2.js"
+        },
+        "./entry-preview/argtypes": {
+            "types": "./dist/entry-preview/argtypes.d.ts",
+            "code": "./src/renderer/docs/entry-preview-argtypes.ts",
+            "default": "./dist/entry-preview/argtypes.js"
+        },
+        "./entry-preview/docs": {
+            "types": "./dist/entry-preview/docs.d.ts",
+            "code": "./src/renderer/docs/entry-preview.ts",
+            "default": "./dist/entry-preview/docs.js"
+        }
     },
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
         "README.md",
+        "src/**/*",
         "dist/**/*",
         "**/*.d.ts",
-        "preset.js",
-        "preview.js",
         "template/**/*"
     ],
     "scripts": {
@@ -81,45 +110,54 @@
         "release:next": "changeset publish --tag next"
     },
     "dependencies": {
-        "vite-plugin-solid": "^2.11.11",
-        "@storybook/builder-vite": "^10.3.1",
         "@joshwooding/vite-plugin-react-docgen-typescript": "^0.7.0",
-        "@storybook/global": "^5.0.0"
+        "@storybook/builder-vite": "^10.4.0",
+        "@storybook/global": "^5.0.0",
+        "semver": "7.8.1"
     },
     "devDependencies": {
-        "@babel/standalone": "^7.29.2",
-        "@changesets/cli": "^2.30.0",
-        "@commitlint/cli": "^20.5.0",
-        "@commitlint/config-conventional": "^20.5.0",
+        "@babel/standalone": "^7.29.4",
+        "@changesets/cli": "^2.31.0",
+        "@commitlint/cli": "^20.5.3",
+        "@commitlint/config-conventional": "^20.5.3",
         "@flexbe/eslint-config": "^3.0.3",
         "@tsconfig/strictest": "^2.0.8",
         "@types/babel__standalone": "^7.1.9",
         "@types/escodegen": "^0.0.10",
-        "@types/node": "^25.5.0",
+        "@types/node": "^25.9.1",
+        "@types/semver": "7.7.1",
         "acorn": "^8.16.0",
         "acorn-jsx": "^5.3.2",
         "acorn-walk": "^8.3.5",
-        "es-toolkit": "^1.45.1",
-        "esbuild-plugin-solid": "^0.6.0",
+        "es-toolkit": "^1.46.1",
         "escodegen": "^2.1.0",
         "eslint": "^9.39.4",
         "html-tags": "^5.1.0",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
-        "storybook": "^10.3.1",
+        "@solidjs/web": "next",
+        "solid-js": "^1.9.13",
+        "solid-js-v1": "npm:solid-js@^1.9.13",
+        "solid-js-v2": "npm:solid-js@next",
+        "storybook": "^10.4.0",
         "ts-dedent": "^2.2.0",
         "tsup": "^8.5.1",
-        "type-fest": "^5.5.0",
+        "type-fest": "^5.6.0",
         "typescript": "^5.9.3",
-        "vitest": "^4.1.0"
+        "vitest": "^4.1.7"
     },
     "peerDependencies": {
-        "solid-js": "^1.9.0",
+        "@solidjs/web": "^2.0.0-0",
+        "solid-js": "^1.8.0-0 || ^2.0.0-0",
         "storybook": "^0.0.0-0 || ^10.0.0",
         "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
+        "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0",
         "typescript": "^4.0.0 || ^5.0.0 || ^6.0.0"
     },
     "peerDependenciesMeta": {
+        "@solidjs/web": {
+            "optional": true
+        },
         "typescript": {
             "optional": true
         }

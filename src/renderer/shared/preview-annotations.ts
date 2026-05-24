@@ -1,26 +1,31 @@
-/* Configuration for default renderer (default preview.ts params) */
 import { global } from '@storybook/global';
+import { createComponent } from 'solid-js';
 import { configure } from 'storybook/test';
 
-import type { Decorator } from './public-types';
+import type { ArgsStoryFn } from 'storybook/internal/types';
+import type { SolidRenderer } from './public-types';
 
+if (global.window) {
+    global.window.STORYBOOK_ENV = 'solid';
+}
+
+/** Preview-wide parameters for the Solid renderer. */
 export const parameters = {
     renderer: 'solid',
 };
 
-export const decorators: Decorator[] = [
-    (StoryFn, context) => {
-        // @ts-expect-error this feature flag not available in global storybook types
-        if (context.tags?.includes('test-fn') && !global.FEATURES?.experimentalTestSyntax) {
-            throw new Error(
-                'To use the experimental test function, you must enable the experimentalTestSyntax feature flag. See https://storybook.js.org/docs/10/api/main-config/main-config-features#experimentalTestSyntax'
-            );
-        }
+/** Default render for meta/stories with `component` + `args` and no custom `render` (CSF 3+). */
+export const render: ArgsStoryFn<SolidRenderer> = (_, context) => {
+    if (!context.component) {
+        throw new Error(
+            `Unable to render story ${ context.id } as the component annotation is missing from the default export`
+        );
+    }
 
-        return StoryFn();
-    },
-];
+    return createComponent(context.component, context.args);
+};
 
+/** Configures `storybook/test` wrappers so Solid updates flush after async play steps. */
 export const beforeAll = async() => {
     try {
         configure({
@@ -47,7 +52,3 @@ export const beforeAll = async() => {
         // storybook/test might not be available; noop
     }
 };
-
-
-export { applyDecorators } from './applyDecorators';
-export { mount, render, renderToCanvas } from './render';

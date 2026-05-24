@@ -3,9 +3,7 @@ import { createType } from './createType';
 import { rawDefaultPropTypeResolvers } from './rawDefaultPropResolvers';
 import { keepOriginalDefinitionOrder } from './sortProps';
 
-import type { ExtractedProp, PropDef } from 'storybook/internal/docs-tools';
-
-type Component = any;
+import type { Component, ExtractedProp, PropDef } from 'storybook/internal/docs-tools';
 
 export function enhancePropTypesProp(extractedProp: ExtractedProp, rawDefaultProp?: any): PropDef {
     const { propDef } = extractedProp;

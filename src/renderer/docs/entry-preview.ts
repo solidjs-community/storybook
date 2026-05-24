@@ -6,10 +6,7 @@ import {
 } from 'storybook/internal/docs-tools';
 
 import type { ArgTypesEnhancer } from 'storybook/internal/types';
-import type { Decorator } from './public-types';
-import type { SolidRenderer } from './types';
-
-export { applyDecorators } from './applyDecorators';
+import type { Decorator, SolidRenderer } from '../shared/public-types';
 
 export const parameters = {
     docs: {
