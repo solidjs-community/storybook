@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.1.1
+
+### Patch Changes
+
+- fa5706c: Fix git path in package
+
 ## 10.1.0
 
 ### Minor Changes
