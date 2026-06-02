@@ -1,6 +1,6 @@
 import { IS_SOLID_JSX_FLAG } from '../shared/public-types';
 
-import type { Component, ComponentProps } from 'solid-js-v1';
+import type { Component, ComponentProps } from 'solid-js';
 import type {
     AnnotatedStoryFn,
     Args,

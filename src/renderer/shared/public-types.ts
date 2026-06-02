@@ -19,9 +19,11 @@ export const IS_SOLID_JSX_FLAG = '__isJSX';
 // This performs a downcast to function types that are mocks, when a mock fn is given to meta args.
 export type AddMocks<TArgs, DefaultArgs> = Simplify<{
     [T in keyof TArgs]: T extends keyof DefaultArgs
-        ? DefaultArgs[T] extends (...args: any) => any & { mock: object }
-            ? DefaultArgs[T]
-            : TArgs[T]
+        ? [DefaultArgs[T]] extends [never]
+            ? TArgs[T]
+            : DefaultArgs[T] extends (...args: any) => any & { mock: object }
+                ? DefaultArgs[T]
+                : TArgs[T]
         : TArgs[T];
 }>;
 
