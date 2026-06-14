@@ -12,7 +12,7 @@ import type {
     StoryAnnotations,
 } from 'storybook/internal/types';
 import type { OmitIndexSignature, SetOptional, Simplify, UnionToIntersection } from 'type-fest';
-import type { AddMocks, SolidComponent, SolidRenderer } from './public-types';
+import type { AddMocks, EmptyMetaArgs, SolidComponent, SolidTypes } from '../shared/public-types';
 
 /** Extracts and unions all args types from an array of decorators. */
 type DecoratorsArgs<TRenderer extends Renderer, Decorators> = UnionToIntersection<
@@ -20,54 +20,55 @@ type DecoratorsArgs<TRenderer extends Renderer, Decorators> = UnionToIntersectio
 >;
 
 type InferArgs<TArgs, T, Decorators> = Simplify<
-    TArgs & Simplify<OmitIndexSignature<DecoratorsArgs<SolidRenderer & T, Decorators>>>
+    TArgs & Simplify<OmitIndexSignature<DecoratorsArgs<SolidTypes & T, Decorators>>>
 >;
 
-type InferSolidTypes<T, TArgs, Decorators> = SolidRenderer
-  & T & { args: Simplify<InferArgs<TArgs, T, Decorators>> };
+type InferSolidTypes<T, TArgs, Decorators> = SolidTypes & T & {
+    args: Simplify<InferArgs<TArgs, T, Decorators>>;
+};
 
 export type DefinePreviewInput<Addons extends PreviewAddon<never>[] = []> = {
     addons?: Addons;
-} & ProjectAnnotations<SolidRenderer & InferTypes<Addons>>;
+} & ProjectAnnotations<SolidTypes & InferTypes<Addons>>;
 
 /** @ts-expect-error We cannot implement the meta faithfully here, but that is okay. */
-export interface SolidPreview<T extends AddonTypes> extends Preview<SolidRenderer & T> {
+export interface SolidPreview<T extends AddonTypes> extends Preview<SolidTypes & T> {
     type: <R>() => SolidPreview<T & R>;
 
     meta: <
         TArgs extends Args,
-        Decorators extends DecoratorFunction<SolidRenderer & T, any>,
+        Decorators extends DecoratorFunction<SolidTypes & T, any>,
         TMetaArgs extends Partial<TArgs & T['args']>
     >(
         meta: {
-            render?: ArgsStoryFn<SolidRenderer & T, TArgs & T['args']>;
+            render?: ArgsStoryFn<SolidTypes & T, TArgs & T['args']>;
             component?: SolidComponent<TArgs>;
             decorators?: Decorators | Decorators[];
             args?: TMetaArgs;
         } & Omit<
-            ComponentAnnotations<SolidRenderer & T, TArgs>,
+            ComponentAnnotations<SolidTypes & T, TArgs>,
             'decorators' | 'component' | 'args' | 'render'
         >
     ) => SolidMeta<
         InferSolidTypes<T, TArgs, Decorators>,
         Omit<ComponentAnnotations<InferSolidTypes<T, TArgs, Decorators>>, 'args'> & {
-            args: Partial<TArgs> extends TMetaArgs ? Record<string, never> : TMetaArgs;
+            args: Partial<TArgs> extends TMetaArgs ? EmptyMetaArgs : TMetaArgs;
         }
     >;
 }
 
-export interface SolidMeta<T extends SolidRenderer, MetaInput extends ComponentAnnotations<T>>
+export interface SolidMeta<T extends SolidTypes, MetaInput extends ComponentAnnotations<T>>
     /** @ts-expect-error SolidMeta requires two type parameters, but Meta's constraints differ */
     extends Meta<T, MetaInput> {
     story: (<
         TInput extends
-            | (() => SolidRenderer['storyResult'])
+            | (() => SolidTypes['storyResult'])
             | (StoryAnnotations<T, T['args']> & {
-                render: () => SolidRenderer['storyResult'];
+                render: () => SolidTypes['storyResult'];
             })
     >(
         story: TInput
-    ) => SolidStory<T, TInput extends () => SolidRenderer['storyResult'] ? { render: TInput } : TInput>) & (<
+    ) => SolidStory<T, TInput extends () => SolidTypes['storyResult'] ? { render: TInput } : TInput>) & (<
         TInput extends Simplify<
             StoryAnnotations<
                 T,
@@ -85,10 +86,10 @@ export interface SolidMeta<T extends SolidRenderer, MetaInput extends ComponentA
         >
             ? []
             : [never]
-    ) => SolidStory<T, Record<string, never>>);
+    ) => SolidStory<T, EmptyMetaArgs>);
 }
 
-export interface SolidStory<T extends SolidRenderer, TInput extends StoryAnnotations<T, T['args']>>
+export interface SolidStory<T extends SolidTypes, TInput extends StoryAnnotations<T, T['args']>>
     extends Story<T, TInput> {
     Component: SolidComponent<Partial<T['args']>>;
 }
@@ -97,4 +98,4 @@ export const definePreview = createDefinePreviewBase(solidAnnotations as never) 
     Addons extends PreviewAddon<never>[] = []
 >(
     input: DefinePreviewInput<Addons>
-) => SolidPreview<SolidRenderer & InferTypes<Addons>>;
+) => SolidPreview<SolidTypes & InferTypes<Addons>>;

@@ -1,7 +1,7 @@
 import { IS_SOLID_JSX_FLAG } from '../shared/public-types';
 
 import type { DecoratorFunction } from 'storybook/internal/types';
-import type { Decorator, SolidRenderer } from './public-types';
+import type { Decorator, SolidRenderer } from '../shared/public-types';
 
 /** Use for decorators that do not return JSX (e.g. they only call `Story()`). */
 export const createDecorator = (
@@ -19,7 +19,7 @@ export const createJSXDecorator = (
     return decorator as Decorator;
 };
 
-export * from './public-types';
+export * from '../shared/public-types';
 
 export type {
     DefinePreviewInput,
