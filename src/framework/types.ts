@@ -1,5 +1,4 @@
 import type { BuilderOptions, StorybookConfigVite } from '@storybook/builder-vite';
-import type { ParserOptions } from 'react-docgen-typescript';
 import type {
     CompatibleString,
     StorybookConfig as StorybookConfigBase,
@@ -12,7 +11,8 @@ export type SolidVersion = 1 | 2;
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;
-    docgen?: boolean | ParserOptions;
+    /** Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest). */
+    docgen?: false;
 };
 
 /** Value of the `framework` field in `.storybook/main.ts` (and from `presets.apply('framework')`). */
@@ -20,7 +20,7 @@ export type FrameworkConfig
     = | FrameworkName
       | {
           name: FrameworkName;
-          options: FrameworkOptions;
+          options?: FrameworkOptions;
       };
 
 type StorybookConfigFramework = {

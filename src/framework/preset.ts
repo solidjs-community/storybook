@@ -8,10 +8,14 @@
 import { hasVitePlugins } from '@storybook/builder-vite';
 import { mergeConfig } from 'vite';
 
+import { experimental_manifests, internal_getArgTypesData } from '../componentManifest/manifests';
+import { solidComponentMetaPlugin } from '../componentManifest/solidComponentMetaPlugin';
 import { mergeSolidDedupe } from './solidVersion';
 
 import type { PresetProperty } from 'storybook/internal/types';
 import type { FrameworkOptions, StorybookConfig } from './types';
+
+export { experimental_manifests, internal_getArgTypesData };
 
 /**
  * Configures Storybook's internal features.
@@ -21,6 +25,15 @@ import type { FrameworkOptions, StorybookConfig } from './types';
 export const core: PresetProperty<'core', StorybookConfig> = {
     builder: import.meta.resolve('@storybook/builder-vite'),
     renderer: import.meta.resolve('storybook-solidjs-vite/renderer'),
+};
+
+/**
+ * Enable the components manifest debugger by default.
+ *
+ * @see https://storybook.js.org/docs/api/main-config/main-config-features#componentsmanifest
+ */
+export const features: PresetProperty<'features', StorybookConfig> = {
+    componentsManifest: true,
 };
 
 /**
@@ -35,25 +48,9 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
     const framework = await presets.apply('framework');
     const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
 
-    // Use @joshwooding/vite-plugin-react-docgen-typescript for docgen
     if (frameworkOptions.docgen !== false) {
-        const reactDocgenTypescriptPlugin = await import('@joshwooding/vite-plugin-react-docgen-typescript').then(module => module.default);
-
-        // Default docgen options
-        const defaultDocgenOptions = {
-            // We *need* this set so that RDT returns default values in the format as react-docgen
-            savePropValueAsString: true,
-            shouldExtractLiteralValuesFromEnum: true,
-            propFilter: (prop: any) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
-        };
-
-        // Merge with custom options if docgen is an object
-        const docgenOptions = typeof frameworkOptions.docgen === 'object'
-            ? { ...defaultDocgenOptions, ...frameworkOptions.docgen }
-            : defaultDocgenOptions;
-
         plugins.push(
-            reactDocgenTypescriptPlugin(docgenOptions)
+            solidComponentMetaPlugin({ enabled: true })
         );
     }
 
@@ -63,10 +60,6 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
         );
     }
 
-    // Exclude renderer from dependency optimization to prevent double evaluation
-    // The renderer module contains module-level state (stores) that should only be initialized once
-    // When optimizeDeps pre-bundles the renderer, it can cause the module to be evaluated twice,
-    // creating duplicate store instances. Excluding it ensures it's only evaluated once at runtime.
     const optimizeDeps = {
         ...config.optimizeDeps,
         exclude: [

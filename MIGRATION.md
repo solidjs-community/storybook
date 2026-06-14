@@ -51,32 +51,21 @@ The main configuration file has several important changes:
 
 #### 1. Docgen configuration
 
-**Before (v9):**
+**Before (v9):** `typescript.reactDocgen` / `reactDocgenTypescriptOptions` (react-docgen-typescript).
 
-```typescript
-framework: 'storybook-solidjs-vite',
-typescript: {
-    reactDocgen: 'react-docgen-typescript',
-    reactDocgenTypescriptOptions: {
-        shouldExtractLiteralValuesFromEnum: true,
-        propFilter: (prop: any) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
-    },
-},
-```
-
-**After (v10):**
+**After (v10):** RCM only — no `typescript.reactDocgen` options.
 
 ```typescript
 framework: {
     name: 'storybook-solidjs-vite',
     options: {
-        docgen: false // → docgen disabled
-        // docgen: true // docgen enabled
-        // docgen: undefined (default) // docgen enabled with default settings
-        // docgen: { tsconfig: '...', ... } // docgen enabled with custom options (see https://github.com/styleguidist/react-docgen-typescript#options for more details)
+        // docgen is enabled by default (Solid component-meta)
+        docgen: false, // → disable docgen (Controls, Docs, manifest)
     },
 },
 ```
+
+Component props are extracted via **React component-meta (RCM)**. Legacy react-docgen / react-docgen-typescript configuration is ignored — remove it from `main.ts`. The components manifest debugger is enabled by default (`features.componentsManifest` from the framework preset). View it at `/manifests/components.html` while Storybook is running.
 
 #### 2. Addon Path Resolution
 

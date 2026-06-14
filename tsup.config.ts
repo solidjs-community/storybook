@@ -2,21 +2,17 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { defineConfig } from 'tsup';
 
-/** Source import ids (devDependency aliases) → peer ids emitted in `dist`. */
-const SOLID_PEER_ALIASES = {
-    'solid-js-v1': 'solid-js',
-    'solid-js-v2': 'solid-js',
-    'solid-js-v1/store': 'solid-js/store',
-    'solid-js-v1/web': 'solid-js/web',
+const SOLID_RUNTIME_IMPORTS = {
+    'solid-js-next': 'solid-js',
 } as const;
 
 function escapeRegExp(value: string) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** Rewrite alias ids to peer ids in emitted JS and declaration files. */
-function rewriteSolidAliases(outDir: string) {
-    const replacements = Object.entries(SOLID_PEER_ALIASES)
+/** Rewrite dev-only Solid import ids in emitted JS and declaration files. */
+function rewriteSolidRuntimeImports(outDir: string) {
+    const replacements = Object.entries(SOLID_RUNTIME_IMPORTS)
         .sort(([a], [b]) => b.length - a.length);
 
     const rewriteFile = (filePath: string) => {
@@ -59,10 +55,10 @@ export default defineConfig((options) => {
         entry: {
             index: 'src/index.ts',
             next: 'src/next.ts',
-            'framework/preset': 'src/framework/preset.ts',
-            'framework/node': 'src/framework/node.ts',
             renderer: 'src/renderer/index.ts',
             'renderer/playwright': 'src/renderer/playwright.ts',
+            'framework/preset': 'src/framework/preset.ts',
+            'framework/node': 'src/framework/node.ts',
             'entry-preview/solid-1': 'src/renderer/v1/entry-preview.ts',
             'entry-preview/solid-2': 'src/renderer/v2/entry-preview.ts',
             'entry-preview/argtypes': 'src/renderer/docs/entry-preview-argtypes.ts',
@@ -78,15 +74,18 @@ export default defineConfig((options) => {
         external: [
             '@storybook/builder-vite',
             '@storybook/global',
+            '@volar/language-core',
+            '@volar/typescript',
             /^@solidjs(?:\/|$)/,
-            /^solid-js(?:-v[12])?(?:\/|$)/,
+            /^solid-js(?:-next)?(?:\/|$)/,
             /^storybook\//,
+            'typescript',
             'vite-plugin-solid',
         ],
         sourcemap: true,
         treeshake: !options.watch,
         onSuccess: async() => {
-            rewriteSolidAliases('dist');
+            rewriteSolidRuntimeImports('dist');
         },
     };
 });

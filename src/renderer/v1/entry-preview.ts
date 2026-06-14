@@ -3,9 +3,9 @@ import {
     ErrorBoundary,
     onCleanup,
     onMount,
-} from 'solid-js-v1';
-import { reconcile, createStore as solidCreateStore } from 'solid-js-v1/store';
-import { render as solidRender } from 'solid-js-v1/web';
+} from 'solid-js';
+import { reconcile, createStore as solidCreateStore } from 'solid-js/store';
+import { render as solidRender } from 'solid-js/web';
 
 import { createApplyDecorators } from '../shared/apply-decorators';
 import { createStoryState, getStoryId } from '../shared/story-store';

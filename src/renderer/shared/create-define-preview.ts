@@ -28,7 +28,6 @@ export function createDefinePreview(solidAnnotations: PreviewAddon<never>) {
             const meta = defineMeta(_input);
             const defineStory = meta.story.bind(meta);
 
-            // @ts-expect-error internal code that is hard to type
             meta.story = (__input: any) => {
                 const story = defineStory(__input);
 
