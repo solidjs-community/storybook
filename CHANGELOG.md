@@ -1,5 +1,28 @@
 # storybook-solidjs-vite
 
+## 10.3.0
+
+### Minor Changes
+
+- 7c5101a: Enable static Autodocs code snippets by default via Storybook's experimental code examples pipeline.
+
+  - Add `generateCodeSnippet` AST helper and `experimental_enrichCsf` preset hook
+  - Enable `features.experimentalCodeExamples` by default; opt out in `.storybook/main.ts`
+  - Include per-story `snippet` fields in the components manifest
+
+- 7c5101a: Replace react-docgen-typescript with solid-component-meta for Controls, Docs, and the components manifest.
+
+  - Add `componentManifest/` pipeline: TypeScript LanguageService extraction, Vite `__docgenInfo` injection, and manifest hooks (`experimental_manifests`, `internal_getArgTypesData`)
+  - Enable components manifest debugger by default (`features.componentsManifest`); opt out of docgen via `framework.options.docgen: false`
+  - Trim runtime docs layer to RCM-only (`entry-preview-argtypes` reads injected `__docgenInfo`); remove legacy acorn/propTypes docgen (~1500 lines)
+  - Make `framework.options` optional in `StorybookConfig`
+  - Add `bun run typecheck`; exclude CLI `template/` from TypeScript project (scaffold files, not built)
+  - Update README and MIGRATION for RCM, manifest debugger, and Storybook MCP
+
+### Patch Changes
+
+- 7c5101a: Fix CSF4 story arg types and published SolidComponent inference
+
 ## 10.2.0
 
 ### Minor Changes
