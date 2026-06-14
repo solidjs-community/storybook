@@ -1,10 +1,10 @@
 import { render as solidRender } from '@solidjs/web';
 import {
     createComponent,
+    createStore,
     Errored,
     onSettled,
-    createStore as solidCreateStore,
-} from 'solid-js-v2';
+} from 'solid-js-next';
 
 import { createApplyDecorators } from '../shared/apply-decorators';
 import { createStoryState, getStoryId } from '../shared/story-store';
@@ -14,17 +14,15 @@ import type { RenderContext, SolidComponent, SolidRenderer, StoryContext, StoryF
 
 export * from '../shared/preview-annotations';
 
-const createStore = <T extends object>(initial: T) => {
-    const [state, setStore] = solidCreateStore(initial as any);
+const storyStore = createStoryState((initial: any) => {
+    const [state, setStore] = createStore(initial);
 
-    const setState = (update: (prev: T) => T) => {
-        setStore(() => update(state as unknown as T));
+    const setState = (update: (prev: any) => any) => {
+        setStore(() => update(state));
     };
 
-    return [state as T, setState] as const;
-};
-
-const storyStore = createStoryState(createStore);
+    return [state, setState];
+});
 
 /** Wraps the story fn with decorators, JSX decorators skip re-render when the story is already mounted. */
 export const applyDecorators = createApplyDecorators(

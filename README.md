@@ -15,13 +15,14 @@ Adds SolidJS support to Storybook.
 
 ## ✨ Features
 
-- Solid 1 and Solid 2 support
-- Vite-powered builder
-- TypeScript-first setup
-- ArgTypes generation from TypeScript
-- [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) factory API (optional)
-- Compatible with Storybook addons
-- Integrated testing (Vitest, Playwright)
+- [Solid 1](#solid-1) and [Solid 2](#solid-2) support
+- [Vite-powered builder](https://storybook.js.org/docs/builders/vite)
+- [TypeScript-first setup](https://storybook.js.org/docs/configure/integration/typescript)
+- Component props show up automatically in [Controls and Docs](#docgen)
+- [Storybook MCP](https://storybook.js.org/docs/ai/mcp/overview) support ([setup](#storybook-mcp))
+- [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) factory API ([setup](#csf-next), optional)
+- [Integrated testing](https://storybook.js.org/docs/writing-tests) (Vitest, Playwright)
+- [Compatible with Storybook addons](https://storybook.js.org/docs/addons)
 
 ## 🚀 Getting Started
 
@@ -79,7 +80,9 @@ Imports without `/next` often still run, but TypeScript may complain because tho
 In `main.ts` either framework name is fine: `storybook-solidjs-vite` reads the major version from your installed `solid-js`, and `storybook-solidjs-vite/next` forces Solid 2.
 
 ```ts
+// Solid 1 & 2
 framework: 'storybook-solidjs-vite'
+// Solid 2
 framework: 'storybook-solidjs-vite/next'
 ```
 
@@ -100,7 +103,7 @@ export default defineMain({
 // .storybook/preview.tsx
 import { definePreview } from 'storybook-solidjs-vite';
 // for Solid 2, use:
-// import { definePreview } from 'storybook-solidjs-vite/next';
+import { definePreview } from 'storybook-solidjs-vite/next';
 ```
 
 ```ts
@@ -117,15 +120,15 @@ export const Primary = meta.story({
 });
 ```
 
-### TypeScript docgen
+### Docgen
 
-TypeScript props for docs and controls are generated with [@joshwooding/vite-plugin-react-docgen-typescript](https://github.com/joshwooding/vite-plugin-react-docgen-typescript).
+TypeScript props for **Controls**, **Docs**, and the **components manifest** come from **React component-meta** (RCM) — a TypeScript LanguageService extractor aligned with Storybook’s `react-component-meta` format.
 
-Configure it with framework.options.docgen in .storybook/main.ts.
+Docgen is **enabled by default**. The components manifest debugger is also enabled at:
 
-`false` — disable docgen
-`true` (default) — enable docgen with the default configuration
-`object` — override default configuration
+`http://localhost:<port>/manifests/components.html`
+
+To disable docgen:
 
 ```ts
 import type { StorybookConfig } from 'storybook-solidjs-vite';
@@ -134,18 +137,23 @@ const config: StorybookConfig = {
   framework: {
     name: 'storybook-solidjs-vite',
     options: {
-      docgen: {
-        savePropValueAsString: true,
-        shouldExtractLiteralValuesFromEnum: true,
-        propFilter: (prop: any) =>
-          prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
-      },
+      docgen: false,
     },
   },
 };
 
 export default config;
 ```
+
+### Storybook MCP
+
+Solid projects can use [Storybook MCP](https://storybook.js.org/docs/ai/mcp/overview) so AI agents can list components, read prop docs from component meta, and preview stories. Requires docgen (enabled by default) and `@storybook/addon-docs`.
+
+```bash
+npx storybook add @storybook/addon-mcp
+```
+
+With Storybook running, the MCP server is at `http://localhost:<port>/mcp`. Connect your agent to that URL (see [Storybook MCP docs](https://storybook.js.org/docs/ai/mcp/overview#2-add-the-mcp-server-to-your-agent)). The components manifest debugger remains at `/manifests/components.html`.
 
 ## 🎨 Decorators
 
