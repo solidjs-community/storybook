@@ -8,14 +8,22 @@
 import { hasVitePlugins } from '@storybook/builder-vite';
 import { mergeConfig } from 'vite';
 
-import { experimental_manifests, internal_getArgTypesData } from '../componentManifest/manifests';
+import { enrichCsf } from '../codeExamples/enrichCsf';
+import { generateComponentManifests, getArgTypesData } from '../componentManifest/manifests';
 import { solidComponentMetaPlugin } from '../componentManifest/solidComponentMetaPlugin';
 import { mergeSolidDedupe } from './solidVersion';
 
 import type { PresetProperty } from 'storybook/internal/types';
 import type { FrameworkOptions, StorybookConfig } from './types';
 
-export { experimental_manifests, internal_getArgTypesData };
+export {
+    /** Injects static JSX snippets into story parameters for Autodocs source blocks */
+    enrichCsf as experimental_enrichCsf,
+    /** @see https://storybook.js.org/docs/ai/manifests */
+    generateComponentManifests as experimental_manifests,
+    /** Used by Storybook MCP / story creation tooling */
+    getArgTypesData as internal_getArgTypesData,
+};
 
 /**
  * Configures Storybook's internal features.
@@ -34,6 +42,7 @@ export const core: PresetProperty<'core', StorybookConfig> = {
  */
 export const features: PresetProperty<'features', StorybookConfig> = {
     componentsManifest: true,
+    experimentalCodeExamples: true,
 };
 
 /**

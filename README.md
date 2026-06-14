@@ -9,16 +9,16 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/solidjs-community/storybook/pulls)
 
-[Storybook](https://storybook.js.org/) **framework adapter** for [SolidJS](https://solidjs.com/), using Vite.
-
-Adds SolidJS support to Storybook.
+[Storybook](https://storybook.js.org/) framework adapter for [SolidJS](https://solidjs.com/) on Vite.
 
 ## ✨ Features
 
 - [Solid 1](#solid-1) and [Solid 2](#solid-2) support
 - [Vite-powered builder](https://storybook.js.org/docs/builders/vite)
 - [TypeScript-first setup](https://storybook.js.org/docs/configure/integration/typescript)
-- Component props show up automatically in [Controls and Docs](#docgen)
+- Automatic props in [Controls and Docs](#docgen)
+- [Autodocs code snippets](#autodocs-code-snippets) — static JSX **Show code** blocks from story source (CSF Next + CSF3, enabled by default)
+- [Components manifest](https://storybook.js.org/docs/ai/manifests) for AI agents ([debugger](#components-manifest-debugger))
 - [Storybook MCP](https://storybook.js.org/docs/ai/mcp/overview) support ([setup](#storybook-mcp))
 - [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) factory API ([setup](#csf-next), optional)
 - [Integrated testing](https://storybook.js.org/docs/writing-tests) (Vitest, Playwright)
@@ -30,26 +30,18 @@ Run in your project:
 
 ```bash
 npx create-storybook --type=solid
-```
-
-Then start Storybook:
-
-```bash
-bun run storybook
+npm run storybook
 ```
 
 Open the URL shown in the terminal.
 
 ## ⚙️ Configuration
 
-You can customize Vite and Storybook as usual.
-
-- Add stories in `src/**/*.stories.tsx` or `src/**/*.stories.js`
-- Use Storybook addons for additional functionality
+Customize Vite and Storybook as usual. Add stories in `src/**/*.stories.{tsx,js}` and install addons as needed.
 
 ### Solid 1
 
-On Solid 1, import from `storybook-solidjs-vite` in config, preview, and stories:
+Import from `storybook-solidjs-vite` in config, preview, and stories:
 
 ```ts
 // .storybook/main.ts
@@ -69,21 +61,19 @@ import type { Preview, Meta, StoryObj } from 'storybook-solidjs-vite';
 
 ### Solid 2
 
-On Solid 2, use `storybook-solidjs-vite/next` in preview and stories — the types there match the Solid 2 renderer:
+Use `storybook-solidjs-vite/next` in preview and stories:
 
 ```ts
 import type { Preview, Meta, StoryObj } from 'storybook-solidjs-vite/next';
 ```
 
-Imports without `/next` often still run, but TypeScript may complain because those types describe the Solid 1 renderer.
+Imports without `/next` may still run, but TypeScript can complain.
 
-In `main.ts` either framework name is fine: `storybook-solidjs-vite` reads the major version from your installed `solid-js`, and `storybook-solidjs-vite/next` forces Solid 2.
+In `main.ts`, either framework name works: `storybook-solidjs-vite` reads the major version from `solid-js`; `storybook-solidjs-vite/next` forces Solid 2.
 
 ```ts
-// Solid 1 & 2
-framework: 'storybook-solidjs-vite'
-// Solid 2
-framework: 'storybook-solidjs-vite/next'
+framework: 'storybook-solidjs-vite'      // Solid auto-detect
+framework: 'storybook-solidjs-vite/next' // Solid 2 only
 ```
 
 ### CSF Next
@@ -122,13 +112,11 @@ export const Primary = meta.story({
 
 ### Docgen
 
-TypeScript props for **Controls**, **Docs**, and the **components manifest** come from **React component-meta** (RCM) — a TypeScript LanguageService extractor aligned with Storybook’s `react-component-meta` format.
+Props for **Controls**, **Docs**, and the **components manifest** come from a TypeScript LanguageService extractor aligned with Storybook's `react-component-meta` format.
 
-Docgen is **enabled by default**. The components manifest debugger is also enabled at:
+Enabled by default. Inspect output in the [manifest debugger](#components-manifest-debugger).
 
-`http://localhost:<port>/manifests/components.html`
-
-To disable docgen:
+To disable:
 
 ```ts
 import type { StorybookConfig } from 'storybook-solidjs-vite';
@@ -136,9 +124,25 @@ import type { StorybookConfig } from 'storybook-solidjs-vite';
 const config: StorybookConfig = {
   framework: {
     name: 'storybook-solidjs-vite',
-    options: {
-      docgen: false,
-    },
+    options: { docgen: false },
+  },
+};
+
+export default config;
+```
+
+### Autodocs code snippets
+
+**Show code** blocks are static snippets generated from story source at index time (`experimentalCodeExamples`). Enabled by default.
+
+To disable:
+
+```ts
+import type { StorybookConfig } from 'storybook-solidjs-vite';
+
+const config: StorybookConfig = {
+  features: {
+    experimentalCodeExamples: false
   },
 };
 
@@ -153,61 +157,57 @@ Solid projects can use [Storybook MCP](https://storybook.js.org/docs/ai/mcp/over
 npx storybook add @storybook/addon-mcp
 ```
 
-With Storybook running, the MCP server is at `http://localhost:<port>/mcp`. Connect your agent to that URL (see [Storybook MCP docs](https://storybook.js.org/docs/ai/mcp/overview#2-add-the-mcp-server-to-your-agent)). The components manifest debugger remains at `/manifests/components.html`.
+See [Storybook MCP docs](https://storybook.js.org/docs/ai/mcp/overview#2-add-the-mcp-server-to-your-agent) for agent setup.
+
+### Components manifest debugger
+
+Storybook builds [JSON manifests](https://storybook.js.org/docs/ai/manifests) from CSF stories and component source — names, props, JSDoc, story ids, and more. Enabled by default (`features.componentsManifest`). Prop data comes from [docgen](#docgen); story snippets use the same [code generator](#autodocs-code-snippets).
+
+While Storybook runs (or in a static build):
+
+- **Debugger UI:** `http://localhost:6006/manifests/components.html` — browse manifests and generation errors/warnings
+- **Components JSON:** `http://localhost:6006/manifests/components.json`
+- **Docs JSON:** `http://localhost:6006/manifests/docs.json` (when MDX docs are present)
 
 ## 🎨 Decorators
 
-On args or globals changes, Storybook re-runs decorators and stories — the same model as React, where each update calls your functions again. Solid updates through fine-grained signals and usually does not need that.
-
-If a decorator returns JSX, the extra runs can leave duplicate nodes in the DOM.
+On args or globals changes, Storybook re-runs decorators and stories functions follows React reactivity model. Solid updates via fine-grained signals and usually doesn't need that. JSX decorators re-run can leave duplicate DOM nodes. To avoid this, use `createJSXDecorator` function to define decorators that return JSX.
 
 ### createJSXDecorator
 
-Use for decorators that return JSX. Ensures they run only once per story mount.
+For decorators that return JSX. Runs once per story mount — `context.globals` and `context.args` are reactive stores, so bindings in JSX still update without re-running the decorator:
 
 ```tsx
 import { createJSXDecorator } from 'storybook-solidjs-vite';
 
-export const decorator = createJSXDecorator((Story) => {
-  return (
-    <main>
-      <Story />
-    </main>
-  );
-});
+export const withLayout = createJSXDecorator((Story, context) => (
+  <main data-theme={context.globals.theme}>
+    <Story />
+  </main>
+));
 ```
 
 ### createDecorator
 
-Use for decorators that do not return JSX.
+For side effects that should run on every story update — e.g. sync `document.body` when globals change:
 
 ```tsx
 import { createDecorator } from 'storybook-solidjs-vite';
 
-export const decorator = createDecorator((Story) => {
+export const withTheme = createDecorator((Story, context) => {
+  // Will run on every story update
+  document.body.setAttribute('data-theme', context.globals.theme);
   return Story();
 });
 ```
 
-### Manual flag
-
-```tsx
-import { IS_SOLID_JSX_FLAG } from 'storybook-solidjs-vite';
-
-export const decorator = (Story) => {
-  return <div><Story /></div>;
-};
-
-decorator[IS_SOLID_JSX_FLAG] = true;
-```
-
 ## 🔄 Migration from v9
 
-Check out [Migration Guide](./MIGRATION.md) for the instructions and breaking changes.
+See [Migration Guide](./MIGRATION.md) for breaking changes.
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome! Feel free to [open an issue](https://github.com/solidjs-community/storybook/issues) or submit a PR.
+Issues and PRs welcome — [open an issue](https://github.com/solidjs-community/storybook/issues) or submit a pull request.
 
 ## 📖 License
 

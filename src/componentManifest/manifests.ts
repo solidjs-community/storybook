@@ -1,15 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { recast } from 'storybook/internal/babel';
 import { Tag } from 'storybook/internal/core-server';
 import { storyNameFromExport } from 'storybook/internal/csf';
-import { loadCsf } from 'storybook/internal/csf-tools';
+import { extractDescription, loadCsf } from 'storybook/internal/csf-tools';
 
+import { getCodeSnippet } from '../codeExamples/generateCodeSnippet';
+import { invariant } from '../codeExamples/invariant';
 import { findMatchingComponent, getComponents } from './getComponents';
 import { DOCGEN_ENGINE, getOrCreateSolidComponentMetaManager, MANIFEST_DOCGEN_ENGINE } from './solidComponentMeta/SolidComponentMetaManager';
 
 import type { SolidComponentDoc } from './types';
-
-/* eslint-disable ts/naming-convention -- Storybook preset hook names */
 
 type ManifestEntry = {
     id: string;
@@ -58,16 +59,34 @@ function selectComponentEntries(manifestEntries: ManifestEntry[]) {
 
 function extractStories(
     csf: ReturnType<ReturnType<typeof loadCsf>['parse']>,
+    componentName: string | undefined,
     manifestEntries: ManifestEntry[]
 ) {
     const manifestEntryIds = new Set(manifestEntries.map(entry => entry.id));
 
     return Object.entries(csf._stories)
         .filter(([, story]) => manifestEntryIds.has(story.id))
-        .map(([storyExport, story]) => ({
-            id: story.id,
-            name: story.name ?? storyNameFromExport(storyExport),
-        }));
+        .map(([storyExport, story]) => {
+            try {
+                const description = extractDescription(csf._storyStatements[storyExport])?.trim();
+
+                return {
+                    id: story.id,
+                    name: story.name ?? storyNameFromExport(storyExport),
+                    snippet: recast.print(getCodeSnippet(csf, storyExport, componentName)).code,
+                    description,
+                };
+            }
+            catch(e) {
+                invariant(e instanceof Error);
+
+                return {
+                    id: story.id,
+                    name: story.name ?? storyNameFromExport(storyExport),
+                    error: { name: e.name, message: e.message },
+                };
+            }
+        });
 }
 
 function normalizeComponentMeta(doc: SolidComponentDoc | undefined) {
@@ -82,13 +101,13 @@ function normalizeComponentMeta(doc: SolidComponentDoc | undefined) {
     };
 }
 
-export const experimental_manifests = async(
+export async function generateComponentManifests(
     existingManifests: Record<string, unknown> = {},
     options: {
         manifestEntries: ManifestEntry[];
         watch?: boolean;
     }
-) => {
+) {
     const { manifestEntries, watch: watchMode = false } = options;
     const startTime = performance.now();
     const manager = await getOrCreateSolidComponentMetaManager(watchMode);
@@ -142,7 +161,7 @@ export const experimental_manifests = async(
             const id = entry.id.split('--')[0] ?? entry.id;
             const title = entry.title.split('/').at(-1)?.replace(/\s+/g, '') ?? id;
             const reactComponentMeta = normalizeComponentMeta(component?.reactComponentMeta);
-            const stories = extractStories(csf, manifestEntries);
+            const stories = extractStories(csf, componentName, manifestEntries);
             const base = {
                 id,
                 name: componentName ?? title,
@@ -197,9 +216,9 @@ export const experimental_manifests = async(
             manager.dispose();
         }
     }
-};
+}
 
-export async function internal_getArgTypesData(
+export async function getArgTypesData(
     _input: unknown,
     options?: {
         componentFilePath?: string;
