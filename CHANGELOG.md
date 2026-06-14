@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.1.2
+
+### Patch Changes
+
+- 1582b23: Fix CSF4 story arg types and published SolidComponent inference
+
 ## 10.1.1
 
 ### Patch Changes
