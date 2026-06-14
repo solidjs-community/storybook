@@ -7,8 +7,8 @@
       "dependencies": {
         "@storybook/builder-vite": "10.4.4",
         "@storybook/global": "5.0.0",
-        "@volar/language-core": "~2.4.28",
-        "@volar/typescript": "~2.4.28",
+        "@volar/language-core": "2.4.28",
+        "@volar/typescript": "2.4.28",
         "semver": "7.8.1",
       },
       "devDependencies": {
@@ -20,7 +20,7 @@
         "@tsconfig/strictest": "2.0.8",
         "@types/node": "25.9.3",
         "@types/semver": "7.7.1",
-        "es-toolkit": "^1.43.0",
+        "es-toolkit": "1.47.1",
         "eslint": "9.39.4",
         "lint-staged": "16.4.0",
         "simple-git-hooks": "2.13.1",
