@@ -7,11 +7,11 @@ import {
 import { reconcile, createStore as solidCreateStore } from 'solid-js-v1/store';
 import { render as solidRender } from 'solid-js-v1/web';
 
-import { createApplyDecorators } from '../shared/apply-decorators.ts';
+import { createApplyDecorators } from '../shared/apply-decorators';
 import { createStoryState, getStoryId } from '../shared/story-store';
 
 import type { Args } from 'storybook/internal/types';
-import type { RenderContext, SolidComponent, SolidRenderer, StoryContext, StoryFnReturnType } from './public-types';
+import type { RenderContext, SolidComponent, SolidRenderer, StoryContext, StoryFnReturnType } from '../shared/public-types';
 
 export * from '../shared/preview-annotations';
 
