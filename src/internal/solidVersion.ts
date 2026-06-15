@@ -3,9 +3,9 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import semver from 'semver';
 
-import type { FrameworkConfig, SolidVersion } from './types';
+type SolidVersion = 1 | 2;
 
-function getFrameworkName(framework: FrameworkConfig): string {
+function getFrameworkName(framework: string | { name: string }): string {
     return typeof framework === 'string' ? framework : framework.name;
 }
 
@@ -33,29 +33,14 @@ function detectInstalledSolidVersion(configDir: string): SolidVersion {
  * - `storybook-solidjs-vite` → detected from installed `solid-js`
  */
 export function resolveSolidVersion(
-    framework: FrameworkConfig,
+    framework: string | { name: string },
     configDir: string
 ): SolidVersion {
     const name = getFrameworkName(framework);
 
-    if (name === 'storybook-solidjs-vite/next') {
+    if (name.endsWith('/next')) {
         return 2;
     }
 
     return detectInstalledSolidVersion(configDir);
-}
-
-/** Force a single copy of Solid packages (renderer + app + linked deps). */
-export const SOLID_DEDUPE_PACKAGES = [
-    'solid-js',
-    '@solidjs/web',
-    '@solidjs/signals',
-    '@solidjs/router',
-    '@solidjs/meta',
-] as const;
-
-export function mergeSolidDedupe(existing?: string | readonly string[]): string[] {
-    const base = existing == null ? [] : [...existing];
-
-    return [...new Set([...base, ...SOLID_DEDUPE_PACKAGES])];
 }

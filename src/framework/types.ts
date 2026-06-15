@@ -7,8 +7,6 @@ import type {
 type FrameworkName = CompatibleString<'storybook-solidjs-vite' | 'storybook-solidjs-vite/next'>;
 type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
-export type SolidVersion = 1 | 2;
-
 export type FrameworkOptions = {
     builder?: BuilderOptions;
     /** Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest). */

@@ -1,5 +1,7 @@
-import { createDefinePreview as createDefinePreviewBase } from '../shared/create-define-preview';
-import * as solidAnnotations from './entry-preview';
+import { definePreview as definePreviewBase } from 'storybook/internal/csf';
+
+import * as solidArgTypesAnnotations from '../renderer/argtypes';
+import * as solidDocsAnnotations from '../renderer/docs';
 
 import type { AddonTypes, InferTypes, Meta, Preview, PreviewAddon, Story } from 'storybook/internal/csf';
 import type {
@@ -12,7 +14,7 @@ import type {
     StoryAnnotations,
 } from 'storybook/internal/types';
 import type { OmitIndexSignature, SetOptional, Simplify, UnionToIntersection } from 'type-fest';
-import type { AddMocks, EmptyMetaArgs, SolidComponent, SolidTypes } from '../shared/public-types';
+import type { AddMocks, EmptyMetaArgs, SolidComponent, SolidTypes } from './public-api';
 
 /** Extracts and unions all args types from an array of decorators. */
 type DecoratorsArgs<TRenderer extends Renderer, Decorators> = UnionToIntersection<
@@ -94,8 +96,44 @@ export interface SolidStory<T extends SolidTypes, TInput extends StoryAnnotation
     Component: SolidComponent<Partial<T['args']>>;
 }
 
-export const definePreview = createDefinePreviewBase(solidAnnotations as never) as unknown as <
-    Addons extends PreviewAddon<never>[] = []
->(
-    input: DefinePreviewInput<Addons>
-) => SolidPreview<SolidTypes & InferTypes<Addons>>;
+export function createSolidDefinePreview(solidAnnotations: PreviewAddon<never>) {
+    return (<Addons extends PreviewAddon<never>[] = []>(
+        input: DefinePreviewInput<Addons>
+    ) => {
+        const { addons, ...projectAnnotations } = input;
+
+        const preview = definePreviewBase({
+            ...projectAnnotations,
+            addons: [
+                solidAnnotations,
+                solidArgTypesAnnotations,
+                solidDocsAnnotations,
+                ...(addons ?? []),
+            ],
+        });
+
+        const defineMeta = preview.meta.bind(preview);
+
+        preview.meta = (_input) => {
+            const meta = defineMeta(_input);
+            const defineStory = meta.story.bind(meta);
+
+            meta.story = (__input: any) => {
+                const story = defineStory(__input);
+
+                // @ts-ignore this is a private property used only here
+                story.Component = story.__compose();
+
+                return story;
+            };
+
+            return meta;
+        };
+
+        return preview;
+    }) as unknown as <
+        Addons extends PreviewAddon<never>[] = []
+    >(
+        input: DefinePreviewInput<Addons>
+    ) => SolidPreview<SolidTypes & InferTypes<Addons>>;
+}

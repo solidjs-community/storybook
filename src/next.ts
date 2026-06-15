@@ -3,13 +3,12 @@
  *
  * @example
  * ```ts
- * import type { StorybookConfig } from 'storybook-solidjs-vite/next';
  * import { definePreview, Meta, StoryObj } from 'storybook-solidjs-vite/next';
- *
- * // .storybook/main.ts
- * framework: { name: 'storybook-solidjs-vite/next' }
  * ```
  */
-export * from './framework/node';
-export * from './renderer/v2';
-export type { FrameworkConfig, FrameworkOptions, SolidVersion, StorybookConfig } from './framework/types';
+import { createSolidDefinePreview } from './preview/define-preview';
+import * as solidAnnotations from './renderer/solid-2';
+
+export * from './framework/public-api';
+export * from './preview/public-api';
+export const definePreview = createSolidDefinePreview(solidAnnotations as never);

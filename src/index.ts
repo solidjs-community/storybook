@@ -1,4 +1,6 @@
-export * from './framework/node';
-// NOTE: Solid 1 is the default version for Storybook 10
-export * from './renderer/v1';
-export type { FrameworkConfig, FrameworkOptions, SolidVersion, StorybookConfig } from './framework/types';
+import { createSolidDefinePreview } from './preview/define-preview';
+import * as solidAnnotations from './renderer/solid-1';
+
+export * from './framework/public-api';
+export * from './preview/public-api';
+export const definePreview = createSolidDefinePreview(solidAnnotations as never);

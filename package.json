@@ -36,6 +36,11 @@
             "code": "./src/index.ts",
             "default": "./dist/index.js"
         },
+        "./preset": {
+            "types": "./dist/framework/preset.d.ts",
+            "code": "./src/framework/preset.ts",
+            "default": "./dist/framework/preset.js"
+        },
         "./next": {
             "types": "./dist/next.d.ts",
             "code": "./src/next.ts",
@@ -46,45 +51,40 @@
             "code": "./src/framework/preset.ts",
             "default": "./dist/framework/preset.js"
         },
-        "./preset": {
-            "types": "./dist/framework/preset.d.ts",
-            "code": "./src/framework/preset.ts",
-            "default": "./dist/framework/preset.js"
-        },
         "./node": {
-            "types": "./dist/framework/node.d.ts",
-            "code": "./src/framework/node.ts",
-            "default": "./dist/framework/node.js"
+            "types": "./dist/node.d.ts",
+            "code": "./src/node.ts",
+            "default": "./dist/node.js"
         },
         "./experimental-playwright": {
-            "types": "./dist/renderer/playwright.d.ts",
-            "code": "./src/renderer/playwright.ts",
-            "default": "./dist/renderer/playwright.js"
+            "types": "./dist/playwright.d.ts",
+            "code": "./src/playwright.ts",
+            "default": "./dist/playwright.js"
         },
         "./renderer": {
             "types": "./dist/renderer.d.ts",
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
-        "./entry-preview/solid-1": {
-            "types": "./dist/entry-preview/solid-1.d.ts",
-            "code": "./src/renderer/v1/entry-preview.ts",
-            "default": "./dist/entry-preview/solid-1.js"
+        "./renderer/solid-1": {
+            "types": "./dist/renderer/solid-1.d.ts",
+            "code": "./src/renderer/solid-1.ts",
+            "default": "./dist/renderer/solid-1.js"
         },
-        "./entry-preview/solid-2": {
-            "types": "./dist/entry-preview/solid-2.d.ts",
-            "code": "./src/renderer/v2/entry-preview.ts",
-            "default": "./dist/entry-preview/solid-2.js"
+        "./renderer/solid-2": {
+            "types": "./dist/renderer/solid-2.d.ts",
+            "code": "./src/renderer/solid-2.ts",
+            "default": "./dist/renderer/solid-2.js"
         },
-        "./entry-preview/argtypes": {
-            "types": "./dist/entry-preview/argtypes.d.ts",
-            "code": "./src/renderer/docs/entry-preview-argtypes.ts",
-            "default": "./dist/entry-preview/argtypes.js"
+        "./renderer/argtypes": {
+            "types": "./dist/renderer/argtypes.d.ts",
+            "code": "./src/renderer/argtypes.ts",
+            "default": "./dist/renderer/argtypes.js"
         },
-        "./entry-preview/docs": {
-            "types": "./dist/entry-preview/docs.d.ts",
-            "code": "./src/renderer/docs/entry-preview.ts",
-            "default": "./dist/entry-preview/docs.js"
+        "./renderer/docs": {
+            "types": "./dist/renderer/docs.d.ts",
+            "code": "./src/renderer/docs.ts",
+            "default": "./dist/renderer/docs.js"
         }
     },
     "main": "dist/index.js",

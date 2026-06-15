@@ -1,22 +1,16 @@
 import { defaultDecorateStory } from 'storybook/preview-api';
 
-import { IS_SOLID_JSX_FLAG } from './public-types';
+import { IS_SOLID_JSX_FLAG, type Decorator, type SolidRenderer } from '../../preview/public-api';
 import { getStoryId } from './story-store';
 
-import type { Args, StoryContext as InternalStoryContext, LegacyStoryFn } from 'storybook/internal/types';
-import type {
-    Decorator,
-    SolidRenderer,
-} from './public-types';
+import type { LegacyStoryFn } from 'storybook/internal/types';
 import type { StoryStateStore } from './story-store';
 
-export function createApplyDecorators(
-    store: StoryStateStore,
-    createComponent: (
-        storyFn: LegacyStoryFn<SolidRenderer>,
-        context: InternalStoryContext<SolidRenderer, Args>
-    ) => SolidRenderer['storyResult']
-): (
+export function createApplyDecorators({
+    storyStore,
+}: {
+    storyStore: StoryStateStore;
+}): (
     storyFn: LegacyStoryFn<SolidRenderer>,
     rawDecorators: Decorator[]
 ) => LegacyStoryFn<SolidRenderer> {
@@ -32,7 +26,7 @@ export function createApplyDecorators(
                     if (isJSX) {
                         const storyId = getStoryId(context);
 
-                        if (storyId && store.isStoryRendered(storyId)) {
+                        if (storyId && storyStore.isStoryRendered(storyId)) {
                             return StoryFn(context);
                         }
                     }
@@ -45,11 +39,11 @@ export function createApplyDecorators(
         return defaultDecorateStory((context) => {
             const storyId = getStoryId(context);
 
-            if (storyId && store.isStoryRendered(storyId)) {
+            if (storyId && storyStore.isStoryRendered(storyId)) {
                 return null;
             }
 
-            return createComponent(storyFn, context);
+            return storyFn(context);
         }, decorators);
     };
 }

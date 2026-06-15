@@ -82,7 +82,7 @@ framework: 'storybook-solidjs-vite/next' // Solid 2 only
 
 ```ts
 // .storybook/main.ts
-import { defineMain } from 'storybook-solidjs-vite/node';
+import { defineMain } from 'storybook-solidjs-vite';
 
 export default defineMain({
   framework: { name: 'storybook-solidjs-vite' },
@@ -91,9 +91,14 @@ export default defineMain({
 
 ```ts
 // .storybook/preview.tsx
+import addonDocs from '@storybook/addon-docs';
 import { definePreview } from 'storybook-solidjs-vite';
 // for Solid 2, use:
-import { definePreview } from 'storybook-solidjs-vite/next';
+// import { definePreview } from 'storybook-solidjs-vite/next';
+
+export default definePreview({
+  addons: [addonDocs()],
+});
 ```
 
 ```ts

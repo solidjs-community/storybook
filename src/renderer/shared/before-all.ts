@@ -1,29 +1,4 @@
-import { global } from '@storybook/global';
-import { createComponent } from 'solid-js';
 import { configure } from 'storybook/test';
-
-import type { ArgsStoryFn } from 'storybook/internal/types';
-import type { SolidRenderer } from './public-types';
-
-if (global.window) {
-    global.window.STORYBOOK_ENV = 'solid';
-}
-
-/** Preview-wide parameters for the Solid renderer. */
-export const parameters = {
-    renderer: 'solid',
-};
-
-/** Default render for meta/stories with `component` + `args` and no custom `render` (CSF 3+). */
-export const render: ArgsStoryFn<SolidRenderer> = (_, context) => {
-    if (!context.component) {
-        throw new Error(
-            `Unable to render story ${ context.id } as the component annotation is missing from the default export`
-        );
-    }
-
-    return createComponent(context.component, context.args);
-};
 
 /** Configures `storybook/test` wrappers so Solid updates flush after async play steps. */
 export const beforeAll = async() => {

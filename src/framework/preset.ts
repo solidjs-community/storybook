@@ -8,22 +8,25 @@
 import { hasVitePlugins } from '@storybook/builder-vite';
 import { mergeConfig } from 'vite';
 
-import { enrichCsf } from '../codeExamples/enrichCsf';
-import { generateComponentManifests, getArgTypesData } from '../componentManifest/manifests';
-import { solidComponentMetaPlugin } from '../componentManifest/solidComponentMetaPlugin';
-import { mergeSolidDedupe } from './solidVersion';
+import { solidComponentMetaPlugin } from '../internal/componentManifest/solidComponentMetaPlugin';
 
 import type { PresetProperty } from 'storybook/internal/types';
 import type { FrameworkOptions, StorybookConfig } from './types';
 
-export {
-    /** Injects static JSX snippets into story parameters for Autodocs source blocks */
-    enrichCsf as experimental_enrichCsf,
-    /** @see https://storybook.js.org/docs/ai/manifests */
-    generateComponentManifests as experimental_manifests,
-    /** Used by Storybook MCP / story creation tooling */
-    getArgTypesData as internal_getArgTypesData,
-};
+/** Force a single copy of Solid packages (renderer + app + linked deps). */
+const SOLID_DEDUPE_PACKAGES = [
+    'solid-js',
+    '@solidjs/web',
+    '@solidjs/signals',
+    '@solidjs/router',
+    '@solidjs/meta',
+] as const;
+
+function mergeSolidDedupe(existing?: string | readonly string[]): string[] {
+    const base = Array.isArray(existing) ? existing : [];
+
+    return [...new Set([...base, ...SOLID_DEDUPE_PACKAGES])];
+}
 
 /**
  * Configures Storybook's internal features.

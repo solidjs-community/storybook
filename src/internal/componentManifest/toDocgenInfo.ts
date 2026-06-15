@@ -8,11 +8,29 @@ export type DocgenInfo = {
         name: string;
         description?: string;
         required?: boolean;
-        type: { name: string; raw?: string };
+        type: {
+            name: string;
+            raw?: string;
+            value?: unknown;
+            computed?: boolean;
+        };
         defaultValue?: { value: string } | null;
         parent?: { name: string; fileName: string };
     }>;
 };
+
+function serializeDocgenPropType(type: SolidComponentDoc['props'][string]['type']) {
+    const docgenType: DocgenInfo['props'][string]['type'] = {
+        name: type.name,
+        raw: type.raw ?? type.name,
+    };
+
+    if (type.value != null) {
+        docgenType.value = type.value;
+    }
+
+    return docgenType;
+}
 
 export function solidComponentDocToDocgenInfo(doc: SolidComponentDoc): DocgenInfo {
     return {
@@ -23,10 +41,7 @@ export function solidComponentDocToDocgenInfo(doc: SolidComponentDoc): DocgenInf
                 const entry: DocgenInfo['props'][string] = {
                     name: prop.name,
                     required: prop.required,
-                    type: {
-                        name: prop.type.name,
-                        raw: prop.type.raw ?? prop.type.name,
-                    },
+                    type: serializeDocgenPropType(prop.type),
                     defaultValue: prop.defaultValue ?? null,
                 };
 

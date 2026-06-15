@@ -1,5 +1,5 @@
 import type { Args, Globals, StoryContext as InternalStoryContext } from 'storybook/internal/types';
-import type { SolidRenderer } from './public-types';
+import type { SolidRenderer } from '../../preview/public-api';
 
 /** Update store via `(prev) => next` (version layer applies reconcile/draft setter). */
 type SetStoreFn<T extends object> = (update: (prev: T) => T) => void;
