@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.4.0
+
+### Minor Changes
+
+- ad5de44: Reorganize renderer, preview API & internal modules
+
 ## 10.3.0
 
 ### Minor Changes
