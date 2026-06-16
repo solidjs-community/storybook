@@ -1,6 +1,6 @@
 {
     "name": "storybook-solidjs-vite",
-    "version": "10.5.1",
+    "version": "10.5.2",
     "description": "SolidJS integration with Storybook",
     "private": false,
     "keywords": [

@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.5.2
+
+### Patch Changes
+
+- ff64120: Fix for Solid 1
+
 ## 10.5.1
 
 ### Patch Changes
