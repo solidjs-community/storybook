@@ -18,9 +18,15 @@ import { createStoryState } from './shared/story-store';
 import type { SolidComponent, SolidRenderer } from '../preview/public-api';
 import type { SolidRendererRuntime, StoryThunk } from './shared/render-to-canvas';
 
+const SOLID_RENDERER_ID = 'solid-next' as const;
+
 if (global.window) {
-    global.window.STORYBOOK_ENV = 'solid';
+    global.window.STORYBOOK_ENV = SOLID_RENDERER_ID;
 }
+
+const parameters = {
+    renderer: SOLID_RENDERER_ID,
+};
 
 function trackStory(story: StoryThunk): SolidRenderer['storyResult'] {
     return createMemo(story) as unknown as SolidRenderer['storyResult'];
@@ -78,11 +84,6 @@ const renderToCanvas = createRenderToCanvas({
         }) as SolidComponent;
     },
 });
-
-/** Preview-wide parameters for the Solid renderer. */
-const parameters = {
-    renderer: 'solid',
-};
 
 export {
     applyDecorators,

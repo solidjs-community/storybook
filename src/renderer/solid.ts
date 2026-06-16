@@ -18,9 +18,15 @@ import { createStoryState } from './shared/story-store';
 import type { SolidComponent } from '../preview/public-api';
 import type { SolidRendererRuntime } from './shared/render-to-canvas';
 
+const SOLID_RENDERER_ID = 'solid' as const;
+
 if (global.window) {
-    global.window.STORYBOOK_ENV = 'solid';
+    global.window.STORYBOOK_ENV = SOLID_RENDERER_ID;
 }
+
+const parameters = {
+    renderer: SOLID_RENDERER_ID,
+};
 
 const createStore = <T extends object>(initial: T) => {
     const [state, setStore] = solidCreateStore<T>(initial);
@@ -74,11 +80,6 @@ const renderToCanvas = createRenderToCanvas({
         return App;
     },
 });
-
-/** Preview-wide parameters for the Solid renderer. */
-const parameters = {
-    renderer: 'solid',
-};
 
 export {
     applyDecorators,

@@ -96,7 +96,25 @@ export interface SolidStory<T extends SolidTypes, TInput extends StoryAnnotation
     Component: SolidComponent<Partial<T['args']>>;
 }
 
-export function createSolidDefinePreview(solidAnnotations: PreviewAddon<never>) {
+/**
+ * Renderer preview annotations shared by Solid 1 (`renderer/solid`) and Solid 2 (`renderer/solid-next`).
+ * The default import in the package entry is aliased at build time; this type is stable either way.
+ */
+export type SolidRendererAnnotations = Pick<
+    typeof import('../renderer/solid'),
+    'applyDecorators' | 'beforeAll' | 'mount' | 'parameters' | 'render' | 'renderToCanvas'
+>;
+
+/** Stable `definePreview` type for Solid 1 and Solid 2. */
+export type SolidDefinePreview = <
+    Addons extends PreviewAddon<never>[] = []
+>(
+    input: DefinePreviewInput<Addons>
+) => SolidPreview<SolidTypes & InferTypes<Addons>>;
+
+export function createSolidDefinePreview(
+    solidAnnotations: SolidRendererAnnotations
+): SolidDefinePreview {
     return (<Addons extends PreviewAddon<never>[] = []>(
         input: DefinePreviewInput<Addons>
     ) => {
@@ -105,7 +123,7 @@ export function createSolidDefinePreview(solidAnnotations: PreviewAddon<never>) 
         const preview = definePreviewBase({
             ...projectAnnotations,
             addons: [
-                solidAnnotations,
+                solidAnnotations as unknown as PreviewAddon<never>,
                 solidArgTypesAnnotations,
                 solidDocsAnnotations,
                 ...(addons ?? []),
@@ -131,9 +149,5 @@ export function createSolidDefinePreview(solidAnnotations: PreviewAddon<never>) 
         };
 
         return preview;
-    }) as unknown as <
-        Addons extends PreviewAddon<never>[] = []
-    >(
-        input: DefinePreviewInput<Addons>
-    ) => SolidPreview<SolidTypes & InferTypes<Addons>>;
+    }) as unknown as SolidDefinePreview;
 }

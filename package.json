@@ -42,9 +42,9 @@
             "default": "./dist/framework/preset.js"
         },
         "./next": {
-            "types": "./dist/next.d.ts",
-            "code": "./src/next.ts",
-            "default": "./dist/next.js"
+            "types": "./dist/index.d.ts",
+            "code": "./src/index.ts",
+            "default": "./dist/index.js"
         },
         "./next/preset": {
             "types": "./dist/framework/preset.d.ts",
@@ -66,15 +66,15 @@
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
-        "./renderer/solid-1": {
-            "types": "./dist/renderer/solid-1.d.ts",
-            "code": "./src/renderer/solid-1.ts",
-            "default": "./dist/renderer/solid-1.js"
+        "./renderer/solid": {
+            "types": "./dist/renderer/solid.d.ts",
+            "code": "./src/renderer/solid.ts",
+            "default": "./dist/renderer/solid.js"
         },
-        "./renderer/solid-2": {
-            "types": "./dist/renderer/solid-2.d.ts",
-            "code": "./src/renderer/solid-2.ts",
-            "default": "./dist/renderer/solid-2.js"
+        "./renderer/solid-next": {
+            "types": "./dist/renderer/solid-next.d.ts",
+            "code": "./src/renderer/solid-next.ts",
+            "default": "./dist/renderer/solid-next.js"
         },
         "./renderer/argtypes": {
             "types": "./dist/renderer/argtypes.d.ts",

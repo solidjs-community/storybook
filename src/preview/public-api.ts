@@ -17,13 +17,6 @@ import type {
 } from 'storybook/internal/types';
 import type { SetOptional, Simplify } from 'type-fest';
 
-export type {
-    DefinePreviewInput,
-    SolidMeta,
-    SolidPreview,
-    SolidStory,
-} from './define-preview';
-
 /**
  * Marks decorators that return JSX so they are not re-run on every Storybook update.
  * Prefer `createJSXDecorator` over setting this flag manually.
@@ -107,6 +100,16 @@ export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<SolidRenderer
 
 export type RenderContext = GenericRenderContext<SolidRenderer>;
 
+export type {
+    DefinePreviewInput,
+    SolidDefinePreview,
+    SolidMeta,
+    SolidPreview,
+    SolidStory,
+} from './define-preview';
+
+export type { Args, ArgTypes, Parameters, StrictArgs } from 'storybook/internal/types';
+
 /** Use for decorators that do not return JSX (e.g. they only call `Story()`). */
 export const createDecorator = (
     decorator: DecoratorFunction<SolidRenderer>
@@ -122,5 +125,3 @@ export const createJSXDecorator = (
 
     return decorator as Decorator;
 };
-
-export type { Args, ArgTypes, Parameters, StrictArgs } from 'storybook/internal/types';

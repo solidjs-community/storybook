@@ -3,7 +3,9 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import semver from 'semver';
 
-type SolidVersion = 1 | 2;
+export type SolidVersion = 1 | 2;
+
+export type SolidRendererId = 'solid' | 'solid-next';
 
 function getFrameworkName(framework: string | { name: string }): string {
     return typeof framework === 'string' ? framework : framework.name;
@@ -43,4 +45,10 @@ export function resolveSolidVersion(
     }
 
     return detectInstalledSolidVersion(configDir);
+}
+
+export function resolveSolidRendererEntry(solidVersion: SolidVersion): string {
+    return solidVersion === 2
+        ? 'storybook-solidjs-vite/renderer/solid-next'
+        : 'storybook-solidjs-vite/renderer/solid';
 }

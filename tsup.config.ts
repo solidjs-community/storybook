@@ -54,13 +54,12 @@ export default defineConfig((options) => {
     return {
         entry: {
             index: 'src/index.ts',
-            next: 'src/next.ts',
             node: 'src/node.ts',
             renderer: 'src/renderer/index.ts',
             playwright: 'src/playwright.ts',
             'framework/preset': 'src/framework/preset.ts',
-            'renderer/solid-1': 'src/renderer/solid-1.ts',
-            'renderer/solid-2': 'src/renderer/solid-2.ts',
+            'renderer/solid': 'src/renderer/solid.ts',
+            'renderer/solid-next': 'src/renderer/solid-next.ts',
             'renderer/argtypes': 'src/renderer/argtypes.ts',
             'renderer/docs': 'src/renderer/docs.ts',
         },
@@ -79,6 +78,7 @@ export default defineConfig((options) => {
             /^@solidjs(?:\/|$)/,
             /^solid-js(?:-next)?(?:\/|$)/,
             /^storybook\//,
+            'storybook-solidjs-vite/renderer/solid',
             'typescript',
             'vite-plugin-solid',
         ],

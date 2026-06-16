@@ -1,3 +1,4 @@
+import { hasVitePlugins } from '@storybook/builder-vite';
 /**
  * A preset is a configuration that enables developers to quickly set up and
  * customize their environment with a specific set of features, functionalities, or integrations.
@@ -5,13 +6,19 @@
  * @see https://storybook.js.org/docs/addons/writing-presets
  * @see https://storybook.js.org/docs/api/main-config/main-config
  */
-import { hasVitePlugins } from '@storybook/builder-vite';
+import { fileURLToPath } from 'node:url';
 import { mergeConfig } from 'vite';
 
 import { solidComponentMetaPlugin } from '../internal/componentManifest/solidComponentMetaPlugin';
+import {
+    resolveSolidRendererEntry,
+    resolveSolidVersion,
+} from '../internal/solidVersion';
 
 import type { PresetProperty } from 'storybook/internal/types';
-import type { FrameworkOptions, StorybookConfig } from './types';
+import type { FrameworkOptions, StorybookConfig } from './public-api';
+
+const SOLID_RENDERER_IMPORT = 'storybook-solidjs-vite/renderer/solid';
 
 /** Force a single copy of Solid packages (renderer + app + linked deps). */
 const SOLID_DEDUPE_PACKAGES = [
@@ -53,12 +60,26 @@ export const features: PresetProperty<'features', StorybookConfig> = {
  *
  * @see https://storybook.js.org/docs/api/main-config/main-config-vite-final
  */
-export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }) => {
+export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, configDir }) => {
     const existPlugins = [...(config?.plugins ?? [])];
     const plugins = [];
 
     const framework = await presets.apply('framework');
     const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
+    const solidVersion = resolveSolidVersion(framework, configDir);
+    const solidEntry = fileURLToPath(
+        import.meta.resolve('storybook-solidjs-vite/renderer/solid')
+    );
+    const solidRendererEntry = fileURLToPath(
+        import.meta.resolve(resolveSolidRendererEntry(solidVersion))
+    );
+    const aliasApplied = solidEntry !== solidRendererEntry;
+    const rendererAlias = aliasApplied
+        ? [
+            { find: SOLID_RENDERER_IMPORT, replacement: solidRendererEntry },
+            { find: solidEntry, replacement: solidRendererEntry },
+        ]
+        : [];
 
     if (frameworkOptions.docgen !== false) {
         plugins.push(
@@ -85,6 +106,17 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets }
         optimizeDeps,
         resolve: {
             ...config.resolve,
+            alias: Array.isArray(config.resolve?.alias)
+                ? [...config.resolve.alias, ...rendererAlias]
+                : {
+                    ...config.resolve?.alias,
+                    ...(aliasApplied
+                        ? {
+                            [SOLID_RENDERER_IMPORT]: solidRendererEntry,
+                            [solidEntry]: solidRendererEntry,
+                        }
+                        : {}),
+                },
             dedupe: mergeSolidDedupe(config.resolve?.dedupe),
         },
     });

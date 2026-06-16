@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 
 import { enrichCsf } from '../internal/codeExamples/enrichCsf';
 import { generateComponentManifests, getArgTypesData } from '../internal/componentManifest/manifests';
-import { resolveSolidVersion } from '../internal/solidVersion';
+import { resolveSolidRendererEntry, resolveSolidVersion } from '../internal/solidVersion';
 
 import type { PresetProperty } from 'storybook/internal/types';
 
@@ -28,10 +28,9 @@ export const previewAnnotations: PresetProperty<'previewAnnotations'> = async(
     const docsEnabled = Object.keys(docsConfig).length > 0;
     const result: string[] = [];
     const framework = await options.presets.apply('framework');
-    const solidVersion = resolveSolidVersion(framework, options.configDir);
-    const entryPreview = solidVersion === 2
-        ? 'storybook-solidjs-vite/renderer/solid-2'
-        : 'storybook-solidjs-vite/renderer/solid-1';
+    const entryPreview = resolveSolidRendererEntry(
+        resolveSolidVersion(framework, options.configDir)
+    );
 
     return result
         .concat(input)
