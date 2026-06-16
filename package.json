@@ -33,6 +33,8 @@
         "./package.json": "./package.json",
         ".": {
             "types": "./dist/index.d.ts",
+            "node": "./dist/node.js",
+            "import": "./dist/index.js",
             "code": "./src/index.ts",
             "default": "./dist/index.js"
         },
@@ -50,11 +52,6 @@
             "types": "./dist/framework/preset.d.ts",
             "code": "./src/framework/preset.ts",
             "default": "./dist/framework/preset.js"
-        },
-        "./node": {
-            "types": "./dist/node.d.ts",
-            "code": "./src/node.ts",
-            "default": "./dist/node.js"
         },
         "./experimental-playwright": {
             "types": "./dist/playwright.d.ts",
@@ -75,11 +72,6 @@
             "types": "./dist/renderer/solid-next.d.ts",
             "code": "./src/renderer/solid-next.ts",
             "default": "./dist/renderer/solid-next.js"
-        },
-        "./renderer/argtypes": {
-            "types": "./dist/renderer/argtypes.d.ts",
-            "code": "./src/renderer/argtypes.ts",
-            "default": "./dist/renderer/argtypes.js"
         },
         "./renderer/docs": {
             "types": "./dist/renderer/docs.d.ts",

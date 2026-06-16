@@ -13,14 +13,14 @@
 
 ## ✨ Features
 
-- [Solid 1](#solid-1) and [Solid 2](#solid-2) support
+- SolidJS and SolidJS 2 support
 - [Vite-powered builder](https://storybook.js.org/docs/builders/vite)
 - [TypeScript-first setup](https://storybook.js.org/docs/configure/integration/typescript)
 - Automatic props in [Controls and Docs](#docgen)
-- [Autodocs code snippets](#autodocs-code-snippets) — static JSX **Show code** blocks from story source (CSF Next + CSF3, enabled by default)
+- [Autodocs code snippets](#autodocs-code-snippets) — static JSX **Show code** blocks from story source (enabled by default)
 - [Components manifest](https://storybook.js.org/docs/ai/manifests) for AI agents ([debugger](#components-manifest-debugger))
 - [Storybook MCP](https://storybook.js.org/docs/ai/mcp/overview) support ([setup](#storybook-mcp))
-- [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) factory API ([setup](#csf-next), optional)
+- [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) support ([setup](#csf-next))
 - [Integrated testing](https://storybook.js.org/docs/writing-tests) (Vitest, Playwright)
 - [Compatible with Storybook addons](https://storybook.js.org/docs/addons)
 
@@ -37,48 +37,10 @@ Open the URL shown in the terminal.
 
 ## ⚙️ Configuration
 
-Customize Vite and Storybook as usual. Add stories in `src/**/*.stories.{tsx,js}` and install addons as needed.
-
-### Solid 1
-
-Import from `storybook-solidjs-vite` in config, preview, and stories:
-
-```ts
-// .storybook/main.ts
-import type { StorybookConfig } from 'storybook-solidjs-vite';
-
-const config: StorybookConfig = {
-  framework: 'storybook-solidjs-vite',
-};
-
-export default config;
-```
-
-```ts
-// .storybook/preview.tsx & stories
-import type { Preview, Meta, StoryObj } from 'storybook-solidjs-vite';
-```
-
-### Solid 2
-
-Use `storybook-solidjs-vite/next` in preview and stories:
-
-```ts
-import type { Preview, Meta, StoryObj } from 'storybook-solidjs-vite/next';
-```
-
-Imports without `/next` may still run, but TypeScript can complain.
-
-In `main.ts`, either framework name works: `storybook-solidjs-vite` reads the major version from `solid-js`; `storybook-solidjs-vite/next` forces Solid 2.
-
-```ts
-framework: 'storybook-solidjs-vite'      // Solid auto-detect
-framework: 'storybook-solidjs-vite/next' // Solid 2 only
-```
+Customize Vite and Storybook as usual. Add stories in `src/**/*.stories.{tsx,js}` and install addons
+as needed.
 
 ### CSF Next
-
-[CSF Next](https://storybook.js.org/docs/api/csf/csf-next) works on Solid 1 and Solid 2.
 
 ```ts
 // .storybook/main.ts
@@ -93,8 +55,6 @@ export default defineMain({
 // .storybook/preview.tsx
 import addonDocs from '@storybook/addon-docs';
 import { definePreview } from 'storybook-solidjs-vite';
-// for Solid 2, use:
-// import { definePreview } from 'storybook-solidjs-vite/next';
 
 export default definePreview({
   addons: [addonDocs()],
@@ -113,6 +73,35 @@ const meta = preview.meta({
 export const Primary = meta.story({
   args: { label: 'Button' },
 });
+```
+
+### CSF 3
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from 'storybook-solidjs-vite';
+
+export default {
+  framework: 'storybook-solidjs-vite',
+} satisfies StorybookConfig;
+```
+
+```ts
+// src/Button.stories.ts
+import type { Meta, StoryObj } from 'storybook-solidjs-vite';
+
+import { Button } from './Button';
+
+const meta = {
+  component: Button,
+} satisfies Meta<typeof Button>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
+  args: { label: 'Button' },
+};
 ```
 
 ### Docgen

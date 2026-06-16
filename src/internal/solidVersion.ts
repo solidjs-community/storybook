@@ -11,7 +11,7 @@ function getFrameworkName(framework: string | { name: string }): string {
     return typeof framework === 'string' ? framework : framework.name;
 }
 
-function detectInstalledSolidVersion(configDir: string): SolidVersion {
+export function detectInstalledSolidVersion(configDir: string): SolidVersion {
     const projectRequire = createRequire(join(configDir, 'package.json'));
 
     let pkgPath: string;
@@ -50,5 +50,5 @@ export function resolveSolidVersion(
 export function resolveSolidRendererEntry(solidVersion: SolidVersion): string {
     return solidVersion === 2
         ? 'storybook-solidjs-vite/renderer/solid-next'
-        : 'storybook-solidjs-vite/renderer/solid';
+        : 'storybook-solidjs-vite/renderer/solid-legacy';
 }

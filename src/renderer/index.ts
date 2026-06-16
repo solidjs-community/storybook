@@ -24,25 +24,13 @@ export const previewAnnotations: PresetProperty<'previewAnnotations'> = async(
     input = [],
     options
 ) => {
-    const docsConfig = await options.presets.apply('docs', {}, options);
-    const docsEnabled = Object.keys(docsConfig).length > 0;
-    const result: string[] = [];
     const framework = await options.presets.apply('framework');
     const entryPreview = resolveSolidRendererEntry(
         resolveSolidVersion(framework, options.configDir)
     );
 
-    return result
-        .concat(input)
-        .concat([
-            fileURLToPath(import.meta.resolve(entryPreview)),
-            fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/argtypes')),
-        ])
-        .concat(
-            docsEnabled
-                ? [
-                    fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/docs')),
-                ]
-                : []
-        );
+    return input.concat([
+        fileURLToPath(import.meta.resolve(entryPreview)),
+        fileURLToPath(import.meta.resolve('storybook-solidjs-vite/renderer/docs')),
+    ]);
 };
