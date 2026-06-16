@@ -17,6 +17,14 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "storybook-solidjs-vite/renderer/solid-legacy": [
+        "./src/renderer/solid-legacy.ts"
+      ],
+      "storybook-solidjs-vite/renderer/solid-next": [
+        "./src/renderer/solid-next.ts"
+      ]
+    },
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
 
