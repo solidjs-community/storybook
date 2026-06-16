@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.5.0
+
+### Minor Changes
+
+- bd143ec: Unify Solid 1 and Solid 2 logic
+
 ## 10.4.0
 
 ### Minor Changes
