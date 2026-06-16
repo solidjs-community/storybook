@@ -17,10 +17,6 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": {
-      "storybook-solidjs-vite/renderer/solid": ["./src/renderer/solid.d.ts"]
-    },
-
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
 

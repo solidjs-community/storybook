@@ -18,7 +18,7 @@ import {
 import type { PresetProperty } from 'storybook/internal/types';
 import type { FrameworkOptions, StorybookConfig } from './public-api';
 
-const SOLID_RENDERER_IMPORT = 'storybook-solidjs-vite/renderer/solid';
+const SOLID_LEGACY_RENDERER_IMPORT = 'storybook-solidjs-vite/renderer/solid-legacy';
 
 /** Force a single copy of Solid packages (renderer + app + linked deps). */
 const SOLID_DEDUPE_PACKAGES = [
@@ -67,17 +67,17 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, 
     const framework = await presets.apply('framework');
     const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
     const solidVersion = resolveSolidVersion(framework, configDir);
-    const solidEntry = fileURLToPath(
-        import.meta.resolve('storybook-solidjs-vite/renderer/solid')
+    const solidLegacyEntry = fileURLToPath(
+        import.meta.resolve(SOLID_LEGACY_RENDERER_IMPORT)
     );
     const solidRendererEntry = fileURLToPath(
         import.meta.resolve(resolveSolidRendererEntry(solidVersion))
     );
-    const aliasApplied = solidEntry !== solidRendererEntry;
+    const aliasApplied = solidLegacyEntry !== solidRendererEntry;
     const rendererAlias = aliasApplied
         ? [
-            { find: SOLID_RENDERER_IMPORT, replacement: solidRendererEntry },
-            { find: solidEntry, replacement: solidRendererEntry },
+            { find: SOLID_LEGACY_RENDERER_IMPORT, replacement: solidRendererEntry },
+            { find: solidLegacyEntry, replacement: solidRendererEntry },
         ]
         : [];
 
@@ -112,8 +112,8 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, 
                     ...config.resolve?.alias,
                     ...(aliasApplied
                         ? {
-                            [SOLID_RENDERER_IMPORT]: solidRendererEntry,
-                            [solidEntry]: solidRendererEntry,
+                            [SOLID_LEGACY_RENDERER_IMPORT]: solidRendererEntry,
+                            [solidLegacyEntry]: solidRendererEntry,
                         }
                         : {}),
                 },

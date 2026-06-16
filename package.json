@@ -63,15 +63,15 @@
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
-        "./renderer/solid": {
-            "types": "./dist/renderer/solid.d.ts",
-            "code": "./src/renderer/solid.ts",
-            "default": "./dist/renderer/solid.js"
-        },
         "./renderer/solid-next": {
             "types": "./dist/renderer/solid-next.d.ts",
             "code": "./src/renderer/solid-next.ts",
             "default": "./dist/renderer/solid-next.js"
+        },
+        "./renderer/solid-legacy": {
+            "types": "./dist/renderer/solid-legacy.d.ts",
+            "code": "./src/renderer/solid-legacy.ts",
+            "default": "./dist/renderer/solid-legacy.js"
         },
         "./renderer/docs": {
             "types": "./dist/renderer/docs.d.ts",
