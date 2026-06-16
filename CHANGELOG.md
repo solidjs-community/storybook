@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.5.1
+
+### Patch Changes
+
+- 560d2e9: Fix for Solid 2
+
 ## 10.5.0
 
 ### Minor Changes
