@@ -1,4 +1,5 @@
-import { dirname, resolve } from 'node:path';
+import { accessSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { types as t } from 'storybook/internal/babel';
 
 import type { ComponentRef } from './types';
@@ -23,6 +24,61 @@ function isTypeSpecifier(specifier: t.Node) {
 
 function baseIdentifier(component: string) {
     return component.split('.')[0] ?? component;
+}
+
+const MODULE_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js'] as const;
+
+function findExistingModulePath(candidates: string[]) {
+    for (const candidate of candidates) {
+        try {
+            accessSync(candidate);
+
+            return candidate;
+        }
+        catch {
+            // try next extension
+        }
+    }
+
+    return undefined;
+}
+
+function modulePathCandidates(basePath: string) {
+    return MODULE_EXTENSIONS.map(extension => `${ basePath }${ extension }`);
+}
+
+/** Resolve `./Button` style imports next to the story file. */
+export function resolveRelativeComponentPath(storyFilePath: string, importId: string) {
+    const resolved = resolve(
+        dirname(storyFilePath),
+        importId.replace(/\.tsx?$/, '')
+    );
+
+    return findExistingModulePath(modulePathCandidates(resolved));
+}
+
+/** Resolve `@design-system/button` style imports from the nearest node_modules. */
+export function resolvePackageComponentPath(storyFilePath: string, importId: string) {
+    let dir = dirname(resolve(storyFilePath));
+
+    while (true) {
+        const packageEntry = join(dir, 'node_modules', importId, 'index');
+        const found = findExistingModulePath(modulePathCandidates(packageEntry));
+
+        if (found) {
+            return found;
+        }
+
+        const parent = dirname(dir);
+
+        if (parent === dir) {
+            break;
+        }
+
+        dir = parent;
+    }
+
+    return undefined;
 }
 
 export async function getComponents({
@@ -187,33 +243,22 @@ export async function getComponents({
                     : { componentName: c, ...jsxDepthFields };
             }
 
-            if (component.importId && !component.importId.startsWith('.')) {
-                return { ...component, isPackage: true };
-            }
-
             if (component.importId) {
-                const resolved = resolve(
-                    dirname(storyFilePath),
-                    component.importId.replace(/\.tsx?$/, '')
-                );
-                const candidates = [`${ resolved }.tsx`, `${ resolved }.ts`, `${ resolved }.jsx`, `${ resolved }.js`];
-                let componentPath: string | undefined;
-
-                for (const candidate of candidates) {
-                    try {
-                        const { accessSync } = await import('node:fs');
-
-                        accessSync(candidate);
-                        componentPath = candidate;
-                        break;
-                    }
-                    catch {
-                        // try next extension
-                    }
-                }
+                const isPackage = !component.importId.startsWith('.');
+                const componentPath = isPackage
+                    ? resolvePackageComponentPath(storyFilePath, component.importId)
+                    : resolveRelativeComponentPath(storyFilePath, component.importId);
 
                 if (componentPath) {
-                    return { ...component, path: componentPath };
+                    return {
+                        ...component,
+                        path: componentPath,
+                        ...(isPackage ? { isPackage: true as const } : {}),
+                    };
+                }
+
+                if (isPackage) {
+                    return { ...component, isPackage: true as const };
                 }
             }
 

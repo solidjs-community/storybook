@@ -1,7 +1,11 @@
 node_modules
 storybook-static
+examples/*/node_modules
+examples/*/storybook-static
 dist
 .tmp-npm-pack
+.tmp/
+.solid-spec-*
 **/dist/
 
 *.tsbuildinfo

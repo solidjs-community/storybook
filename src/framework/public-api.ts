@@ -4,7 +4,7 @@ import type {
     StorybookConfig as StorybookConfigBase,
 } from 'storybook/internal/types';
 
-type FrameworkName = CompatibleString<'storybook-solidjs-vite' | 'storybook-solidjs-vite/next'>;
+type FrameworkName = CompatibleString<'storybook-solidjs-vite'>;
 type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
 export type FrameworkOptions = {

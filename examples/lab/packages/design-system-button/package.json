@@ -1,0 +1,8 @@
+{
+    "name": "@design-system/button",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./index.tsx"
+    }
+}

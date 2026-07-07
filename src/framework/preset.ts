@@ -66,7 +66,7 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, 
 
     const framework = await presets.apply('framework');
     const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
-    const solidVersion = resolveSolidVersion(framework, configDir);
+    const solidVersion = await resolveSolidVersion(configDir);
     const solidLegacyEntry = fileURLToPath(
         import.meta.resolve(SOLID_LEGACY_RENDERER_IMPORT)
     );

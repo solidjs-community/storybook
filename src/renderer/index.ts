@@ -24,10 +24,8 @@ export const previewAnnotations: PresetProperty<'previewAnnotations'> = async(
     input = [],
     options
 ) => {
-    const framework = await options.presets.apply('framework');
-    const entryPreview = resolveSolidRendererEntry(
-        resolveSolidVersion(framework, options.configDir)
-    );
+    const solidVersion = await resolveSolidVersion(options.configDir);
+    const entryPreview = resolveSolidRendererEntry(solidVersion);
 
     return input.concat([
         fileURLToPath(import.meta.resolve(entryPreview)),

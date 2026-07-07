@@ -1,3 +1,8 @@
+export type SerializedPropIf = {
+    arg: string;
+    eq: string | number | boolean;
+};
+
 export type SerializedPropType = {
     name: string;
     raw?: string;
@@ -10,6 +15,7 @@ export type SerializedProp = {
     required: boolean;
     type: SerializedPropType;
     defaultValue?: { value: string };
+    if?: SerializedPropIf;
 };
 
 export type SolidComponentDoc = {
