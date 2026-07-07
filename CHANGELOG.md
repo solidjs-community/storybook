@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.6.0
+
+### Minor Changes
+
+- 8f3e296: Improved autodocs types/args generation
+
 ## 10.5.2
 
 ### Patch Changes
