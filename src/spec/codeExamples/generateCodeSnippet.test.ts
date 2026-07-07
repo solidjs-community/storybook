@@ -3,7 +3,7 @@ import { loadCsf } from 'storybook/internal/csf-tools';
 import { dedent } from 'ts-dedent';
 import { expect, test } from 'vitest';
 
-import { getCodeSnippet } from './generateCodeSnippet';
+import { getCodeSnippet } from '../../internal/codeExamples/generateCodeSnippet';
 
 function generateExample(code: string) {
     const csf = loadCsf(code, { makeTitle: userTitle => userTitle ?? 'title' }).parse();

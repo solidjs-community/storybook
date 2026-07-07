@@ -3,7 +3,8 @@ import { baseConfig, combine, solidConfig, typescriptConfig } from '@flexbe/esli
 export default combine(
     {
         // CLI scaffolds — not in tsconfig (validated in consumer projects after init)
-        ignores: ['template/**'],
+        // examples/lab has its own eslint.config.mjs + tsconfig
+        ignores: ['template/**', 'examples/**'],
     },
     baseConfig(),
     solidConfig(),

@@ -8,6 +8,7 @@ export type DocgenInfo = {
         name: string;
         description?: string;
         required?: boolean;
+        if?: { arg: string; eq: string | number | boolean };
         type: {
             name: string;
             raw?: string;
@@ -47,6 +48,10 @@ export function solidComponentDocToDocgenInfo(doc: SolidComponentDoc): DocgenInf
 
                 if (prop.description !== undefined) {
                     entry.description = prop.description;
+                }
+
+                if (prop.if !== undefined) {
+                    entry.if = prop.if;
                 }
 
                 return [name, entry];
