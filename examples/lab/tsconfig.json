@@ -1,23 +1,23 @@
 {
-  "extends": "@tsconfig/strictest/tsconfig.json",
-  "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true
-  },
-  "include": [
-    ".storybook/**/*.ts",
-    ".storybook/**/*.tsx",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "scripts/**/*.ts",
-    "packages/**/*.ts",
-    "packages/**/*.tsx"
-  ]
+    "extends": "@tsconfig/strictest/tsconfig.json",
+    "compilerOptions": {
+        "lib": ["ESNext", "DOM"],
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "preserve",
+        "jsxImportSource": "solid-js",
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true
+    },
+    "include": [
+        ".storybook/**/*.ts",
+        ".storybook/**/*.tsx",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "scripts/**/*.ts",
+        "packages/**/*.ts",
+        "packages/**/*.tsx"
+    ]
 }

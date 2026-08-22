@@ -5,8 +5,8 @@ import { solidComponentDocToDocgenInfo } from './toDocgenInfo';
 
 import type { Plugin } from 'vite';
 
-const COMPONENT_FILE_PATTERN = /\.(tsx|jsx)$/;
-const STORIES_FILE_PATTERN = /\.stories\.(tsx|jsx|ts|js)$/;
+const COMPONENT_FILE_PATTERN = /\.(?:tsx|jsx)$/;
+const STORIES_FILE_PATTERN = /\.stories\.(?:tsx|jsx|ts|js)$/;
 
 export function solidComponentMetaPlugin(options?: { enabled?: boolean }): Plugin {
     const enabled = options?.enabled !== false;
@@ -45,8 +45,8 @@ export function solidComponentMetaPlugin(options?: { enabled?: boolean }): Plugi
             const injections = docs
                 .map((doc) => {
                     const useDisplayName = doc.exportName === 'default'
-                      && doc.displayName
-                      && /^[$A-Z_][\w$]*$/i.test(doc.displayName);
+                        && doc.displayName
+                        && /^[$A-Z_][\w$]*$/i.test(doc.displayName);
                     const target = useDisplayName ? doc.displayName! : doc.exportName;
                     const info = JSON.stringify(solidComponentDocToDocgenInfo(doc));
 

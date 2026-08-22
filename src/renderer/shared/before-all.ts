@@ -1,7 +1,7 @@
 import { configure } from 'storybook/test';
 
 /** Configures `storybook/test` wrappers so Solid updates flush after async play steps. */
-export const beforeAll = async() => {
+export async function beforeAll() {
     try {
         configure({
             unstable_advanceTimersWrapper: (cb: () => any) => cb(),
@@ -26,4 +26,4 @@ export const beforeAll = async() => {
     catch {
         // storybook/test might not be available; noop
     }
-};
+}

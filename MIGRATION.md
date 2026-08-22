@@ -14,26 +14,26 @@ Before migrating your `storybook-solidjs-vite` configuration, be aware of these 
 - **`.storybook/main.*` and `vite.config.ts` files must be valid ESM** - CJS constants (`require`, `__dirname`, `__filename`) are no longer defined
 - If you need CJS constants, define them manually:
 
-  ```typescript
-  import { createRequire } from "node:module";
-  import { dirname } from "node:path";
-  import { fileURLToPath } from "node:url";
+    ```typescript
+    import { createRequire } from 'node:module';
+    import { dirname } from 'node:path';
+    import { fileURLToPath } from 'node:url';
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const require = createRequire(import.meta.url);
-  ```
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const require = createRequire(import.meta.url);
+    ```
 
 ### TypeScript Configuration
 
 - **Update `tsconfig.json`** to use a `moduleResolution` that supports the `types` condition:
-  ```json
-  {
-    "compilerOptions": {
-      "moduleResolution": "bundler" // or "node16"/"nodenext"
+    ```json
+    {
+        "compilerOptions": {
+            "moduleResolution": "bundler" // or "node16"/"nodenext"
+        }
     }
-  }
-  ```
+    ```
 
 ### Addon Path Resolution
 

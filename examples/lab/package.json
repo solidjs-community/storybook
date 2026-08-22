@@ -6,7 +6,7 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "typecheck": "tsc --noEmit",
-        "lint": "eslint . --fix --max-warnings=9999 --quiet",
+        "lint": "eslint . --config ../../eslint.config.mjs --fix --max-warnings=9999 --quiet",
         "check-docgen": "bun scripts/check-docgen.ts"
     },
     "dependencies": {
@@ -15,12 +15,11 @@
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@flexbe/eslint-config": "^3.0.3",
         "@storybook/addon-docs": "^10.4.4",
         "@tsconfig/strictest": "^2.0.8",
         "eslint": "^9.39.4",
         "storybook": "^10.4.4",
-        "typescript": "^5.9.3",
+        "typescript": "^6.0.2",
         "vite": "^7.0.0",
         "vite-plugin-solid": "^2.11.12"
     }

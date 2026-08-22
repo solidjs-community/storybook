@@ -14,7 +14,7 @@ export function createMount({ storyStore }: { storyStore: StoryStateStore }) {
             throw new Error('Story ID is required');
         }
 
-        return async(ui: StoryFnReturnType) => {
+        return async(ui?: StoryFnReturnType) => {
             if (ui != null) {
                 context.originalStoryFn = () => ui;
             }

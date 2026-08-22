@@ -21,7 +21,7 @@ describe('createApplyDecorators', () => {
 
         const storyFn = (context: { id?: string }) => `story:${ context.id }`;
         const applyDecorators = createApplyDecorators({ storyStore });
-        const decoratedStory = applyDecorators(storyFn, [jsxDecorator]);
+        const decoratedStory = applyDecorators(storyFn as any, [jsxDecorator as any]);
 
         expect(decoratedStory({ id: 'button--primary' } as any)).toBeNull();
         expect(jsxDecoratorRuns).toBe(0);
@@ -38,7 +38,7 @@ describe('createApplyDecorators', () => {
 
         const storyFn = (context: { id?: string }) => `story:${ context.id }`;
         const applyDecorators = createApplyDecorators({ storyStore });
-        const decoratedStory = applyDecorators(storyFn, [jsxDecorator]);
+        const decoratedStory = applyDecorators(storyFn as any, [jsxDecorator as any]);
 
         expect(decoratedStory({ id: 'button--primary' } as any)).toBe('decorated:story:button--primary');
     });
@@ -85,7 +85,7 @@ describe('createApplyDecorators', () => {
 
         const storyFn = (context: { id?: string }) => `story:${ context.id }`;
         const applyDecorators = createApplyDecorators({ storyStore });
-        const decoratedStory = applyDecorators(storyFn, [decorator]);
+        const decoratedStory = applyDecorators(storyFn as any, [decorator as any]);
 
         expect(decoratedStory({ id: 'button--primary' } as any)).toBe('decorated:null');
         expect(decoratorRuns).toBe(1);

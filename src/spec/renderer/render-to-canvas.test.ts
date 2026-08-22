@@ -27,7 +27,7 @@ describe('createRenderToCanvas', () => {
 
         const renderToCanvas = createRenderToCanvas({
             storyStore,
-            createComponent: component => component,
+            createComponent: component => component as any,
             render: (renderFn) => {
                 mountCount += 1;
                 renderFn();
@@ -67,7 +67,7 @@ describe('createRenderToCanvas', () => {
         let disposed = false;
         const renderToCanvas = createRenderToCanvas({
             storyStore,
-            createComponent: component => component,
+            createComponent: component => component as any,
             render: () => () => {
                 disposed = true;
             },

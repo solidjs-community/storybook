@@ -11,7 +11,7 @@ import {
     MAX_SERIALIZATION_DEPTH,
 } from './typeUtils';
 
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 import type { SerializedProp } from '../types';
 
 function parseStringLiteralToken(token: string) {

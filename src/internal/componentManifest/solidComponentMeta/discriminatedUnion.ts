@@ -6,7 +6,7 @@ import {
     MAX_SERIALIZATION_DEPTH,
 } from './typeUtils';
 
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 import type { SerializedProp, SerializedPropIf } from '../types';
 
 function pickDiscriminantKey(discriminants: string[], propName?: string) {

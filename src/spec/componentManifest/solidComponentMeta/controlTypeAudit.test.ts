@@ -1,7 +1,7 @@
+import ts from '@typescript/typescript6';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { convert, type DocgenInfo } from 'storybook/internal/docs-tools';
-import ts from 'typescript';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { SolidComponentMetaProject } from '../../../internal/componentManifest/solidComponentMeta/SolidComponentMetaProject';
@@ -22,12 +22,12 @@ afterEach(() => {
     cleanupSpecTempDirs(tempDirs);
 });
 
-type AuditCase = {
+interface AuditCase {
     prop: string;
     typeSource: string;
     expected: ExpectedControl;
     matchers?: typeof recommendedControlMatchers;
-};
+}
 
 function auditProps(cases: AuditCase[], preamble = '') {
     const dir = createSpecTempDir(tempDirs);

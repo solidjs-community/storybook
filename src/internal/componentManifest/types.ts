@@ -1,33 +1,33 @@
-export type SerializedPropIf = {
+export interface SerializedPropIf {
     arg: string;
     eq: string | number | boolean;
-};
+}
 
-export type SerializedPropType = {
+export interface SerializedPropType {
     name: string;
     raw?: string;
     value?: Array<{ value: string }>;
-};
+}
 
-export type SerializedProp = {
+export interface SerializedProp {
     name: string;
     description?: string;
     required: boolean;
     type: SerializedPropType;
     defaultValue?: { value: string };
     if?: SerializedPropIf;
-};
+}
 
-export type SolidComponentDoc = {
+export interface SolidComponentDoc {
     displayName?: string;
     exportName: string;
     filePath: string;
     description?: string;
     jsDocTags?: Record<string, string[]>;
     props: Record<string, SerializedProp>;
-};
+}
 
-export type ComponentRef = {
+export interface ComponentRef {
     componentName: string;
     localImportName?: string;
     importId?: string;
@@ -40,15 +40,15 @@ export type ComponentRef = {
     reactComponentMeta?: SolidComponentDoc;
     componentJsDocTags?: Record<string, string[]>;
     importOverride?: string;
-};
+}
 
-export type StoryExtractionEntry = {
+export interface StoryExtractionEntry {
     storyPath: string;
     component: ComponentRef;
-};
+}
 
-export type ResolvedComponent = {
+export interface ResolvedComponent {
     componentRef: ComponentRef;
-    propsType: import('typescript').Type;
-    symbol: import('typescript').Symbol;
-};
+    propsType: import('@typescript/typescript6').Type;
+    symbol: import('@typescript/typescript6').Symbol;
+}

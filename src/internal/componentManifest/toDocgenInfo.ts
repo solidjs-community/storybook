@@ -1,7 +1,7 @@
 import type { SolidComponentDoc } from './types';
 
 /** Maps Solid component-meta (RCM) output to the `__docgenInfo` shape consumed by `storybook/internal/docs-tools`. */
-export type DocgenInfo = {
+export interface DocgenInfo {
     displayName?: string;
     description?: string;
     props: Record<string, {
@@ -18,7 +18,7 @@ export type DocgenInfo = {
         defaultValue?: { value: string } | null;
         parent?: { name: string; fileName: string };
     }>;
-};
+}
 
 function serializeDocgenPropType(type: SolidComponentDoc['props'][string]['type']) {
     const docgenType: DocgenInfo['props'][string]['type'] = {

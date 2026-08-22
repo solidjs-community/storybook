@@ -30,7 +30,7 @@ const parameters = {
     renderer: SOLID_RENDERER_ID,
 };
 
-const createStore = <T extends object>(initial: T) => {
+function createStore<T extends object>(initial: T) {
     const [state, setStore] = solidCreateStore<T>(initial);
 
     const setState = (update: (prev: T) => T) => {
@@ -38,7 +38,7 @@ const createStore = <T extends object>(initial: T) => {
     };
 
     return [state, setState] as const;
-};
+}
 
 const storyStore = createStoryState(createStore);
 
@@ -65,7 +65,7 @@ const renderToCanvas = createRenderToCanvas({
             });
 
 
-            if (storyContext?.parameters?.['__isPortableStory']) {
+            if (storyContext?.parameters?.__isPortableStory) {
                 return createComponent(() => Story(), {});
             }
 

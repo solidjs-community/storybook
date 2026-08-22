@@ -7,28 +7,28 @@ import type {
 type FrameworkName = CompatibleString<'storybook-solidjs-vite'>;
 type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
-export type FrameworkOptions = {
+export interface FrameworkOptions {
     builder?: BuilderOptions;
     /** Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest). */
     docgen?: false;
-};
+}
 
 type FrameworkConfig
     = | FrameworkName
-      | {
-          name: FrameworkName;
-          options?: FrameworkOptions;
-      };
+        | {
+            name: FrameworkName;
+            options?: FrameworkOptions;
+        };
 
-type StorybookConfigFramework = {
+interface StorybookConfigFramework {
     framework: FrameworkConfig;
     core?: StorybookConfigBase['core'] & {
         builder?:
-          | BuilderName
-          | {
-              name: BuilderName;
-              options: BuilderOptions;
-          };
+            | BuilderName
+            | {
+                name: BuilderName;
+                options: BuilderOptions;
+            };
     };
     features?: StorybookConfigBase['features'] & {
         /**
@@ -38,7 +38,7 @@ type StorybookConfigFramework = {
          */
         experimentalTestSyntax?: boolean;
     };
-};
+}
 
 /** The interface for Storybook configuration in `main.ts` files. */
 export type StorybookConfig = Omit<

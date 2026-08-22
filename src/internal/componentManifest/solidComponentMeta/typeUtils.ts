@@ -1,8 +1,8 @@
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 
 export const MAX_UNWRAP_DEPTH = 5;
 export const MAX_SERIALIZATION_DEPTH = 5;
-export const SOLID_COMPONENT_TYPE_ALIASES = /^(Component|VoidComponent|ParentComponent|FlowComponent)$/;
+export const SOLID_COMPONENT_TYPE_ALIASES = /^(?:Component|VoidComponent|ParentComponent|FlowComponent)$/;
 
 export type ExtendedTypeChecker = ts.TypeChecker & {
     getUnionType: (types: readonly ts.Type[]) => ts.Type;
@@ -34,8 +34,8 @@ export function isBooleanLiteralType(typescript: typeof ts, type: ts.Type) {
 
 export function isObjectLikeType(typescript: typeof ts, type: ts.Type) {
     return !!(type.flags & typescript.TypeFlags.Object)
-      && !isLiteralType(type)
-      && !isBooleanLiteralType(typescript, type);
+        && !isLiteralType(type)
+        && !isBooleanLiteralType(typescript, type);
 }
 
 export function filterDiscriminatedUnionMembers(typescript: typeof ts, types: readonly ts.Type[]) {

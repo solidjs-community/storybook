@@ -13,7 +13,7 @@ afterEach(() => {
     cleanupSpecTempDirs(tempDirs);
 });
 
-describe('Design system type patterns', () => {
+describe('design system type patterns', () => {
     it('resolves Size through a barrel re-export', () => {
         expectScenario('barrel re-export', {
             files: {
@@ -194,7 +194,7 @@ describe('Design system type patterns', () => {
     });
 });
 
-describe('Solid JSX & DOM props', () => {
+describe('solid JSX & DOM props', () => {
     it('surfaces allowlisted props from extends HTMLAttributes', () => {
         expectScenario('extends HTMLAttributes', {
             files: {
@@ -321,7 +321,7 @@ describe('Solid JSX & DOM props', () => {
     });
 });
 
-describe('Solid component aliases', () => {
+describe('solid component aliases', () => {
     it('resolves props from solid-js Component aliases', () => {
         expectScenario('Component<Props>', {
             files: {
@@ -456,7 +456,7 @@ describe('Solid component aliases', () => {
     });
 });
 
-describe('Indexed access & npm type aliases', () => {
+describe('indexed access & npm type aliases', () => {
     it('resolves interface indexed access to string or enum', () => {
         expectScenario('local indexed access', {
             files: {
