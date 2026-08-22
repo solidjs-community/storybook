@@ -339,7 +339,7 @@ describe('advanced types through story pipeline', () => {
         });
 
         expectStoryDocMatchesComponentDoc('discriminated union', pipeline.doc, directDoc);
-        expect(pipeline.doc?.props.padding?.if).toEqual({ arg: 'variant', eq: 'solid' });
+        expect(pipeline.doc?.props['padding']?.if).toEqual({ arg: 'variant', eq: 'solid' });
     });
 });
 
@@ -446,11 +446,11 @@ describe('dOM filtering through story pipeline', () => {
         });
 
         expect(Object.keys(pipeline.doc?.props ?? {}).length).toBeLessThan(40);
-        expect(pipeline.doc?.props.onClick).toBeUndefined();
-        expect(pipeline.doc?.props.innerText).toBeUndefined();
-        expect(pipeline.doc?.props.label?.type.name).toBe('string');
-        expect(pipeline.doc?.props.id?.type.name).toBe('string');
-        expect(pipeline.doc?.props.class?.type.name).toBe('string');
+        expect(pipeline.doc?.props['onClick']).toBeUndefined();
+        expect(pipeline.doc?.props['innerText']).toBeUndefined();
+        expect(pipeline.doc?.props['label']?.type.name).toBe('string');
+        expect(pipeline.doc?.props['id']?.type.name).toBe('string');
+        expect(pipeline.doc?.props['class']?.type.name).toBe('string');
         expect(Object.keys(directDoc?.props ?? {}).length).toBe(
             Object.keys(pipeline.doc?.props ?? {}).length
         );

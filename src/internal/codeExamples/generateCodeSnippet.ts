@@ -211,10 +211,10 @@ function inlineArgsInJsx(
             if (t.isJSXExpressionContainer(c)) {
                 const key = getArgsMemberKey(c.expression);
 
-                if (key === 'children' && merged.children) {
+                if (key === 'children' && merged['children']) {
                     changed = true;
 
-                    return toJsxChildren(merged.children);
+                    return toJsxChildren(merged['children']);
                 }
             }
 
@@ -249,7 +249,7 @@ function inlineArgsInJsx(
             if (key === 'children' && 'children' in merged) {
                 changed = true;
 
-                return toJsxChildren(merged.children);
+                return toJsxChildren(merged['children']);
             }
         }
 
@@ -330,9 +330,9 @@ function transformArgsSpreadsInJsx(
 
         let children = newChildren;
 
-        if (sawArgsSpread && newChildren.length === 0 && merged.children) {
+        if (sawArgsSpread && newChildren.length === 0 && merged['children']) {
             changed = true;
-            children = toJsxChildren(merged.children);
+            children = toJsxChildren(merged['children']);
         }
 
         const selfClosing = children.length === 0;
@@ -712,7 +712,7 @@ export function getCodeSnippet(
     const name = t.jsxIdentifier(componentName);
     const openingElAttrs = invalidSpread ? [...injectedAttrs, invalidSpread] : injectedAttrs;
 
-    const children = toJsxChildren(merged.children);
+    const children = toJsxChildren(merged['children']);
     const selfClosing = children.length === 0;
     const arrow = t.arrowFunctionExpression(
         [],

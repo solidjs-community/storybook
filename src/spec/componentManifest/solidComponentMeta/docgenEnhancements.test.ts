@@ -104,7 +104,7 @@ describe('discriminated union auto-if', () => {
             ],
         }, tempDirs);
 
-        expect(doc?.props.variant?.if).toBeUndefined();
+        expect(doc?.props['variant']?.if).toBeUndefined();
     });
 
     it('maps auto-if through docgen to Storybook argTypes', () => {
@@ -113,8 +113,8 @@ describe('discriminated union auto-if', () => {
         const extractArgTypes = parameters.docs.extractArgTypes;
         const argTypes = extractArgTypes({ __docgenInfo: docgenInfo });
 
-        expect(argTypes?.padding?.if).toEqual({ arg: 'variant', eq: 'solid' });
-        expect(argTypes?.transparent?.if).toEqual({ arg: 'variant', eq: 'ghost' });
+        expect(argTypes?.['padding']?.if).toEqual({ arg: 'variant', eq: 'solid' });
+        expect(argTypes?.['transparent']?.if).toEqual({ arg: 'variant', eq: 'ghost' });
     });
 });
 
@@ -159,8 +159,8 @@ describe('story pipeline integration', () => {
             tempDirs,
         });
 
-        expect(pipeline.doc?.props.label?.defaultValue).toEqual({ value: '\'Click me\'' });
-        expect(pipeline.doc?.props.size?.defaultValue).toEqual({ value: '\'sm\'' });
+        expect(pipeline.doc?.props['label']?.defaultValue).toEqual({ value: '\'Click me\'' });
+        expect(pipeline.doc?.props['size']?.defaultValue).toEqual({ value: '\'sm\'' });
     });
 });
 

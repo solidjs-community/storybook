@@ -315,7 +315,7 @@ export class SolidComponentMetaProject {
                     if (doc.jsDocTags) {
                         entryComponent.componentJsDocTags = doc.jsDocTags;
 
-                        const importOverride = doc.jsDocTags.import?.[0]?.trim();
+                        const importOverride = doc.jsDocTags['import']?.[0]?.trim();
 
                         if (importOverride) {
                             entryComponent.importOverride = importOverride;

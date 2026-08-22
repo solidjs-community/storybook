@@ -65,7 +65,7 @@ const renderToCanvas = createRenderToCanvas({
             });
 
 
-            if (storyContext?.parameters?.__isPortableStory) {
+            if (storyContext?.parameters?.['__isPortableStory']) {
                 return createComponent(() => Story(), {});
             }
 

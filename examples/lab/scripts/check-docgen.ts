@@ -63,7 +63,7 @@ const scenarios: Scenario[] = [
         componentExportName: 'Card',
         expectedProps: ['variant', 'padding', 'transparent'],
         assert(props) {
-            const padding = props?.padding;
+            const padding = props?.['padding'];
 
             if (padding?.if?.arg !== 'variant' || padding.if.eq !== 'solid') {
                 fail('Card.padding missing auto-if { variant: solid }');

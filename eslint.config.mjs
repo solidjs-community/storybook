@@ -98,6 +98,9 @@ export default antfu(
             'jsonc/sort-keys': 'off',
             // False-positive on docgen prop names like `props['innerText']`
             'unicorn/prefer-dom-node-text-content': 'off',
+            // strictest TS4111 needs bracket access; dot-notation autofix breaks typecheck
+            'dot-notation': 'off',
+            'ts/dot-notation': 'off',
             // Handled by import/no-duplicates + separate type/value import style
             'no-duplicate-imports': 'off',
             // TypeScript already covers this

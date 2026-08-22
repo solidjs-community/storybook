@@ -1,6 +1,6 @@
 type CardProps
     = | { variant: 'solid'; padding: number }
-      | { variant: 'ghost'; transparent: boolean };
+        | { variant: 'ghost'; transparent: boolean };
 
 /** Discriminated union — auto-if controls on variant-specific props. */
 export function Card(props: CardProps) {
