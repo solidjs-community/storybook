@@ -9,10 +9,10 @@ export async function beforeAll() {
                 const result = await cb();
 
                 await new Promise<void>((resolve) => {
-                    setTimeout(() => resolve(), 0);
+                    setTimeout(resolve, 0);
 
                     // @ts-expect-error global jest
-                    if (typeof jest !== 'undefined' && jest != null && ((setTimeout as any)._isMockFunction === true || Object.prototype.hasOwnProperty.call(setTimeout, 'clock'))) {
+                    if (typeof jest !== 'undefined' && jest != null && ((setTimeout as any)._isMockFunction === true || Object.hasOwn(setTimeout, 'clock'))) {
                         // @ts-expect-error global jest
                         jest!.advanceTimersByTime(0);
                     }

@@ -1,5 +1,4 @@
 import antfu from '@antfu/eslint-config';
-import perfectionist from 'eslint-plugin-perfectionist';
 
 const typeAwareRules = {
     // Storybook / Babel / docs-tools surfaces are loosely typed — unsafe-* is pure noise here
@@ -88,12 +87,9 @@ export default antfu(
         ],
     },
     {
-        plugins: {
-            perfectionist,
-        },
         rules: {
             // Node library — `process` global is correct
-            'node/prefer-global/process': 'off',
+            'n/prefer-global/process': 'off',
             // Auto-sort of package.json / tsconfig keys is churn without payoff
             'jsonc/sort-keys': 'off',
             // False-positive on docgen prop names like `props['innerText']`

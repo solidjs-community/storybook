@@ -130,7 +130,7 @@
         "semver": "^7.8.5"
     },
     "devDependencies": {
-        "@antfu/eslint-config": "^6.7.3",
+        "@antfu/eslint-config": "^9.3.0",
         "@changesets/cli": "^2.31.1",
         "@commitlint/cli": "^20.5.3",
         "@commitlint/config-conventional": "^20.5.3",
@@ -139,10 +139,9 @@
         "@types/node": "^25.9.5",
         "@types/semver": "^7.8.0",
         "es-toolkit": "^1.51.0",
-        "eslint": "^9.39.5",
-        "eslint-plugin-format": "^1.5.0",
-        "eslint-plugin-perfectionist": "^4.15.1",
-        "eslint-plugin-solid": "^0.14.5",
+        "eslint": "^10.9.0",
+        "eslint-plugin-format": "^2.0.1",
+        "eslint-plugin-solid": "^0.16.0",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
         "solid-js": "^1.9.15",
