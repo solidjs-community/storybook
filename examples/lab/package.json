@@ -11,16 +11,16 @@
     },
     "dependencies": {
         "@design-system/button": "file:./packages/design-system-button",
-        "solid-js": "^1.9.13",
+        "solid-js": "^1.9.15",
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@storybook/addon-docs": "^10.4.4",
+        "@storybook/addon-docs": "^10.5.10",
         "@tsconfig/strictest": "^2.0.8",
-        "eslint": "^9.39.4",
-        "storybook": "^10.4.4",
-        "typescript": "^6.0.2",
-        "vite": "^7.0.0",
-        "vite-plugin-solid": "^2.11.12"
+        "eslint": "^9.39.5",
+        "storybook": "^10.5.10",
+        "typescript": "^6.0.3",
+        "vite": "^7.3.6",
+        "vite-plugin-solid": "^2.11.14"
     }
 }
