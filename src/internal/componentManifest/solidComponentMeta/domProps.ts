@@ -26,6 +26,7 @@ const INHERITED_DOM_PROP_ALLOWLIST = new Set([
     'spellcheck',
     'style',
     'tabIndex',
+    'tabindex',
     'title',
     'translate',
 ]);
@@ -61,19 +62,63 @@ function isAllowlistedInheritedDomProp(name: string) {
         return true;
     }
 
-    return INHERITED_DOM_PROP_ALLOWLIST.has(name);
+    if (INHERITED_DOM_PROP_ALLOWLIST.has(name)) {
+        return true;
+    }
+
+    const lower = name.toLowerCase();
+
+    for (const allowed of INHERITED_DOM_PROP_ALLOWLIST) {
+        if (allowed.toLowerCase() === lower) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function isPropDeclaredInSource(prop: ts.Symbol, sourceFile: ts.SourceFile) {
     return prop.declarations?.some(declaration => declaration.getSourceFile() === sourceFile) ?? false;
 }
 
-export function propsTypeHasInterfaceHeritage(typescript: typeof ts, propsType: ts.Type) {
-    if (propsType.isUnion()) {
+const DOM_ATTRIBUTES_TYPE_NAMES = new Set([
+    'ElementAttributes',
+    'HTMLAttributes',
+    'MathMLAttributes',
+    'SVGAttributes',
+    'SvgSVGAttributes',
+]);
+
+function isIntersectionType(typescript: typeof ts, type: ts.Type): type is ts.IntersectionType {
+    return (type.flags & typescript.TypeFlags.Intersection) !== 0;
+}
+
+function typeHasDomInterfaceHeritage(
+    typescript: typeof ts,
+    type: ts.Type,
+    seen: Set<ts.Type>
+): boolean {
+    if (seen.has(type)) {
         return false;
     }
 
-    const symbol = propsType.getSymbol() ?? propsType.aliasSymbol;
+    seen.add(type);
+
+    if (type.isUnion()) {
+        return false;
+    }
+
+    if (isIntersectionType(typescript, type)) {
+        return type.types.some(part => typeHasDomInterfaceHeritage(typescript, part, seen));
+    }
+
+    const symbol = type.getSymbol() ?? type.aliasSymbol;
+    const name = symbol?.getName();
+
+    if (name && DOM_ATTRIBUTES_TYPE_NAMES.has(name)) {
+        return true;
+    }
+
     const declaration = symbol?.declarations?.find(typescript.isInterfaceDeclaration);
 
     if (!declaration) {
@@ -83,6 +128,10 @@ export function propsTypeHasInterfaceHeritage(typescript: typeof ts, propsType: 
     return declaration.heritageClauses?.some(
         clause => clause.token === typescript.SyntaxKind.ExtendsKeyword && clause.types.length > 0
     ) ?? false;
+}
+
+export function propsTypeHasInterfaceHeritage(typescript: typeof ts, propsType: ts.Type) {
+    return typeHasDomInterfaceHeritage(typescript, propsType, new Set());
 }
 
 export function shouldIncludeComponentProp(

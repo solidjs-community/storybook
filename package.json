@@ -148,6 +148,7 @@
         "@tsconfig/strictest": "^2.0.8",
         "@types/node": "^25.9.5",
         "@types/semver": "^7.8.0",
+        "@vitest/coverage-v8": "4.1.11",
         "es-toolkit": "^1.51.0",
         "eslint": "^10.9.0",
         "eslint-plugin-format": "^2.0.1",

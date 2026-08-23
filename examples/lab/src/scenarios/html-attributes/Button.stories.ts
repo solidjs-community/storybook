@@ -17,6 +17,6 @@ export const WithAria = meta.story({
     args: {
         label: 'Accessible',
         'aria-label': 'Primary action',
-        tabIndex: 0,
+        tabindex: 0,
     },
 });

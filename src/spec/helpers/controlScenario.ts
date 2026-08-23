@@ -96,6 +96,7 @@ export interface ScenarioOptions {
     maxPropCount?: number;
     absentProps?: string[];
     jsDocTags?: Record<string, string[]>;
+    compilerOptions?: ts.CompilerOptions;
 }
 
 function toSbType(serialized: SerializedPropType, required: boolean) {
@@ -116,13 +117,14 @@ export function extractComponentDoc(options: {
     entryFile: string;
     exportName: string;
     tempDirs: string[];
+    compilerOptions?: ts.CompilerOptions;
 }): SolidComponentDoc | undefined {
     const dir = createSpecTempDir(options.tempDirs);
 
     writeSpecFiles(dir, options.files);
 
     const commandLine: ts.ParsedCommandLine = {
-        options: defaultCompilerOptions(),
+        options: options.compilerOptions ?? defaultCompilerOptions(),
         fileNames: Object.keys(options.files).map(relativePath => join(dir, relativePath)),
         errors: [],
     };

@@ -10,7 +10,7 @@ import {
 } from '../../helpers/controlScenario';
 import { cardDiscriminatedUnion, htmlAttributesButton } from '../../helpers/scenarioFixtures';
 import { expectStoryMatchesDirectExtract } from '../../helpers/storyScenario';
-import { cleanupSpecTempDirs } from '../../helpers/tempProject';
+import { cleanupSpecTempDirs, solid2CompilerOptions } from '../../helpers/tempProject';
 
 const tempDirs: string[] = [];
 
@@ -30,6 +30,54 @@ describe('dOM prop filtering', () => {
                 { prop: 'class', rcmName: 'string', control: 'text' },
             ],
         }, tempDirs);
+    });
+
+    it('keeps allowlisted DOM props from HTMLAttributes intersection aliases', () => {
+        expectScenario('HTMLAttributes intersection', {
+            files: {
+                'Button.tsx': `
+                    import type { JSX } from 'solid-js';
+                    type ButtonProps = JSX.HTMLAttributes<HTMLDivElement> & { label: string };
+                    export function Button(props: ButtonProps) { return null; }
+                `,
+            },
+            entryFile: 'Button.tsx',
+            exportName: 'Button',
+            maxPropCount: 40,
+            absentProps: ['onClick', 'innerText'],
+            expectations: [
+                { prop: 'label', rcmName: 'string', control: 'text' },
+                { prop: 'id', rcmName: 'string', control: 'text' },
+                { prop: 'class', rcmName: 'string', control: 'text' },
+            ],
+        }, tempDirs);
+    });
+
+    it('keeps Solid 2 lowercase tabindex from @solidjs/web HTMLAttributes', () => {
+        const doc = expectScenario('Solid 2 HTMLAttributes', {
+            files: {
+                'Button.tsx': `
+                    import type { JSX } from '@solidjs/web';
+                    interface ButtonProps extends JSX.HTMLAttributes<HTMLDivElement> {
+                        label: string;
+                    }
+                    export function Button(props: ButtonProps) { return null; }
+                `,
+            },
+            entryFile: 'Button.tsx',
+            exportName: 'Button',
+            compilerOptions: solid2CompilerOptions(),
+            maxPropCount: 40,
+            absentProps: ['onClick', 'innerText', 'tabIndex'],
+            expectations: [
+                { prop: 'label', rcmName: 'string', control: 'text' },
+            ],
+        }, tempDirs);
+
+        expect(doc?.props['id']).toBeDefined();
+        expect(doc?.props['class']).toBeDefined();
+        expect(doc?.props['tabindex']).toBeDefined();
+        expect(doc?.props['aria-label']).toBeDefined();
     });
 
     it('excludes Solid JSX-only namespaces from globally augmented JSX types', () => {

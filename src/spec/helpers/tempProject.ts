@@ -90,6 +90,19 @@ export function defaultCompilerOptions(): ts.CompilerOptions {
     };
 }
 
+export function solid2CompilerOptions(): ts.CompilerOptions {
+    return {
+        strict: true,
+        jsx: ts.JsxEmit.Preserve,
+        jsxImportSource: '@solidjs/web',
+        esModuleInterop: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ES2020,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+    };
+}
+
 export function writeSpecFiles(dir: string, files: Record<string, string>) {
     for (const [relativePath, contents] of Object.entries(files)) {
         const filePath = join(dir, relativePath);

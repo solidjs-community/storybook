@@ -75,7 +75,7 @@ export function Callout(props: CalloutProps) {
         <div
             id={props.id}
             title={props.title}
-            tabIndex={enabled() ? (props.tabIndex ?? 0) : -1}
+            tabindex={enabled() ? (props.tabIndex ?? 0) : -1}
             aria-label={props['aria-label']}
             aria-disabled={enabled() ? undefined : true}
             role={enabled() ? 'button' : undefined}

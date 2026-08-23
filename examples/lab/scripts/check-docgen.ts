@@ -45,6 +45,7 @@ interface Scenario {
     componentFilePath: string;
     componentExportName: string;
     expectedProps: string[];
+    absentProps?: string[];
     expectedArgTypes?: Record<string, string>;
     assert?: (props: Record<string, DocgenProp>) => void;
 }
@@ -114,7 +115,8 @@ const scenarios: Scenario[] = [
         storyName: 'Default',
         componentFilePath: 'src/scenarios/html-attributes/Button.tsx',
         componentExportName: 'Button',
-        expectedProps: ['label'],
+        expectedProps: ['label', 'id', 'class', 'aria-label', 'tabindex'],
+        absentProps: ['onClick'],
     },
     {
         label: 'PickedButton (Pick utility)',
@@ -215,6 +217,12 @@ async function checkDocgenProvider(scenario: Scenario) {
         }
     }
 
+    for (const absent of scenario.absentProps ?? []) {
+        if (propNames.includes(absent)) {
+            fail(`${ scenario.label }: unexpected prop "${ absent }" (got: ${ propNames.join(', ') })`);
+        }
+    }
+
     scenario.assert?.(props);
     assertArgTypeNames(scenario, payload.argTypes);
     ok(`${ scenario.label } → docgen props: ${ propNames.join(', ') }`);
@@ -233,6 +241,12 @@ async function checkArgTypesScenario(scenario: Scenario) {
     for (const expected of scenario.expectedProps) {
         if (!(expected in argTypes)) {
             fail(`${ scenario.label }: argTypes missing "${ expected }" (got: ${ Object.keys(argTypes).join(', ') })`);
+        }
+    }
+
+    for (const absent of scenario.absentProps ?? []) {
+        if (absent in argTypes) {
+            fail(`${ scenario.label }: argTypes unexpected "${ absent }" (got: ${ Object.keys(argTypes).join(', ') })`);
         }
     }
 
@@ -284,6 +298,12 @@ function checkBuiltSnapshots() {
         for (const expected of scenario.expectedProps) {
             if (!propNames.includes(expected)) {
                 fail(`${ scenario.label }: built snapshot missing "${ expected }" (got: ${ propNames.join(', ') || 'none' })`);
+            }
+        }
+
+        for (const absent of scenario.absentProps ?? []) {
+            if (propNames.includes(absent)) {
+                fail(`${ scenario.label }: built snapshot unexpected "${ absent }" (got: ${ propNames.join(', ') })`);
             }
         }
 

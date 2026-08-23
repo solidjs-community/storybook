@@ -23,6 +23,7 @@
         "@tailwindcss/vite": "^4.3.3",
         "@tsconfig/strictest": "^2.0.8",
         "@vitest/browser-playwright": "^4.1.11",
+        "@vitest/coverage-v8": "4.1.11",
         "eslint": "^10.9.0",
         "jsdom": "30.0.1",
         "playwright": "^1.55.0",
