@@ -1,5 +1,3 @@
-import { mergeProps, splitProps } from 'solid-js';
-
 import './button.css';
 
 export interface ButtonProps {
@@ -7,31 +5,26 @@ export interface ButtonProps {
     backgroundColor?: string;
     size?: 'small' | 'medium' | 'large';
     label: string;
-    [key: string]: any;
+    onClick?: () => void;
 }
 
 /** Primary UI component for user interaction */
-export const Button = (_props: ButtonProps) => {
-    const [props, rest] = splitProps(
-        mergeProps({ primary: false, backgroundColor: null, size: 'medium' }, _props),
-        ['primary', 'backgroundColor', 'size', 'label']
-    );
-    
+export const Button = (props: ButtonProps) => {
     const mode = () => props.primary ? 'storybook-button--primary' : 'storybook-button--secondary';
+    const size = () => props.size ?? 'medium';
 
     return (
         <button
             type="button"
             class={ [
                 'storybook-button',
-                `storybook-button--${ props.size }`,
+                `storybook-button--${ size() }`,
                 mode(),
             ].join(' ') }
             style={ props.backgroundColor ? { 'background-color': props.backgroundColor } : undefined }
-            { ...rest }
+            onClick={ props.onClick }
         >
             {props.label}
         </button>
     );
 };
-
