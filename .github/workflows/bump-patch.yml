@@ -21,41 +21,41 @@ jobs:
 
         steps:
             - name: Checkout
-                uses: actions/checkout@v6
-                with:
-                    fetch-depth: 0
-                    token: ${{ secrets.GH_PAT }}
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GH_PAT }}
 
             - name: Setup Bun
-                uses: oven-sh/setup-bun@v2
+              uses: oven-sh/setup-bun@v2
 
             - name: Install dependencies
-                env:
-                    SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
-                run: bun install --frozen-lockfile
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install --frozen-lockfile
 
             - name: Create patch changeset
-                shell: bash
-                run: |
-                    mkdir -p .changeset
-                    FILE=".changeset/patch-$(date +%s).md"
-                    cat > "$FILE" <<EOF
-                    ---
-                    "storybook-solidjs-vite": patch
-                    ---
+              shell: bash
+              run: |
+                  mkdir -p .changeset
+                  FILE=".changeset/patch-$(date +%s).md"
+                  cat > "$FILE" <<EOF
+                  ---
+                  "storybook-solidjs-vite": patch
+                  ---
 
-                    ${{ inputs.summary }}
-                    EOF
+                  ${{ inputs.summary }}
+                  EOF
 
             - name: Commit and push
-                shell: bash
-                run: |
-                    git config user.name "github-actions[bot]"
-                    git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                    git add .
-                    if git diff --cached --quiet; then
-                      echo "No changes to commit"
-                      exit 0
-                    fi
-                    git commit -m "chore: bump patch version"
-                    git push origin HEAD:main
+              shell: bash
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add .
+                  if git diff --cached --quiet; then
+                    echo "No changes to commit"
+                    exit 0
+                  fi
+                  git commit -m "chore: bump patch version"
+                  git push origin HEAD:main
