@@ -5,7 +5,7 @@
     "scripts": {
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
-        "typecheck": "node ../../node_modules/typescript7/bin/tsc --noEmit",
+        "typecheck": "tsc --noEmit",
         "lint": "eslint . --config ../../eslint.config.mjs --fix --max-warnings=9999 --quiet",
         "check-docgen": "bun scripts/check-docgen.ts"
     },
@@ -19,6 +19,7 @@
         "@tsconfig/strictest": "^2.0.8",
         "eslint": "^10.9.0",
         "storybook": "^10.5.10",
+        "typescript": "^7.0.2",
         "vite": "^8.2.2",
         "vite-plugin-solid": "^2.11.14"
     }

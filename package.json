@@ -93,8 +93,8 @@
         "prepack": "bun run build",
         "build": "tsup && bun run build:dts && bun scripts/rewrite-solid-imports.ts",
         "build:js": "tsup",
-        "build:dts": "node ./node_modules/typescript7/bin/tsc -p tsconfig.build.json",
-        "typecheck": "node ./node_modules/typescript7/bin/tsc -p tsconfig.json --noEmit",
+        "build:dts": "tsc -p tsconfig.build.json",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
         "dev": "tsup --watch",
         "test": "vitest run --passWithNoTests",
         "storybook": "cd examples/lab && bun run storybook",
@@ -142,7 +142,6 @@
         "eslint": "^10.9.0",
         "eslint-plugin-format": "^2.0.1",
         "eslint-plugin-perfectionist": "^5.10.1",
-        "eslint-plugin-solid": "^0.16.0",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
         "solid-js": "^1.9.15",
@@ -150,8 +149,7 @@
         "storybook": "^10.5.10",
         "tsup": "^8.5.1",
         "type-fest": "^5.8.0",
-        "typescript": "^6.0.3",
-        "typescript7": "npm:typescript@^7.0.2",
+        "typescript": "^7.0.2",
         "vite": "^8.2.2",
         "vite-plugin-solid": "^2.11.14",
         "vitest": "^4.1.11"
@@ -164,7 +162,7 @@
         "commit-msg": "bunx --no-install commitlint --edit \"$1\""
     },
     "lint-staged": {
-        "*.{js,mjs,jsx,ts,tsx}": [
+        "*.{js,mjs,jsx,cjs}": [
             "eslint --fix --max-warnings=9999 --quiet"
         ]
     },
