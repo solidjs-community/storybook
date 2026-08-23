@@ -1,10 +1,7 @@
-import { mergeProps } from 'solid-js';
-
+import { Button } from './Button';
 import './header.css';
 
-export const Header = (_props) => {
-    const props = mergeProps({ user: undefined }, _props);
-
+export const Header = (props) => {
     return (
         <header>
             <div class="storybook-header">
@@ -51,4 +48,3 @@ export const Header = (_props) => {
         </header>
     );
 };
-

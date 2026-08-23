@@ -1,5 +1,3 @@
-import { mergeProps } from 'solid-js';
-
 import { Button } from './Button';
 import './header.css';
 
@@ -8,12 +6,9 @@ export interface HeaderProps {
     onLogin: () => void;
     onLogout: () => void;
     onCreateAccount: () => void;
-    [key: string]: any;
 }
 
-export const Header = (_props: HeaderProps) => {
-    const props = mergeProps({ user: undefined }, _props);
-
+export const Header = (props: HeaderProps) => {
     return (
         <header>
             <div class="storybook-header">
@@ -60,4 +55,3 @@ export const Header = (_props: HeaderProps) => {
         </header>
     );
 };
-
