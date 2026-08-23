@@ -1,0 +1,48 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+            - next
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Install dependencies
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install --frozen-lockfile
+
+            - name: Build package
+              run: bun run build
+
+            - name: Unit tests
+              run: bun run test
+
+            - name: Install lab dependencies
+              working-directory: examples/lab
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install --frozen-lockfile
+
+            - name: Install Playwright Chromium
+              working-directory: examples/lab
+              run: bunx playwright install chromium --with-deps
+
+            - name: Docgen lab check
+              run: bun run check-docgen
+
+            - name: Vitest browser tests (lab)
+              working-directory: examples/lab
+              run: bun run test

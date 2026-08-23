@@ -1,16 +1,14 @@
-import { fn } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
+
+import preview from './preview';
 
 import { Header } from './Header';
 
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
-
-const meta = {
+const meta = preview.meta({
     title: 'Example/Header',
     component: Header,
-    // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
     tags: ['autodocs'],
     parameters: {
-    // More on how to position stories at: https://storybook.js.org/docs/configure/story-layout
         layout: 'fullscreen',
     },
     args: {
@@ -18,18 +16,30 @@ const meta = {
         onLogout: fn(),
         onCreateAccount: fn(),
     },
-} satisfies Meta<typeof Header>;
+});
 
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const LoggedIn: Story = {
+export const LoggedIn = meta.story({
     args: {
         user: {
             name: 'Jane Doe',
         },
     },
-};
+});
 
-export const LoggedOut: Story = {};
+LoggedIn.test('shows the welcome message', async ({ canvas }) => {
+    await expect(canvas.getByText(/Welcome,/)).toBeInTheDocument();
+    await expect(canvas.getByText('Jane Doe')).toBeInTheDocument();
+    await expect(canvas.getByRole('button', { name: /Log out/i })).toBeInTheDocument();
+});
 
+export const LoggedOut = meta.story({});
+
+LoggedOut.test('shows auth actions and calls onLogin', async ({ canvas, userEvent, args }) => {
+    const loginButton = canvas.getByRole('button', { name: /Log in/i });
+
+    await expect(loginButton).toBeInTheDocument();
+    await expect(canvas.getByRole('button', { name: /Sign up/i })).toBeInTheDocument();
+
+    await userEvent.click(loginButton);
+    await expect(args.onLogin).toHaveBeenCalledOnce();
+});

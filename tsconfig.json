@@ -6,6 +6,8 @@
         "verbatimModuleSyntax": true,
         "forceConsistentCasingInFileNames": true,
         "paths": {
+            "solid-js-legacy": ["./node_modules/solid-js-legacy"],
+            "solid-js-legacy/*": ["./node_modules/solid-js-legacy/*"],
             "storybook-solidjs-vite/renderer/solid-legacy": [
                 "./src/renderer/solid-legacy.ts"
             ],

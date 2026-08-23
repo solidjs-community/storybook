@@ -1,8 +1,8 @@
+import preview from '../../../.storybook/preview';
+
 import { PickedButton } from './PickedButton';
 
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
-
-const meta = {
+const meta = preview.meta({
     title: 'Docgen Lab/Utility Types/PickedButton',
     component: PickedButton,
     tags: ['autodocs'],
@@ -10,15 +10,12 @@ const meta = {
         label: 'Save',
         size: 'sm',
     },
-} satisfies Meta<typeof PickedButton>;
+});
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export const Default = meta.story({});
 
-export const Default: Story = {};
-
-export const Large: Story = {
+export const Large = meta.story({
     args: {
         size: 'lg',
     },
-};
+});

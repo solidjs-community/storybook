@@ -1,5 +1,3 @@
-import { mergeProps, splitProps } from 'solid-js';
-
 export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger';
 
 export interface BadgeProps {
@@ -11,16 +9,14 @@ export interface BadgeProps {
     dot?: boolean;
 }
 
-/** Enum union + mergeProps defaults — baseline controls scenario. */
-export function Badge(_props: BadgeProps) {
-    const [props] = splitProps(
-        mergeProps({ variant: 'neutral', dot: false }, _props),
-        ['label', 'variant', 'dot']
-    );
+/** Enum union + default props — baseline controls scenario. */
+export function Badge(props: BadgeProps) {
+    const variant = () => props.variant ?? 'neutral';
+    const dot = () => props.dot ?? false;
 
     return (
-        <span data-variant={ props.variant } data-dot={ String(props.dot) }>
-            {props.dot ? '• ' : null}
+        <span data-variant={ variant() } data-dot={ String(dot()) }>
+            {dot() ? '• ' : null}
             {props.label}
         </span>
     );

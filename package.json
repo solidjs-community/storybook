@@ -53,11 +53,6 @@
             "code": "./src/framework/preset.ts",
             "default": "./dist/framework/preset.js"
         },
-        "./experimental-playwright": {
-            "types": "./dist/playwright.d.ts",
-            "code": "./src/playwright.ts",
-            "default": "./dist/playwright.js"
-        },
         "./renderer": {
             "types": "./dist/renderer/index.d.ts",
             "code": "./src/renderer/index.ts",
@@ -72,6 +67,11 @@
             "types": "./dist/renderer/solid-legacy.d.ts",
             "code": "./src/renderer/solid-legacy.ts",
             "default": "./dist/renderer/solid-legacy.js"
+        },
+        "./renderer/preview-addon": {
+            "types": "./dist/renderer/preview-addon.d.ts",
+            "code": "./src/renderer/preview-addon.ts",
+            "default": "./dist/renderer/preview-addon.js"
         },
         "./renderer/docs": {
             "types": "./dist/renderer/docs.d.ts",
@@ -101,7 +101,10 @@
         "build:dts": "tsc -p tsconfig.build.json",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "dev": "tsup --watch",
+        "lab": "cd examples/lab && bun run storybook",
         "test": "vitest run --passWithNoTests",
+        "test:lab": "cd examples/lab && bun run test",
+        "check-docgen": "cd examples/lab && bun run build-storybook && bun run check-docgen",
         "storybook": "cd examples/lab && bun run storybook",
         "clean": "rm -rf dist && rm -rf node_modules",
         "lint": "eslint . --fix --max-warnings=9999 --quiet",
@@ -150,8 +153,8 @@
         "eslint-plugin-perfectionist": "^5.10.1",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
-        "solid-js": "^1.9.15",
-        "solid-js-next": "npm:solid-js@next",
+        "solid-js": "^2.0.0-rc.1",
+        "solid-js-legacy": "npm:solid-js@^1.9.15",
         "storybook": "^10.5.10",
         "tsup": "^8.5.1",
         "type-fest": "^5.8.0",

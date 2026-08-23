@@ -1,6 +1,6 @@
 import type { SolidComponentDoc } from './types';
 
-/** Maps Solid component-meta (RCM) output to the `__docgenInfo` shape consumed by `storybook/internal/docs-tools`. */
+// Maps Solid component-meta output to Storybook docgen / argTypes shapes.
 export interface DocgenInfo {
     displayName?: string;
     description?: string;

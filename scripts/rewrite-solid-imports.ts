@@ -1,34 +1,28 @@
 /**
  * Rewrite dev-only Solid import ids in emitted JS/DTS under dist/.
- * `solid-js-next` is a local alias for Solid 2; published output must import `solid-js`.
+ * `solid-js-legacy` is a local alias for Solid 1; published legacy renderer imports `solid-js`.
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SOLID_RUNTIME_IMPORTS = {
-    'solid-js-next': 'solid-js',
-} as const;
+const LEGACY_IMPORT_PREFIX = 'solid-js-legacy';
 
 function escapeRegExp(value: string) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export function rewriteSolidRuntimeImports(outDir = 'dist') {
-    const replacements = Object.entries(SOLID_RUNTIME_IMPORTS)
-        .sort(([a], [b]) => b.length - a.length);
+    const legacyImportPattern = new RegExp(
+        `(["'])${ escapeRegExp(LEGACY_IMPORT_PREFIX) }(/[^'"]+)?\\1`,
+        'g'
+    );
 
     const rewriteFile = (filePath: string) => {
         const source = readFileSync(filePath, 'utf8');
-        let next = source;
-
-        for (const [from, to] of replacements) {
-            const pattern = new RegExp(
-                `(["'])${ escapeRegExp(from) }\\1`,
-                'g'
-            );
-
-            next = next.replace(pattern, (_, quote: string) => `${ quote }${ to }${ quote }`);
-        }
+        const next = source.replace(
+            legacyImportPattern,
+            (_, quote: string, subpath = '') => `${ quote }solid-js${ subpath }${ quote }`
+        );
 
         if (next !== source) {
             writeFileSync(filePath, next);

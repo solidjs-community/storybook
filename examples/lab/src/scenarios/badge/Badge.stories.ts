@@ -1,6 +1,6 @@
-import { Badge } from './Badge';
-
 import type { Meta, StoryObj } from 'storybook-solidjs-vite';
+
+import { Badge } from './Badge';
 
 const meta = {
     title: 'Docgen Lab/Badge',

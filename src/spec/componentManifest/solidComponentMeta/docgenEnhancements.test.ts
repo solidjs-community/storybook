@@ -4,8 +4,6 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { solidComponentDocToDocgenInfo } from '../../../internal/componentManifest/toDocgenInfo';
-import { parameters } from '../../../renderer/docs';
 import {
     expectScenario,
     extractComponentDoc,
@@ -105,16 +103,6 @@ describe('discriminated union auto-if', () => {
         }, tempDirs);
 
         expect(doc?.props['variant']?.if).toBeUndefined();
-    });
-
-    it('maps auto-if through docgen to Storybook argTypes', () => {
-        const doc = extractComponentDoc({ ...cardDiscriminatedUnion, tempDirs });
-        const docgenInfo = solidComponentDocToDocgenInfo(doc!);
-        const extractArgTypes = parameters.docs.extractArgTypes;
-        const argTypes = extractArgTypes({ __docgenInfo: docgenInfo });
-
-        expect(argTypes?.['padding']?.if).toEqual({ arg: 'variant', eq: 'solid' });
-        expect(argTypes?.['transparent']?.if).toEqual({ arg: 'variant', eq: 'ghost' });
     });
 });
 

@@ -37,6 +37,8 @@ Open the URL shown in the terminal.
 
 ## ⚙️ Configuration
 
+Put `vite-plugin-solid` in your `vite.config.ts` — Storybook uses that Vite config and does not inject the plugin for you (same as React/Vue since Storybook 8).
+
 Customize Vite and Storybook as usual. Add stories in `src/**/*.stories.{tsx,js}` and install addons
 as needed.
 
@@ -107,6 +109,8 @@ export const Primary: Story = {
 ### Docgen
 
 Props for **Controls**, **Docs**, and the **components manifest** come from a TypeScript LanguageService extractor aligned with Storybook's `react-component-meta` format.
+
+Extraction runs on the **Storybook server** (`features.experimentalDocgenServer`, enabled by default from the framework preset). There is no Vite preview `__docgenInfo` inject.
 
 Enabled by default. Inspect output in the [manifest debugger](#components-manifest-debugger).
 

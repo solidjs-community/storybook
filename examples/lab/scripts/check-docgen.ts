@@ -1,7 +1,7 @@
 /**
  * Headless docgen checks for examples/lab scenarios.
  *
- * Run from repo root: bun run check-docgen:lab
+ * Run from repo root: bun run check-docgen
  * Or here: bun run check-docgen
  */
 import { existsSync, readFileSync } from 'node:fs';

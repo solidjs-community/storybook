@@ -1,8 +1,8 @@
+import preview from '../../../.storybook/preview';
+
 import { Card } from './Card';
 
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
-
-const meta = {
+const meta = preview.meta({
     title: 'Docgen Lab/Subcomponents/Card',
     component: Card,
     subcomponents: {
@@ -13,9 +13,6 @@ const meta = {
     args: {
         title: 'Invoice',
     },
-} satisfies Meta<typeof Card>;
+});
 
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Default: Story = {};
+export const Default = meta.story({});

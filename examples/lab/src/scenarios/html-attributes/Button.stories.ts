@@ -1,25 +1,22 @@
+import preview from '../../../.storybook/preview';
+
 import { Button } from './Button';
 
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
-
-const meta = {
+const meta = preview.meta({
     title: 'Docgen Lab/HTML Attributes/Button',
     component: Button,
     tags: ['autodocs'],
     args: {
         label: 'Click me',
     },
-} satisfies Meta<typeof Button>;
+});
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export const Default = meta.story({});
 
-export const Default: Story = {};
-
-export const WithAria: Story = {
+export const WithAria = meta.story({
     args: {
         label: 'Accessible',
         'aria-label': 'Primary action',
         tabIndex: 0,
     },
-};
+});
