@@ -9,7 +9,7 @@ import { InlineCanvas } from './InlineCanvas';
  * update the inline canvas in place.
  */
 const meta = preview.meta({
-    title: 'Lab/Inline Docs/InlineCanvas',
+    title: 'Docs/Inline canvas',
     component: InlineCanvas,
     tags: ['autodocs'],
     args: {

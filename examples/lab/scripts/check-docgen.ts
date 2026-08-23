@@ -45,25 +45,55 @@ interface Scenario {
     componentFilePath: string;
     componentExportName: string;
     expectedProps: string[];
+    expectedArgTypes?: Record<string, string>;
     assert?: (props: Record<string, DocgenProp>) => void;
 }
 
 const scenarios: Scenario[] = [
     {
-        label: 'Badge (enum union)',
-        storyImportPath: 'src/scenarios/badge/Badge.stories.ts',
-        storyId: 'docgen-lab-badge--neutral',
-        storyTitle: 'Docgen Lab/Badge',
-        storyName: 'Neutral',
-        componentFilePath: 'src/scenarios/badge/Badge.tsx',
-        componentExportName: 'Badge',
-        expectedProps: ['label', 'variant', 'dot'],
+        label: 'Callout (type matrix)',
+        storyImportPath: 'src/scenarios/all-types/Callout.stories.ts',
+        storyId: 'docgen-all-types--solid',
+        storyTitle: 'Docgen/All types',
+        storyName: 'Solid',
+        componentFilePath: 'src/scenarios/all-types/Callout.tsx',
+        componentExportName: 'Callout',
+        expectedProps: [
+            'label',
+            'count',
+            'enabled',
+            'size',
+            'tone',
+            'accentColor',
+            'dueDate',
+            'tags',
+            'meta',
+            'onPress',
+            'appearance',
+            'padding',
+            'transparent',
+            'id',
+            'class',
+            'title',
+            'tabIndex',
+            'aria-label',
+        ],
+        expectedArgTypes: {
+            label: 'string',
+            count: 'number',
+            enabled: 'boolean',
+            size: 'enum',
+            tone: 'enum',
+            appearance: 'enum',
+            padding: 'number',
+            transparent: 'boolean',
+        },
     },
     {
         label: 'Card (discriminated union)',
         storyImportPath: 'src/scenarios/discriminated-union/Card.stories.ts',
-        storyId: 'docgen-lab-discriminated-union-card--solid',
-        storyTitle: 'Docgen Lab/Discriminated Union/Card',
+        storyId: 'docgen-discriminated-union--solid',
+        storyTitle: 'Docgen/Discriminated union',
         storyName: 'Solid',
         componentFilePath: 'src/scenarios/discriminated-union/Card.tsx',
         componentExportName: 'Card',
@@ -79,8 +109,8 @@ const scenarios: Scenario[] = [
     {
         label: 'Button (HTMLAttributes filter)',
         storyImportPath: 'src/scenarios/html-attributes/Button.stories.ts',
-        storyId: 'docgen-lab-html-attributes-button--default',
-        storyTitle: 'Docgen Lab/HTML Attributes/Button',
+        storyId: 'docgen-html-attributes--default',
+        storyTitle: 'Docgen/HTML attributes',
         storyName: 'Default',
         componentFilePath: 'src/scenarios/html-attributes/Button.tsx',
         componentExportName: 'Button',
@@ -89,8 +119,8 @@ const scenarios: Scenario[] = [
     {
         label: 'PickedButton (Pick utility)',
         storyImportPath: 'src/scenarios/utility-types/PickedButton.stories.ts',
-        storyId: 'docgen-lab-utility-types-pickedbutton--default',
-        storyTitle: 'Docgen Lab/Utility Types/PickedButton',
+        storyId: 'docgen-utility-types--default',
+        storyTitle: 'Docgen/Utility types',
         storyName: 'Default',
         componentFilePath: 'src/scenarios/utility-types/PickedButton.tsx',
         componentExportName: 'PickedButton',
@@ -99,14 +129,41 @@ const scenarios: Scenario[] = [
     {
         label: 'Package Button (@design-system/button)',
         storyImportPath: 'src/scenarios/package-import/Button.stories.ts',
-        storyId: 'docgen-lab-package-import-button--primary',
-        storyTitle: 'Docgen Lab/Package Import/Button',
+        storyId: 'docgen-package-import--primary',
+        storyTitle: 'Docgen/Package import',
         storyName: 'Primary',
         componentFilePath: 'node_modules/@design-system/button/index.tsx',
         componentExportName: 'Button',
         expectedProps: ['label', 'size'],
     },
 ];
+
+function argTypeName(type: unknown): string | undefined {
+    if (type && typeof type === 'object' && 'name' in type && typeof type.name === 'string') {
+        return type.name;
+    }
+
+    return undefined;
+}
+
+function assertArgTypeNames(scenario: Scenario, argTypes: Record<string, unknown> | undefined) {
+    if (!scenario.expectedArgTypes) {
+        return;
+    }
+
+    for (const [name, expected] of Object.entries(scenario.expectedArgTypes)) {
+        const argType = argTypes?.[name] as { type?: unknown } | undefined;
+        const actual = argTypeName(argType?.type);
+
+        if (typeof argType?.type === 'string') {
+            fail(`${ scenario.label }: argTypes.${ name }.type is the string "${ argType.type }" — Controls need { name: '${ expected }' }, not a string`);
+        }
+
+        if (actual !== expected) {
+            fail(`${ scenario.label }: argTypes.${ name }.type is ${ JSON.stringify(argType?.type) }, expected { name: '${ expected }' }`);
+        }
+    }
+}
 
 function fail(message: string): never {
     console.error(`FAIL: ${ message }`);
@@ -159,6 +216,7 @@ async function checkDocgenProvider(scenario: Scenario) {
     }
 
     scenario.assert?.(props);
+    assertArgTypeNames(scenario, payload.argTypes);
     ok(`${ scenario.label } → docgen props: ${ propNames.join(', ') }`);
 }
 
@@ -178,6 +236,7 @@ async function checkArgTypesScenario(scenario: Scenario) {
         }
     }
 
+    assertArgTypeNames(scenario, argTypes);
     ok(`${ scenario.label } → argTypes: ${ Object.keys(argTypes).join(', ') }`);
 }
 
@@ -250,4 +309,4 @@ else {
 }
 
 console.log('\nVisual checks while `bun run storybook` is running:');
-console.log('  • Docgen Lab/* → Controls + Docs props table');
+console.log('  • Docgen/* → Controls + Docs props table');

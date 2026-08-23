@@ -1,32 +1,32 @@
 # Storybook SolidJS lab
 
-Manual and automated checks for docgen, interactions, CSF Next `.test()`, Autodocs, and legacy CSF 3. Runs on **Solid 2**. For Solid 1 / `solid-legacy`, see [`examples/solid1`](../solid1).
+Checklist for docgen, autodocs, interactions, and CSF Next tests. **Solid 2**. For Solid 1 / `solid-legacy`, see [`examples/solid1`](../solid1).
 
-**Default for new scenarios:** CSF Next (`preview.meta()` + `meta.story()`).
+New scenarios: CSF Next (`preview.meta()` + `meta.story()`). Sidebar is grouped by **pipeline**, not by fake design-system names.
 
 ## Scripts
 
-- `bun run storybook` — dev server on port 6006
-- `bun run build-storybook` — static build + docgen snapshots (`storybook-static/services/core/docgen/`)
-- `bun run check-docgen` — headless docgen assertions (requires `build-storybook` first)
-- `bun run test` — Vitest browser tests via `@storybook/addon-vitest`
+- `bun run storybook` — port 6006
+- `bun run build-storybook` — static build + docgen snapshots
+- `bun run check-docgen` — headless docgen assertions (`build-storybook` first)
+- `bun run test` — Vitest browser tests
 
-From repo root:
+From repo root: `bun run lab`, `bun run check-docgen`, `bun run test:lab`.
 
-- `bun run lab` — Storybook dev server (port 6006)
-- `bun run check-docgen`
-- `bun run test:lab`
+## What stays and why
 
-## Scenarios
+Each folder is a different extraction/runtime path. If two folders would catch the same bug, one of them should not exist.
 
-| Path | Format | Purpose |
-|------|--------|---------|
-| `src/scenarios/badge` | CSF 3 | Enum unions, autodocs (legacy) |
-| `src/scenarios/discriminated-union` | CSF Next | Discriminated union docgen |
-| `src/scenarios/html-attributes` | CSF Next | HTMLAttributes filter |
-| `src/scenarios/package-import` | CSF Next | Package component import |
-| `src/scenarios/subcomponents` | CSF Next | `meta.subcomponents` |
-| `src/scenarios/utility-types` | CSF Next | `Pick` / utility types |
-| `src/scenarios/inline-docs` | CSF Next | Autodocs inline vs iframe canvases |
-| `src/scenarios/interactions` | CSF 3 | `play` functions (legacy) |
-| `src/scenarios/testing` | CSF Next | `meta.story().test()` + `fn()` mocks |
+| Path | Sidebar | Why it exists |
+|------|---------|----------------|
+| `src/scenarios/all-types` | Docgen / All types | Type matrix on one component: string, number, boolean, short enum, long enum, object, array, fn, color/date matchers, a few DOM props |
+| `src/scenarios/discriminated-union` | Docgen / Discriminated union | Auto-`if` on variant-only props — not expressible as a flat matrix |
+| `src/scenarios/html-attributes` | Docgen / HTML attributes | `extends JSX.HTMLAttributes` + DOM allowlist vs bulk filter |
+| `src/scenarios/utility-types` | Docgen / Utility types | `Pick` / `Omit` resolution |
+| `src/scenarios/package-import` | Docgen / Package import | Component from `node_modules`, not project source |
+| `src/scenarios/subcomponents` | Docgen / Subcomponents | `meta.subcomponents` |
+| `src/scenarios/inline-docs` | Docs / Inline canvas | Autodocs inline vs iframe |
+| `src/scenarios/interactions` | Tests / Play | CSF 3 `play()` (legacy format on purpose) |
+| `src/scenarios/testing` | Tests / Story.test | CSF Next `story.test()` + `fn()` |
+
+Dropped: **Badge** (subset of All types) and **KitchenSink** (same matrix, worse name).

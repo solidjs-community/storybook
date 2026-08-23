@@ -3,7 +3,7 @@ import preview from '../../../.storybook/preview';
 import { PickedButton } from './PickedButton';
 
 const meta = preview.meta({
-    title: 'Docgen Lab/Utility Types/PickedButton',
+    title: 'Docgen/Utility types',
     component: PickedButton,
     tags: ['autodocs'],
     args: {

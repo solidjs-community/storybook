@@ -101,7 +101,7 @@
         "build:dts": "tsc -p tsconfig.build.json",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "dev": "tsup --watch",
-        "lab": "cd examples/lab && bun run storybook",
+        "lab": "bun run build:js && cd examples/lab && bun run storybook",
         "lab:solid1": "cd examples/solid1 && bun run storybook",
         "test": "vitest run --passWithNoTests",
         "test:lab": "cd examples/lab && bun run test",

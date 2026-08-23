@@ -5,7 +5,7 @@ import preview from '../../../.storybook/preview';
 import { ClickButton } from './ClickButton';
 
 const meta = preview.meta({
-    title: 'Lab/Testing/ClickButton',
+    title: 'Tests/Story.test',
     component: ClickButton,
     args: {
         label: 'Click me',

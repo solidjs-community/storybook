@@ -1,4 +1,7 @@
+import { convert, type DocgenInfo as StorybookDocgenInfo } from 'storybook/internal/docs-tools';
+
 import type { SolidComponentDoc } from './types';
+import type { StrictArgTypes, StrictInputType } from 'storybook/internal/types';
 
 // Maps Solid component-meta output to Storybook docgen / argTypes shapes.
 export interface DocgenInfo {
@@ -60,18 +63,42 @@ export function solidComponentDocToDocgenInfo(doc: SolidComponentDoc): DocgenInf
     };
 }
 
-export function solidComponentDocToArgTypesData(doc: SolidComponentDoc): Record<string, unknown> {
-    const docgenInfo = solidComponentDocToDocgenInfo(doc);
+function toSbType(prop: SolidComponentDoc['props'][string]) {
+    return convert({
+        type: {
+            name: prop.type.name,
+            raw: prop.type.raw ?? prop.type.name,
+            ...(prop.type.value !== undefined ? { value: prop.type.value } : {}),
+        },
+        required: prop.required,
+        description: prop.description ?? '',
+        defaultValue: prop.defaultValue ?? { value: '' },
+    } satisfies StorybookDocgenInfo);
+}
 
+export function solidComponentDocToArgTypesData(doc: SolidComponentDoc): StrictArgTypes {
     return Object.fromEntries(
-        Object.entries(docgenInfo.props).map(([name, prop]) => [
-            name,
-            {
+        Object.entries(doc.props).map(([name, prop]) => {
+            const sbType = toSbType(prop);
+            const argType: StrictInputType = {
                 name,
-                type: prop.type.name,
-                required: prop.required ?? false,
                 description: prop.description,
-            },
-        ])
+                type: sbType
+                    ? { required: prop.required, ...sbType }
+                    : { name: 'other', value: prop.type.name, required: prop.required },
+                table: {
+                    type: { summary: prop.type.raw ?? prop.type.name },
+                    defaultValue: prop.defaultValue
+                        ? { summary: prop.defaultValue.value }
+                        : undefined,
+                },
+            };
+
+            if (prop.if) {
+                argType.if = prop.if;
+            }
+
+            return [name, argType];
+        })
     );
 }

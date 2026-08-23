@@ -3,7 +3,7 @@ import preview from '../../../.storybook/preview';
 import { Card } from './Card';
 
 const meta = preview.meta({
-    title: 'Docgen Lab/Discriminated Union/Card',
+    title: 'Docgen/Discriminated union',
     component: Card,
     tags: ['autodocs'],
 });

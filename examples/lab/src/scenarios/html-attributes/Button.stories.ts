@@ -3,7 +3,7 @@ import preview from '../../../.storybook/preview';
 import { Button } from './Button';
 
 const meta = preview.meta({
-    title: 'Docgen Lab/HTML Attributes/Button',
+    title: 'Docgen/HTML attributes',
     component: Button,
     tags: ['autodocs'],
     args: {

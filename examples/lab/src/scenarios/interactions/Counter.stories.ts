@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from 'storybook-solidjs-vite';
 import { Counter } from './Counter';
 
 const meta = {
-    title: 'Lab/Interactions/Counter',
+    title: 'Tests/Play',
     component: Counter,
     args: {
         label: 'Clicks',
