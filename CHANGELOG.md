@@ -1,5 +1,21 @@
 # storybook-solidjs-vite
 
+## 10.7.0
+
+### Minor Changes
+
+- 698a324: ### Docgen & autodocs
+  - Pin Solid component-meta to `@typescript/typescript6` so prop extraction no longer depends on the consumer's installed `typescript` version (including TypeScript 7 projects without a programmatic compiler API).
+  - Exclude Solid JSX-only namespaces from extracted props and Controls: `use:`, `prop:`, `attr:`, `bool:`, `on:`, and `oncapture:` (compile-time JSX syntax, not meaningful Storybook args). Fixes [#56](https://github.com/solidjs-community/storybook/issues/56).
+  - Fix `./renderer` package export types path (`dist/renderer/index.d.ts`).
+
+  ### Build
+  - Split JS and declaration emit (`tsup` + `tsc`) and rewrite dev-only `solid-js-next` imports in published output.
+
+  ### Compatibility
+  - Align Storybook integration dependencies with Storybook **10.5.x**.
+  - Peer range already includes Vite **8**; lab example updated to validate against it.
+
 ## 10.6.0
 
 ### Minor Changes
@@ -35,13 +51,11 @@
 ### Minor Changes
 
 - 7c5101a: Enable static Autodocs code snippets by default via Storybook's experimental code examples pipeline.
-
   - Add `generateCodeSnippet` AST helper and `experimental_enrichCsf` preset hook
   - Enable `features.experimentalCodeExamples` by default; opt out in `.storybook/main.ts`
   - Include per-story `snippet` fields in the components manifest
 
 - 7c5101a: Replace react-docgen-typescript with solid-component-meta for Controls, Docs, and the components manifest.
-
   - Add `componentManifest/` pipeline: TypeScript LanguageService extraction, Vite `__docgenInfo` injection, and manifest hooks (`experimental_manifests`, `internal_getArgTypesData`)
   - Enable components manifest debugger by default (`features.componentsManifest`); opt out of docgen via `framework.options.docgen: false`
   - Trim runtime docs layer to RCM-only (`entry-preview-argtypes` reads injected `__docgenInfo`); remove legacy acorn/propTypes docgen (~1500 lines)
@@ -58,7 +72,6 @@
 ### Minor Changes
 
 - 28b8951: Replace react-docgen-typescript with solid-component-meta for Controls, Docs, and the components manifest.
-
   - Add `componentManifest/` pipeline: TypeScript LanguageService extraction, Vite `__docgenInfo` injection, and manifest hooks (`experimental_manifests`, `internal_getArgTypesData`)
   - Enable components manifest debugger by default (`features.componentsManifest`); opt out of docgen via `framework.options.docgen: false`
   - Trim runtime docs layer to RCM-only (`entry-preview-argtypes` reads injected `__docgenInfo`); remove legacy acorn/propTypes docgen (~1500 lines)
@@ -97,7 +110,6 @@
   You can still import from `storybook-solidjs-vite` without `/next` on Solid 2, but that may produce TypeScript errors because those types target the Solid 1 renderer.
 
   In `.storybook/main.ts`, both framework names are valid:
-
   - `storybook-solidjs-vite` — auto-detects Solid version from installed `solid-js` (works for Solid 2 projects)
   - `storybook-solidjs-vite/next` — pins the Solid 2 renderer explicitly
 
@@ -128,7 +140,6 @@
   ```
 
   ### Removals
-
   - **Removed `setProjectAnnotations`** — it only mattered for portable stories, which this integration does not support. If you adopt CSF Next, use `definePreview` in `.storybook/preview` and import that preview in story files.
 
   ### Internal
