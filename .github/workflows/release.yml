@@ -5,14 +5,15 @@ on:
         branches:
             - main
             - next
-      
+
 permissions:
     contents: write
     id-token: write
     pull-requests: write
-  
+
 jobs:
     release:
+        if: github.ref == 'refs/heads/main'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
@@ -42,3 +43,45 @@ jobs:
                   publish-script: bun run release
                   create-github-releases: true
                   github-token: ${{ secrets.GH_PAT }}
+
+    snapshot:
+        if: github.ref == 'refs/heads/next'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Update npm to latest
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install -g npm@latest
+
+            - name: Install dependencies
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install --frozen-lockfile
+
+            - name: Check build
+              run: bun run build
+
+            - name: Check for changesets
+              id: changesets
+              run: |
+                  if find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | grep -q .; then
+                    echo "exists=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "exists=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Publish next snapshot
+              if: steps.changesets.outputs.exists == 'true'
+              run: |
+                  bun run version-packages:next
+                  bun run release:next

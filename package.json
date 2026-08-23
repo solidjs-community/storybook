@@ -107,8 +107,9 @@
         "lint": "eslint . --fix --max-warnings=9999 --quiet",
         "changelog": "changeset",
         "version-packages": "changeset version",
+        "version-packages:next": "changeset version --snapshot next",
         "release": "changeset publish",
-        "release:next": "changeset publish --tag next"
+        "release:next": "changeset publish --no-git-tag --tag next"
     },
     "peerDependencies": {
         "@solidjs/web": "^2.0.0-0",
