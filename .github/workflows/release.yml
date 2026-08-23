@@ -15,30 +15,30 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-                with:
-                    fetch-depth: 0
+              with:
+                  fetch-depth: 0
 
             - name: Setup Bun
-                uses: oven-sh/setup-bun@v2
-        
+              uses: oven-sh/setup-bun@v2
+
             - name: Update npm to latest
-                env:
-                    SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
-                run: bun install -g npm@latest
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install -g npm@latest
 
             - name: Install dependencies
-                env:
-                    SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
-                run: bun install --frozen-lockfile
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install --frozen-lockfile
 
             - name: Check build
-                run: bun run build
+              run: bun run build
 
             - name: Create Release Pull Request and Publish to npm
-                uses: changesets/action@v2
-                with:
-                    version-script: bun run version-packages
-                    publish-script: bun run release
-                    create-github-releases: true
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+              uses: changesets/action@v2
+              with:
+                  version-script: bun run version-packages
+                  publish-script: bun run release
+                  create-github-releases: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}

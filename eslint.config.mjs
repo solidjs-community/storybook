@@ -1,63 +1,14 @@
 import antfu from '@antfu/eslint-config';
 
-const typeAwareRules = {
-    // Storybook / Babel / docs-tools surfaces are loosely typed — unsafe-* is pure noise here
-    'ts/no-unsafe-argument': 'off',
-    'ts/no-unsafe-member-access': 'off',
-    'ts/no-unsafe-call': 'off',
-    'ts/no-unsafe-assignment': 'off',
-    'ts/no-unsafe-return': 'off',
-    // Optional chaining / `??` / boolean narrowing becomes unreadable under this rule
-    'ts/strict-boolean-expressions': 'off',
-    // Passing class methods as callbacks (SB / store helpers) false-positives constantly
-    'ts/unbound-method': 'off',
-
-    'ts/prefer-optional-chain': 'error',
-    'ts/no-floating-promises': 'error',
-    'ts/await-thenable': 'error',
-    'ts/no-misused-promises': ['error', {
-        checksVoidReturn: false,
-    }],
-    'ts/naming-convention': [
-        'error',
-        {
-            selector: ['classMethod', 'typeLike'],
-            format: ['snake_case', 'camelCase', 'UPPER_CASE', 'PascalCase'],
-            leadingUnderscore: 'allowSingleOrDouble',
-            trailingUnderscore: 'allow',
-        },
-        {
-            selector: 'variableLike',
-            format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
-            leadingUnderscore: 'allowSingleOrDouble',
-            trailingUnderscore: 'allow',
-        },
-        {
-            selector: 'property',
-            format: [],
-            leadingUnderscore: 'allowSingleOrDouble',
-            trailingUnderscore: 'allow',
-        },
-        {
-            selector: 'typeLike',
-            format: ['PascalCase'],
-        },
-    ],
-};
-
 export default antfu(
     {
-        typescript: {
-            overridesTypeAware: typeAwareRules,
-        },
-        solid: {
-            files: ['**/*.tsx'],
-            overrides: {
-                'solid/reactivity': 'warn',
-                'solid/no-destructure': 'warn',
-                'solid/jsx-no-undef': 'error',
-            },
-        },
+        // typescript-eslint hard-aborts on TypeScript 7 (no compiler API until ~7.1).
+        // With typescript:false antfu ignores **/*.{ts,tsx}; typecheck covers that surface.
+        typescript: false,
+        // antfu solid preset always imports @typescript-eslint/parser — same crash.
+        solid: false,
+        // @vitest/eslint-plugin also loads typescript-eslint at import time.
+        test: false,
         stylistic: {
             indent: 4,
             quotes: 'single',
@@ -66,7 +17,6 @@ export default antfu(
         },
         formatters: true,
         jsx: true,
-        // Code fences in README/CHANGELOG aren't in tsconfig — skip typed lint there
         markdown: false,
         yaml: false,
     },
@@ -96,7 +46,6 @@ export default antfu(
             'unicorn/prefer-dom-node-text-content': 'off',
             // strictest TS4111 needs bracket access; dot-notation autofix breaks typecheck
             'dot-notation': 'off',
-            'ts/dot-notation': 'off',
             // Handled by import/no-duplicates + separate type/value import style
             'no-duplicate-imports': 'off',
             // TypeScript already covers this
