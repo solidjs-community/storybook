@@ -4,7 +4,7 @@ Tiny Storybook that pins **Solid 1** (`solid-js@^1.9` + `vite-plugin-solid@2`) s
 
 ```bash
 bun run build          # from repo root, so file:../.. has dist
-cd examples/lab-solid1
+cd examples/solid1
 bun install
 bun run storybook      # port 6007
 ```

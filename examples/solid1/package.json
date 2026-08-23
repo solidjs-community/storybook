@@ -1,5 +1,5 @@
 {
-    "name": "storybook-solidjs-lab-solid1",
+    "name": "storybook-solidjs-solid1",
     "private": true,
     "type": "module",
     "scripts": {
@@ -12,7 +12,9 @@
     },
     "devDependencies": {
         "@storybook/addon-docs": "^10.5.10",
+        "@tailwindcss/vite": "^4.3.3",
         "storybook": "^10.5.10",
+        "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
         "vite-plugin-solid": "^2.11.14"

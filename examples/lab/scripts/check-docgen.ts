@@ -1,32 +1,38 @@
 /**
  * Headless docgen checks for examples/lab scenarios.
  *
+ * `experimental_manifests` is an empty stub under the docgen server (Storybook 11).
+ * Live extract goes through the docgen provider; the static build writes
+ * `storybook-static/services/core/docgen/*.json`.
+ *
  * Run from repo root: bun run check-docgen
  * Or here: bun run check-docgen
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import {
-    experimental_manifests,
-    internal_getArgTypesData,
-} from 'storybook-solidjs-vite/renderer';
+import { createDocgenProvider } from 'storybook-solidjs-vite/internal/docgen-worker';
+import { internal_getArgTypesData } from 'storybook-solidjs-vite/renderer';
 
 const root = process.cwd();
-const builtManifestPath = path.join(root, 'storybook-static/manifests/components.json');
+const builtDocgenDir = path.join(root, 'storybook-static/services/core/docgen');
 
-interface ManifestComponent {
+interface DocgenProp {
+    name?: string;
+    type?: { name?: string; raw?: string } | string;
+    required?: boolean;
+    if?: { arg: string; eq?: unknown };
+}
+
+interface DocgenPayload {
     id?: string;
     name?: string;
+    path?: string;
     error?: { name: string; message: string };
+    argTypes?: Record<string, unknown>;
     reactComponentMeta?: {
         displayName?: string;
         exportName?: string;
-        props?: Record<string, {
-            name: string;
-            type?: { name?: string; raw?: string };
-            required?: boolean;
-            if?: { arg: string; eq?: unknown };
-        }>;
+        props?: Record<string, DocgenProp>;
     };
 }
 
@@ -39,14 +45,14 @@ interface Scenario {
     componentFilePath: string;
     componentExportName: string;
     expectedProps: string[];
-    assert?: (props: NonNullable<ManifestComponent['reactComponentMeta']>['props']) => void;
+    assert?: (props: Record<string, DocgenProp>) => void;
 }
 
 const scenarios: Scenario[] = [
     {
         label: 'Badge (enum union)',
         storyImportPath: 'src/scenarios/badge/Badge.stories.ts',
-        storyId: 'lab-badge--neutral',
+        storyId: 'docgen-lab-badge--neutral',
         storyTitle: 'Docgen Lab/Badge',
         storyName: 'Neutral',
         componentFilePath: 'src/scenarios/badge/Badge.tsx',
@@ -56,14 +62,14 @@ const scenarios: Scenario[] = [
     {
         label: 'Card (discriminated union)',
         storyImportPath: 'src/scenarios/discriminated-union/Card.stories.ts',
-        storyId: 'lab-discriminated-union-card--solid',
+        storyId: 'docgen-lab-discriminated-union-card--solid',
         storyTitle: 'Docgen Lab/Discriminated Union/Card',
         storyName: 'Solid',
         componentFilePath: 'src/scenarios/discriminated-union/Card.tsx',
         componentExportName: 'Card',
         expectedProps: ['variant', 'padding', 'transparent'],
         assert(props) {
-            const padding = props?.['padding'];
+            const padding = props['padding'];
 
             if (padding?.if?.arg !== 'variant' || padding.if.eq !== 'solid') {
                 fail('Card.padding missing auto-if { variant: solid }');
@@ -73,7 +79,7 @@ const scenarios: Scenario[] = [
     {
         label: 'Button (HTMLAttributes filter)',
         storyImportPath: 'src/scenarios/html-attributes/Button.stories.ts',
-        storyId: 'lab-html-attributes-button--default',
+        storyId: 'docgen-lab-html-attributes-button--default',
         storyTitle: 'Docgen Lab/HTML Attributes/Button',
         storyName: 'Default',
         componentFilePath: 'src/scenarios/html-attributes/Button.tsx',
@@ -83,7 +89,7 @@ const scenarios: Scenario[] = [
     {
         label: 'PickedButton (Pick utility)',
         storyImportPath: 'src/scenarios/utility-types/PickedButton.stories.ts',
-        storyId: 'lab-utility-types-picked-button--default',
+        storyId: 'docgen-lab-utility-types-pickedbutton--default',
         storyTitle: 'Docgen Lab/Utility Types/PickedButton',
         storyName: 'Default',
         componentFilePath: 'src/scenarios/utility-types/PickedButton.tsx',
@@ -93,7 +99,7 @@ const scenarios: Scenario[] = [
     {
         label: 'Package Button (@design-system/button)',
         storyImportPath: 'src/scenarios/package-import/Button.stories.ts',
-        storyId: 'lab-package-import-button--primary',
+        storyId: 'docgen-lab-package-import-button--primary',
         storyTitle: 'Docgen Lab/Package Import/Button',
         storyName: 'Primary',
         componentFilePath: 'node_modules/@design-system/button/index.tsx',
@@ -111,33 +117,39 @@ function ok(message: string) {
     console.log(`OK  ${ message }`);
 }
 
-async function checkManifestScenario(scenario: Scenario) {
-    const manifestEntries = [{
-        id: scenario.storyId,
-        title: scenario.storyTitle,
-        name: scenario.storyName,
-        importPath: scenario.storyImportPath,
-        type: 'story' as const,
-        subtype: 'story' as const,
-        tags: ['manifest', 'autodocs'],
-    }];
-
-    const result = await experimental_manifests({}, {
-        manifestEntries,
-        watch: false,
-    });
-
-    const component = Object.values(result.components?.components ?? {})[0] as ManifestComponent | undefined;
-
-    if (!component) {
-        fail(`${ scenario.label }: manifest returned no component`);
+function payloadProps(payload: DocgenPayload): Record<string, DocgenProp> {
+    if (payload.reactComponentMeta?.props) {
+        return payload.reactComponentMeta.props;
     }
 
-    if (component.error) {
-        fail(`${ scenario.label }: ${ component.error.name }: ${ component.error.message }`);
+    return Object.fromEntries(
+        Object.keys(payload.argTypes ?? {}).map(name => [name, { name }])
+    );
+}
+
+const extractDocgen = await createDocgenProvider()(async() => undefined);
+
+async function checkDocgenProvider(scenario: Scenario) {
+    const payload = await extractDocgen({
+        entry: {
+            id: scenario.storyId,
+            title: scenario.storyTitle,
+            name: scenario.storyName,
+            importPath: scenario.storyImportPath,
+            type: 'story',
+            subtype: 'story',
+        },
+    }) as DocgenPayload | undefined;
+
+    if (!payload) {
+        fail(`${ scenario.label }: docgen provider returned nothing`);
     }
 
-    const props = component.reactComponentMeta?.props ?? {};
+    if (payload.error) {
+        fail(`${ scenario.label }: ${ payload.error.name }: ${ payload.error.message }`);
+    }
+
+    const props = payloadProps(payload);
     const propNames = Object.keys(props);
 
     for (const expected of scenario.expectedProps) {
@@ -147,7 +159,7 @@ async function checkManifestScenario(scenario: Scenario) {
     }
 
     scenario.assert?.(props);
-    ok(`${ scenario.label } → manifest props: ${ propNames.join(', ') }`);
+    ok(`${ scenario.label } → docgen props: ${ propNames.join(', ') }`);
 }
 
 async function checkArgTypesScenario(scenario: Scenario) {
@@ -169,48 +181,73 @@ async function checkArgTypesScenario(scenario: Scenario) {
     ok(`${ scenario.label } → argTypes: ${ Object.keys(argTypes).join(', ') }`);
 }
 
-function checkBuiltManifest() {
-    if (!existsSync(builtManifestPath)) {
-        fail(`missing ${ path.relative(root, builtManifestPath) } — run: bun run build-storybook`);
+function loadBuiltPayloads(): DocgenPayload[] {
+    if (!existsSync(builtDocgenDir)) {
+        return [];
     }
 
-    const manifest = JSON.parse(readFileSync(builtManifestPath, 'utf8')) as {
-        meta?: { docgen?: string; engine?: string };
-        components?: Record<string, ManifestComponent>;
-    };
+    return readdirSync(builtDocgenDir)
+        .filter(file => file.endsWith('.json'))
+        .flatMap((file) => {
+            const raw = JSON.parse(readFileSync(path.join(builtDocgenDir, file), 'utf8')) as {
+                components?: Record<string, DocgenPayload>;
+            };
 
-    for (const scenario of scenarios) {
-        const entry = Object.values(manifest.components ?? {}).find(
-            component => component.id?.includes(scenario.storyId.split('--')[0] ?? '')
-                || component.reactComponentMeta?.exportName === scenario.componentExportName
-        );
-
-        if (!entry?.reactComponentMeta?.props) {
-            fail(`${ scenario.label }: built manifest has no props`);
-        }
-
-        ok(`${ scenario.label } → built manifest props: ${ Object.keys(entry.reactComponentMeta.props).join(', ') }`);
-    }
-
-    ok(`built manifest meta.docgen: ${ manifest.meta?.docgen ?? 'unknown' }`);
+            return Object.values(raw.components ?? {});
+        });
 }
 
-console.log('Docgen lab — manifest + argTypes checks\n');
+function checkBuiltSnapshots() {
+    if (!existsSync(builtDocgenDir)) {
+        fail(`missing ${ path.relative(root, builtDocgenDir) } — run: bun run build-storybook`);
+    }
+
+    const payloads = loadBuiltPayloads();
+
+    if (payloads.length === 0) {
+        fail('built docgen snapshots contain no components');
+    }
+
+    for (const scenario of scenarios) {
+        const componentId = scenario.storyId.split('--')[0] ?? '';
+        const entry = payloads.find(payload =>
+            payload.id === componentId
+            || payload.path?.includes(scenario.componentFilePath)
+        );
+
+        if (!entry) {
+            fail(`${ scenario.label }: no built docgen snapshot (ids: ${ payloads.map(payload => payload.id).join(', ') || 'none' })`);
+        }
+
+        const props = payloadProps(entry);
+        const propNames = Object.keys(props);
+
+        for (const expected of scenario.expectedProps) {
+            if (!propNames.includes(expected)) {
+                fail(`${ scenario.label }: built snapshot missing "${ expected }" (got: ${ propNames.join(', ') || 'none' })`);
+            }
+        }
+
+        scenario.assert?.(props);
+        ok(`${ scenario.label } → built snapshot props: ${ propNames.join(', ') }`);
+    }
+}
+
+console.log('Docgen lab — provider + argTypes checks\n');
 
 for (const scenario of scenarios) {
-    await checkManifestScenario(scenario);
+    await checkDocgenProvider(scenario);
     await checkArgTypesScenario(scenario);
     console.log('');
 }
 
-if (process.argv.includes('--built')) {
-    checkBuiltManifest();
+if (process.argv.includes('--skip-built')) {
+    console.log('Skipping built snapshots (`--skip-built`)');
 }
 else {
-    console.log('Tip: `bun run build-storybook` then `bun run check-docgen -- --built` for static manifest');
+    console.log('Built docgen snapshots\n');
+    checkBuiltSnapshots();
 }
 
 console.log('\nVisual checks while `bun run storybook` is running:');
 console.log('  • Docgen Lab/* → Controls + Docs props table');
-console.log('  • http://localhost:6006/manifests/components.html');
-console.log('  • http://localhost:6006/manifests/components.json');

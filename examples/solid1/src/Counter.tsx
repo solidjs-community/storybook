@@ -5,6 +5,7 @@ export interface CounterProps {
     initial?: number;
 }
 
+/** Solid 1 counter — signals + click handler for the legacy renderer. */
 export function Counter(props: CounterProps) {
     const [count, setCount] = createSignal(props.initial ?? 0);
 
