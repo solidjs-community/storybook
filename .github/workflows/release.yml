@@ -40,5 +40,4 @@ jobs:
                   version-script: bun run version-packages
                   publish-script: bun run release
                   create-github-releases: true
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+                  github-token: ${{ secrets.GH_PAT }}
