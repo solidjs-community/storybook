@@ -17,7 +17,7 @@ describe('createDefaultRender', () => {
         const render = createDefaultRender((passedComponent, passedArgs) => ({
             component: passedComponent,
             args: passedArgs,
-        }));
+        }) as any);
 
         expect(render(null as any, { component, args } as any)).toEqual({
             component,

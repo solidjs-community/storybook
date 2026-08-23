@@ -1,3 +1,4 @@
+import ts from '@typescript/typescript6';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { recast } from 'storybook/internal/babel';
@@ -8,11 +9,16 @@ import { extractDescription, loadCsf } from 'storybook/internal/csf-tools';
 import { getCodeSnippet } from '../codeExamples/generateCodeSnippet';
 import { invariant } from '../codeExamples/invariant';
 import { findMatchingComponent, getComponents } from './getComponents';
-import { DOCGEN_ENGINE, getOrCreateSolidComponentMetaManager, MANIFEST_DOCGEN_ENGINE } from './solidComponentMeta/SolidComponentMetaManager';
+import {
+    DOCGEN_ENGINE,
+    getOrCreateSolidComponentMetaManager,
+    MANIFEST_DOCGEN_ENGINE,
+    SolidComponentMetaManager,
+} from './solidComponentMeta/SolidComponentMetaManager';
 
 import type { SolidComponentDoc } from './types';
 
-type ManifestEntry = {
+interface ManifestEntry {
     id: string;
     title: string;
     name: string;
@@ -21,12 +27,12 @@ type ManifestEntry = {
     subtype?: string;
     tags?: string[];
     storiesImports?: string[];
-};
+}
 
 function isAttachedDocsEntry(entry: ManifestEntry) {
     return entry.type === 'docs'
-      && entry.tags?.includes(Tag.ATTACHED_MDX) === true
-      && (entry.storiesImports?.length ?? 0) > 0;
+        && entry.tags?.includes(Tag.ATTACHED_MDX) === true
+        && (entry.storiesImports?.length ?? 0) > 0;
 }
 
 function selectComponentEntries(manifestEntries: ManifestEntry[]) {
@@ -232,8 +238,6 @@ export async function getArgTypesData(
     }
 
     try {
-        const ts = await import('typescript');
-        const { SolidComponentMetaManager } = await import('./solidComponentMeta/SolidComponentMetaManager');
         const manager = new SolidComponentMetaManager(ts);
         const resolvedPath = join(process.cwd(), componentFilePath);
         const doc = manager.extractFromComponentFile(

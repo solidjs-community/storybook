@@ -4,11 +4,11 @@ import { invariant } from './invariant';
 
 import type { CsfFile } from 'storybook/internal/csf-tools';
 
-const keyOf = (p: t.ObjectProperty): string | null => (
-    t.isIdentifier(p.key) ? p.key.name : t.isStringLiteral(p.key) ? p.key.value : null
-);
+function keyOf(p: t.ObjectProperty): string | null {
+    return t.isIdentifier(p.key) ? p.key.name : t.isStringLiteral(p.key) ? p.key.value : null;
+}
 
-const isValidJsxAttrName = (n: string) => /^[A-Za-z_][A-Za-z0-9_:-]*$/.test(n);
+const isValidJsxAttrName = (n: string) => /^[A-Z_][\w:-]*$/i.test(n);
 
 function buildInvalidSpread(entries: ReadonlyArray<[string, t.Node]>): t.JSXSpreadAttribute | null {
     if (entries.length === 0) {
@@ -23,8 +23,8 @@ function buildInvalidSpread(entries: ReadonlyArray<[string, t.Node]>): t.JSXSpre
     return t.jsxSpreadAttribute(t.objectExpression(objectProps));
 }
 
-const argsRecordFromObjectPath = (objPath?: NodePath<t.ObjectExpression> | null) => (
-    objPath
+function argsRecordFromObjectPath(objPath?: NodePath<t.ObjectExpression> | null) {
+    return objPath
         ? Object.fromEntries(
             objPath
                 .get('properties')
@@ -32,8 +32,8 @@ const argsRecordFromObjectPath = (objPath?: NodePath<t.ObjectExpression> | null)
                 .map(p => [keyOf(p.node), p.get('value').node])
                 .filter(e => Boolean(e[0]))
         )
-        : {}
-);
+        : {};
+}
 
 function storyArgsAssignmentPath(
     program: NodePath<t.Program>,
@@ -51,7 +51,7 @@ function storyArgsAssignmentPath(
                 const prop = left.get('property');
                 const isStoryIdent = obj.isIdentifier() && obj.node.name === storyName;
                 const isArgsProp = (prop.isIdentifier() && prop.node.name === 'args' && !left.node.computed)
-                  || (t.isStringLiteral(prop.node) && left.node.computed && prop.node.value === 'args');
+                    || (t.isStringLiteral(prop.node) && left.node.computed && prop.node.value === 'args');
 
                 if (isStoryIdent && isArgsProp && right.isObjectExpression()) {
                     found = right;
@@ -63,18 +63,18 @@ function storyArgsAssignmentPath(
     return found;
 }
 
-const argsRecordFromObjectNode = (obj?: t.ObjectExpression | null) => (
-    obj
+function argsRecordFromObjectNode(obj?: t.ObjectExpression | null) {
+    return obj
         ? Object.fromEntries(
             obj.properties
                 .filter((p): p is t.ObjectProperty => t.isObjectProperty(p))
                 .map(p => [keyOf(p), p.value])
                 .filter(e => Boolean(e[0]))
         )
-        : {}
-);
+        : {};
+}
 
-const metaArgsRecord = (meta?: t.ObjectExpression | null) => {
+function metaArgsRecord(meta?: t.ObjectExpression | null) {
     if (!meta) {
         return {};
     }
@@ -88,9 +88,9 @@ const metaArgsRecord = (meta?: t.ObjectExpression | null) => {
     }
 
     return argsRecordFromObjectNode(argsProp.value);
-};
+}
 
-const toAttr = (key: string, value: t.Node) => {
+function toAttr(key: string, value: t.Node) {
     if (t.isBooleanLiteral(value)) {
         return value.value
             ? t.jsxAttribute(t.jsxIdentifier(key), null)
@@ -106,9 +106,9 @@ const toAttr = (key: string, value: t.Node) => {
     }
 
     return null;
-};
+}
 
-const toJsxChildren = (node: t.Node | null | undefined) => {
+function toJsxChildren(node: t.Node | null | undefined) {
     if (!node) {
         return [];
     }
@@ -126,7 +126,7 @@ const toJsxChildren = (node: t.Node | null | undefined) => {
     }
 
     return [];
-};
+}
 
 function getArgsMemberKey(expr: t.Node) {
     if (t.isMemberExpression(expr) && t.isIdentifier(expr.object) && expr.object.name === 'args') {
@@ -511,7 +511,7 @@ export function getCodeSnippet(
             const obj = callee.get('object');
             const prop = callee.get('property');
             const isBind = (prop.isIdentifier() && prop.node.name === 'bind')
-              || (t.isStringLiteral(prop.node) && prop.node.value === 'bind');
+                || (t.isStringLiteral(prop.node) && prop.node.value === 'bind');
 
             if (obj.isIdentifier() && isBind) {
                 const resolved = resolveIdentifierInit(storyDeclaration, obj);
@@ -553,8 +553,8 @@ export function getCodeSnippet(
     }
 
     let storyFn:
-      | NodePath<t.ArrowFunctionExpression | t.FunctionExpression | t.FunctionDeclaration>
-      | undefined;
+        | NodePath<t.ArrowFunctionExpression | t.FunctionExpression | t.FunctionDeclaration>
+        | undefined;
 
     if (
         normalizedPath.isArrowFunctionExpression()
@@ -565,8 +565,8 @@ export function getCodeSnippet(
     }
     else if (!normalizedPath.isObjectExpression()) {
         const isEmptyCsf4Story = normalizedPath.isCallExpression()
-          && Array.isArray(normalizedPath.node.arguments)
-          && normalizedPath.node.arguments.length === 0;
+            && Array.isArray(normalizedPath.node.arguments)
+            && normalizedPath.node.arguments.length === 0;
 
         if (!isEmptyCsf4Story) {
             throw normalizedPath.buildCodeFrameError(
@@ -586,11 +586,11 @@ export function getCodeSnippet(
 
     type RenderResolution
         = | { kind: 'missing' }
-          | {
-              kind: 'resolved';
-              path: NodePath<t.ArrowFunctionExpression | t.FunctionExpression | t.FunctionDeclaration>;
-          }
-          | { kind: 'unresolved' };
+            | {
+                kind: 'resolved';
+                path: NodePath<t.ArrowFunctionExpression | t.FunctionExpression | t.FunctionDeclaration>;
+            }
+            | { kind: 'unresolved' };
 
     const getRenderPath = (object: NodePath<t.ObjectProperty>[]): RenderResolution => {
         const renderPath = object.find(p => keyOf(p.node) === 'render')?.get('value');
@@ -605,8 +605,8 @@ export function getCodeSnippet(
             if (
                 resolved
                 && (resolved.isArrowFunctionExpression()
-                  || resolved.isFunctionExpression()
-                  || resolved.isFunctionDeclaration())
+                    || resolved.isFunctionExpression()
+                    || resolved.isFunctionDeclaration())
             ) {
                 return { kind: 'resolved', path: resolved };
             }

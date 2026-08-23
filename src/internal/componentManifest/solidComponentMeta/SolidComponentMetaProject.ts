@@ -9,7 +9,7 @@ import {
     serializeComponentDoc
 } from './resolveProps';
 
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 import type { ComponentRef, SolidComponentDoc, StoryExtractionEntry } from '../types';
 
 function arrayItemsEqual(a: string[], b: string[]) {
@@ -99,15 +99,16 @@ export class SolidComponentMetaProject {
             },
         };
 
+        // Volar is typed against `typescript`; we always pass @typescript/typescript6 (same API shape).
         const { languageServiceHost } = createLanguageServiceHost(
-            typescript,
-            typescript.sys,
+            typescript as never,
+            typescript.sys as never,
             language,
             s => s,
-            projectHost
+            projectHost as never
         );
 
-        this.ls = typescript.createLanguageService(languageServiceHost);
+        this.ls = typescript.createLanguageService(languageServiceHost as never);
     }
 
     dispose() {

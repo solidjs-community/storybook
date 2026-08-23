@@ -99,7 +99,7 @@ const extractArgTypes: ArgTypesExtractor = (component): StrictArgTypes | null =>
 
 /** Storybook-recommended control matchers (same defaults as `storybook init`). */
 export const controlMatchers = {
-    color: /(background|color)$/i,
+    color: /(?:background|color)$/i,
     date: /Date$/,
 } as const;
 

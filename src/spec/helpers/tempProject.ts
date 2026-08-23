@@ -1,7 +1,7 @@
+import ts from '@typescript/typescript6';
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { cwd } from 'node:process';
-import ts from 'typescript';
 
 import { SolidComponentMetaProject } from '../../internal/componentManifest/solidComponentMeta/SolidComponentMetaProject';
 

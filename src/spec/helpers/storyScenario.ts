@@ -1,6 +1,6 @@
+import ts from '@typescript/typescript6';
 import { join } from 'node:path';
 import { loadCsf } from 'storybook/internal/csf-tools';
-import ts from 'typescript';
 import { expect } from 'vitest';
 
 import { findMatchingComponent, getComponents } from '../../internal/componentManifest/getComponents';
@@ -47,14 +47,14 @@ function expectSerializedPropsEqual(actual: SerializedProp, expected: Serialized
     }
 }
 
-export type StoryPipelineResult = {
+export interface StoryPipelineResult {
     dir: string;
     storyPath: string;
     componentPath: string;
     componentRef: ComponentRef;
     doc: SolidComponentDoc | undefined;
     allComponents: ComponentRef[];
-};
+}
 
 export async function extractViaStoryPipeline(options: {
     files: Record<string, string>;
@@ -74,7 +74,10 @@ export async function extractViaStoryPipeline(options: {
     const storyContents = options.files[options.storyFile]!;
     const title = options.title ?? 'Example/Button';
     const csf = loadCsf(storyContents, { makeTitle: () => title }).parse();
-    const allComponents = await getComponents({ csf, storyFilePath: storyPath });
+    const allComponents = await getComponents({
+        csf: csf as Parameters<typeof getComponents>[0]['csf'],
+        storyFilePath: storyPath,
+    });
     const componentRef = findMatchingComponent(
         allComponents,
         options.componentName ?? csf._meta?.component,

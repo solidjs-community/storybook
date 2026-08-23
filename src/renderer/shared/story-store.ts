@@ -21,7 +21,7 @@ export interface StoryStateStore {
     disposeStory: (storyId: string) => void;
 }
 
-export const getStoryId = (context: { id?: string; canvasElement?: { id?: string } }): string | undefined => {
+export function getStoryId(context: { id?: string; canvasElement?: { id?: string } }): string | undefined {
     const canvasId = context.canvasElement?.id;
 
     if (!canvasId || canvasId === 'storybook-root') {
@@ -29,7 +29,7 @@ export const getStoryId = (context: { id?: string; canvasElement?: { id?: string
     }
 
     return canvasId;
-};
+}
 
 export function createStoryState(createStore: CreateStoreFn): StoryStateStore {
     const [globals, setGlobals] = createStore<Globals>({});

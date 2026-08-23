@@ -4,11 +4,11 @@ import { types as t } from 'storybook/internal/babel';
 
 import type { ComponentRef } from './types';
 
-type CsfProgram = {
+interface CsfProgram {
     traverse: (visitors: Record<string, unknown>) => void;
     get: (key: string) => Array<{ isImportDeclaration: () => boolean; node: t.ImportDeclaration }>;
     scope: { getBinding: (name: string) => { path: { isImportSpecifier?: () => boolean; isImportDefaultSpecifier?: () => boolean; isImportNamespaceSpecifier?: () => boolean } } | undefined };
-};
+}
 
 function importedName(specifier: t.ImportSpecifier) {
     if (t.isIdentifier(specifier.imported)) {
@@ -189,8 +189,8 @@ export async function getComponents({
 
         return binding
             ? !(binding.path.isImportSpecifier?.()
-              || binding.path.isImportDefaultSpecifier?.()
-              || binding.path.isImportNamespaceSpecifier?.())
+                || binding.path.isImportDefaultSpecifier?.()
+                || binding.path.isImportNamespaceSpecifier?.())
             : false;
     };
 
@@ -278,8 +278,8 @@ export function findMatchingComponent(
 
     const exact = components.find(
         c => c.componentName === componentName
-          || c.localImportName === componentName
-          || c.importName === componentName
+            || c.localImportName === componentName
+            || c.importName === componentName
     );
 
     if (exact) {
@@ -289,8 +289,8 @@ export function findMatchingComponent(
     const trimmedTitle = title.replace(/\s+/g, '');
     const matches = components.filter(
         it => trimmedTitle.includes(it.componentName)
-          || (it.localImportName && trimmedTitle.includes(it.localImportName))
-          || (it.importName && trimmedTitle.includes(it.importName))
+            || (it.localImportName && trimmedTitle.includes(it.localImportName))
+            || (it.importName && trimmedTitle.includes(it.importName))
     );
 
     if (matches.length <= 1) {
@@ -315,7 +315,7 @@ export function findMatchingComponent(
 export function findExactComponentMatch(components: ComponentRef[], componentName: string) {
     return components.find(
         c => c.componentName === componentName
-          || c.localImportName === componentName
-          || c.importName === componentName
+            || c.localImportName === componentName
+            || c.importName === componentName
     );
 }

@@ -1,54 +1,6 @@
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { defineConfig } from 'tsup';
 
-const SOLID_RUNTIME_IMPORTS = {
-    'solid-js-next': 'solid-js',
-} as const;
-
-function escapeRegExp(value: string) {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/** Rewrite dev-only Solid import ids in emitted JS and declaration files. */
-function rewriteSolidRuntimeImports(outDir: string) {
-    const replacements = Object.entries(SOLID_RUNTIME_IMPORTS)
-        .sort(([a], [b]) => b.length - a.length);
-
-    const rewriteFile = (filePath: string) => {
-        const source = readFileSync(filePath, 'utf8');
-        let next = source;
-
-        for (const [from, to] of replacements) {
-            const pattern = new RegExp(
-                `(["'])${ escapeRegExp(from) }\\1`,
-                'g'
-            );
-
-            next = next.replace(pattern, (_, quote: string) => `${ quote }${ to }${ quote }`);
-        }
-
-        if (next !== source) {
-            writeFileSync(filePath, next);
-        }
-    };
-
-    const walk = (dir: string) => {
-        for (const entry of readdirSync(dir)) {
-            const filePath = join(dir, entry);
-            const stats = statSync(filePath);
-
-            if (stats.isDirectory()) {
-                walk(filePath);
-            }
-            else if (/\.(?:js|d\.ts)$/.test(entry)) {
-                rewriteFile(filePath);
-            }
-        }
-    };
-
-    walk(outDir);
-}
+import { rewriteSolidRuntimeImports } from './scripts/rewrite-solid-imports';
 
 export default defineConfig((options) => {
     return {
@@ -65,9 +17,7 @@ export default defineConfig((options) => {
         format: ['esm'],
         outDir: 'dist',
         clean: true,
-        dts: {
-            resolve: true,
-        },
+        dts: false,
         tsconfig: 'tsconfig.json',
         external: [
             '@storybook/builder-vite',
@@ -78,13 +28,16 @@ export default defineConfig((options) => {
             /^solid-js(?:-next)?(?:\/|$)/,
             /^storybook\//,
             'storybook-solidjs-vite/renderer/solid-legacy',
-            'typescript',
+            '@typescript/typescript6',
             'vite-plugin-solid',
         ],
         sourcemap: true,
         treeshake: !options.watch,
+        // Watch builds only emit JS — rewrite Solid 2 import aliases for local runs.
         onSuccess: async() => {
-            rewriteSolidRuntimeImports('dist');
+            if (options.watch) {
+                rewriteSolidRuntimeImports('dist');
+            }
         },
     };
 });

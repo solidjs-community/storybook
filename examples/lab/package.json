@@ -5,23 +5,21 @@
     "scripts": {
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
-        "typecheck": "tsc --noEmit",
-        "lint": "eslint . --fix --max-warnings=9999 --quiet",
+        "typecheck": "node ../../node_modules/typescript7/bin/tsc --noEmit",
+        "lint": "eslint . --config ../../eslint.config.mjs --fix --max-warnings=9999 --quiet",
         "check-docgen": "bun scripts/check-docgen.ts"
     },
     "dependencies": {
         "@design-system/button": "file:./packages/design-system-button",
-        "solid-js": "^1.9.13",
+        "solid-js": "^1.9.15",
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@flexbe/eslint-config": "^3.0.3",
-        "@storybook/addon-docs": "^10.4.4",
+        "@storybook/addon-docs": "^10.5.10",
         "@tsconfig/strictest": "^2.0.8",
-        "eslint": "^9.39.4",
-        "storybook": "^10.4.4",
-        "typescript": "^5.9.3",
-        "vite": "^7.0.0",
-        "vite-plugin-solid": "^2.11.12"
+        "eslint": "^10.9.0",
+        "storybook": "^10.5.10",
+        "vite": "^8.2.2",
+        "vite-plugin-solid": "^2.11.14"
     }
 }

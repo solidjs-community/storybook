@@ -1,6 +1,6 @@
+import ts from '@typescript/typescript6';
 import { join } from 'node:path';
 import { convert, type DocgenInfo } from 'storybook/internal/docs-tools';
-import ts from 'typescript';
 import { expect } from 'vitest';
 
 import { SolidComponentMetaProject } from '../../internal/componentManifest/solidComponentMeta/SolidComponentMetaProject';
@@ -14,31 +14,31 @@ import type { SerializedPropIf, SerializedPropType, SolidComponentDoc } from '..
 
 export type ExpectedControl
     = | 'boolean'
-      | 'text'
-      | 'number'
-      | 'radio'
-      | 'select'
-      | 'object'
-      | 'color'
-      | 'date'
-      | 'none'
-      | 'MISSING'
-      | 'NO_SBTYPE';
+        | 'text'
+        | 'number'
+        | 'radio'
+        | 'select'
+        | 'object'
+        | 'color'
+        | 'date'
+        | 'none'
+        | 'MISSING'
+        | 'NO_SBTYPE';
 
-export type ControlMatchers = {
+export interface ControlMatchers {
     color?: RegExp;
     date?: RegExp;
-};
+}
 
 /** Same defaults as `src/renderer/docs.ts` controlMatchers. */
 export const recommendedControlMatchers: ControlMatchers = {
-    color: /(background|color)$/i,
+    color: /(?:background|color)$/i,
     date: /Date$/,
 };
 
 export function inferControlType(
     sbType: ReturnType<typeof convert> | null,
-    options: { propName?: string; matchers?: ControlMatchers } = {}
+    options: { propName?: string; matchers?: ControlMatchers | undefined } = {}
 ): ExpectedControl {
     if (!sbType) {
         return options.matchers ? 'NO_SBTYPE' : 'object';
@@ -76,7 +76,7 @@ export function inferControlType(
     }
 }
 
-export type PropExpectation = {
+export interface PropExpectation {
     prop: string;
     rcmName?: string;
     control?: ExpectedControl;
@@ -85,9 +85,9 @@ export type PropExpectation = {
     if?: SerializedPropIf;
     defaultValue?: { value: string };
     type?: SerializedPropType;
-};
+}
 
-export type ScenarioOptions = {
+export interface ScenarioOptions {
     files: Record<string, string>;
     entryFile: string;
     exportName: string;
@@ -96,7 +96,7 @@ export type ScenarioOptions = {
     maxPropCount?: number;
     absentProps?: string[];
     jsDocTags?: Record<string, string[]>;
-};
+}
 
 function toSbType(serialized: SerializedPropType, required: boolean) {
     return convert({

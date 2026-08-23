@@ -1,8 +1,19 @@
 {
     "name": "storybook-solidjs-vite",
+    "type": "module",
     "version": "10.6.0",
-    "description": "SolidJS integration with Storybook",
     "private": false,
+    "packageManager": "bun@1.3.14",
+    "description": "SolidJS integration with Storybook",
+    "license": "MIT",
+    "homepage": "https://github.com/solidjs-community/storybook",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/solidjs-community/storybook.git"
+    },
+    "bugs": {
+        "url": "https://github.com/solidjs-community/storybook/issues"
+    },
     "keywords": [
         "storybook",
         "solidjs",
@@ -18,17 +29,6 @@
         "javascript",
         "typescript"
     ],
-    "packageManager": "bun@1.3.10",
-    "homepage": "https://github.com/solidjs-community/storybook",
-    "bugs": {
-        "url": "https://github.com/solidjs-community/storybook/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/solidjs-community/storybook.git"
-    },
-    "license": "MIT",
-    "type": "module",
     "exports": {
         "./package.json": "./package.json",
         ".": {
@@ -59,7 +59,7 @@
             "default": "./dist/playwright.js"
         },
         "./renderer": {
-            "types": "./dist/renderer.d.ts",
+            "types": "./dist/renderer/index.d.ts",
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
@@ -82,17 +82,19 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
-        "README.md",
-        "src/**/*",
-        "dist/**/*",
         "**/*.d.ts",
+        "README.md",
+        "dist/**/*",
+        "src/**/*",
         "template/**/*"
     ],
     "scripts": {
         "prepare": "simple-git-hooks",
         "prepack": "bun run build",
-        "build": "tsup",
-        "typecheck": "tsc --noEmit",
+        "build": "tsup && bun run build:dts && bun scripts/rewrite-solid-imports.ts",
+        "build:js": "tsup",
+        "build:dts": "node ./node_modules/typescript7/bin/tsc -p tsconfig.build.json",
+        "typecheck": "node ./node_modules/typescript7/bin/tsc -p tsconfig.json --noEmit",
         "dev": "tsup --watch",
         "test": "vitest run --passWithNoTests",
         "storybook": "cd examples/lab && bun run storybook",
@@ -103,41 +105,13 @@
         "release": "changeset publish",
         "release:next": "changeset publish --tag next"
     },
-    "dependencies": {
-        "@storybook/builder-vite": "^10.4.4",
-        "@storybook/global": "^5.0.0",
-        "@volar/language-core": "^2.4.28",
-        "@volar/typescript": "^2.4.28",
-        "semver": "^7.8.1"
-    },
-    "devDependencies": {
-        "@changesets/cli": "^2.31.0",
-        "@commitlint/cli": "^20.5.3",
-        "@commitlint/config-conventional": "^20.5.3",
-        "@flexbe/eslint-config": "^3.0.3",
-        "@tsconfig/strictest": "^2.0.8",
-        "@types/node": "^25.9.3",
-        "@types/semver": "^7.7.1",
-        "es-toolkit": "^1.47.1",
-        "eslint": "^9.39.4",
-        "lint-staged": "^16.4.0",
-        "simple-git-hooks": "^2.13.1",
-        "@solidjs/web": "^2.0.0-0",
-        "solid-js": "^1.9.13",
-        "solid-js-next": "npm:solid-js@next",
-        "storybook": "^10.4.4",
-        "tsup": "^8.5.1",
-        "type-fest": "^5.7.0",
-        "typescript": "^5.9.3",
-        "vitest": "^4.1.8"
-    },
     "peerDependencies": {
         "@solidjs/web": "^2.0.0-0",
         "solid-js": "^1.8.0-0 || ^2.0.0-0",
         "storybook": "^0.0.0-0 || ^10.0.0",
+        "typescript": "*",
         "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
-        "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0",
-        "typescript": "^4.0.0 || ^5.0.0 || ^6.0.0"
+        "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0"
     },
     "peerDependenciesMeta": {
         "@solidjs/web": {
@@ -147,6 +121,41 @@
             "optional": true
         }
     },
+    "dependencies": {
+        "@storybook/builder-vite": "^10.5.10",
+        "@storybook/global": "^5.0.0",
+        "@typescript/typescript6": "^6.0.2",
+        "@volar/language-core": "^2.4.28",
+        "@volar/typescript": "^2.4.28",
+        "semver": "^7.8.5"
+    },
+    "devDependencies": {
+        "@antfu/eslint-config": "^9.3.0",
+        "@changesets/cli": "^3.0.1",
+        "@commitlint/cli": "^21.2.2",
+        "@commitlint/config-conventional": "^21.2.2",
+        "@solidjs/web": "^2.0.0-rc.1",
+        "@tsconfig/strictest": "^2.0.8",
+        "@types/node": "^25.9.5",
+        "@types/semver": "^7.8.0",
+        "es-toolkit": "^1.51.0",
+        "eslint": "^10.9.0",
+        "eslint-plugin-format": "^2.0.1",
+        "eslint-plugin-perfectionist": "^5.10.1",
+        "eslint-plugin-solid": "^0.16.0",
+        "lint-staged": "^16.4.0",
+        "simple-git-hooks": "^2.13.1",
+        "solid-js": "^1.9.15",
+        "solid-js-next": "npm:solid-js@next",
+        "storybook": "^10.5.10",
+        "tsup": "^8.5.1",
+        "type-fest": "^5.8.0",
+        "typescript": "^6.0.3",
+        "typescript7": "npm:typescript@^7.0.2",
+        "vite": "^8.2.2",
+        "vite-plugin-solid": "^2.11.14",
+        "vitest": "^4.1.11"
+    },
     "publishConfig": {
         "access": "public"
     },
@@ -155,9 +164,6 @@
         "commit-msg": "bunx --no-install commitlint --edit \"$1\""
     },
     "lint-staged": {
-        "examples/lab/**/*.{js,mjs,jsx,ts,tsx}": [
-            "eslint --config examples/lab/eslint.config.mjs --fix --max-warnings=9999 --quiet"
-        ],
         "*.{js,mjs,jsx,ts,tsx}": [
             "eslint --fix --max-warnings=9999 --quiet"
         ]

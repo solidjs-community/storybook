@@ -68,7 +68,7 @@ const storybookTypesStub = `
     };
 `;
 
-describe('CSF 3 meta.component → docgen', () => {
+describe('cSF 3 meta.component → docgen', () => {
     it('matches direct extract for satisfies Meta<typeof Component> stories', async() => {
         const { pipeline } = await expectStoryMatchesDirectExtract({
             label: 'satisfies Meta StoryObj',
@@ -137,7 +137,7 @@ describe('CSF 3 meta.component → docgen', () => {
     });
 });
 
-describe('CSF Next preview.meta → docgen', () => {
+describe('cSF Next preview.meta → docgen', () => {
     it('matches direct extract for meta.story with args', async() => {
         await expectStoryMatchesDirectExtract({
             label: 'CSF Next args-only',
@@ -196,7 +196,7 @@ describe('CSF Next preview.meta → docgen', () => {
     });
 });
 
-describe('JSX in story → resolvePropsFromStoryFile', () => {
+describe('jSX in story → resolvePropsFromStoryFile', () => {
     it('matches direct extract when story renders the component', async() => {
         await expectStoryMatchesDirectExtract({
             label: 'render JSX',
@@ -339,7 +339,7 @@ describe('advanced types through story pipeline', () => {
         });
 
         expectStoryDocMatchesComponentDoc('discriminated union', pipeline.doc, directDoc);
-        expect(pipeline.doc?.props.padding?.if).toEqual({ arg: 'variant', eq: 'solid' });
+        expect(pipeline.doc?.props['padding']?.if).toEqual({ arg: 'variant', eq: 'solid' });
     });
 });
 
@@ -413,7 +413,7 @@ describe('package imports in story pipeline', () => {
     });
 });
 
-describe('DOM filtering through story pipeline', () => {
+describe('dOM filtering through story pipeline', () => {
     it('keeps allowlisted inherited props without bulk HTMLAttributes noise', async() => {
         const storyFiles = {
             ...htmlAttributesButton.files,
@@ -446,11 +446,11 @@ describe('DOM filtering through story pipeline', () => {
         });
 
         expect(Object.keys(pipeline.doc?.props ?? {}).length).toBeLessThan(40);
-        expect(pipeline.doc?.props.onClick).toBeUndefined();
-        expect(pipeline.doc?.props.innerText).toBeUndefined();
-        expect(pipeline.doc?.props.label?.type.name).toBe('string');
-        expect(pipeline.doc?.props.id?.type.name).toBe('string');
-        expect(pipeline.doc?.props.class?.type.name).toBe('string');
+        expect(pipeline.doc?.props['onClick']).toBeUndefined();
+        expect(pipeline.doc?.props['innerText']).toBeUndefined();
+        expect(pipeline.doc?.props['label']?.type.name).toBe('string');
+        expect(pipeline.doc?.props['id']?.type.name).toBe('string');
+        expect(pipeline.doc?.props['class']?.type.name).toBe('string');
         expect(Object.keys(directDoc?.props ?? {}).length).toBe(
             Object.keys(pipeline.doc?.props ?? {}).length
         );

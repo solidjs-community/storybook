@@ -128,7 +128,7 @@ export function createSolidDefinePreview(
             meta.story = (__input: any) => {
                 const story = defineStory(__input);
 
-                // @ts-ignore this is a private property used only here
+                // @ts-expect-error private compose helper used only for JSX story factory
                 story.Component = story.__compose();
 
                 return story;

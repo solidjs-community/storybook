@@ -20,7 +20,7 @@ afterEach(() => {
     cleanupSpecTempDirs(tempDirs);
 });
 
-describe('DOM prop filtering', () => {
+describe('dOM prop filtering', () => {
     it('keeps allowlisted inherited DOM props but drops event handlers and bulk attrs', () => {
         expectScenario('DOM allowlist', {
             ...htmlAttributesButton,
@@ -30,6 +30,65 @@ describe('DOM prop filtering', () => {
                 { prop: 'label', rcmName: 'string', control: 'text' },
                 { prop: 'id', rcmName: 'string', control: 'text' },
                 { prop: 'class', rcmName: 'string', control: 'text' },
+            ],
+        }, tempDirs);
+    });
+
+    it('excludes Solid JSX-only namespaces from globally augmented JSX types', () => {
+        expectScenario('Solid JSX namespace filter', {
+            files: {
+                'solid-jsx.d.ts': `
+                    import 'solid-js';
+
+                    declare module 'solid-js' {
+                        namespace JSX {
+                            interface Directives {
+                                clickOutside: boolean;
+                            }
+                            interface ExplicitProperties {
+                                value: string;
+                            }
+                            interface ExplicitAttributes {
+                                href: string;
+                            }
+                            interface ExplicitBoolAttributes {
+                                open: boolean;
+                            }
+                            interface CustomEvents {
+                                custom: Event;
+                            }
+                            interface CustomCaptureEvents {
+                                captured: Event;
+                            }
+                        }
+                    }
+                `,
+                'Button.tsx': `
+                    import type { JSX } from 'solid-js';
+                    import './solid-jsx';
+
+                    interface ButtonProps extends JSX.HTMLAttributes<HTMLDivElement> {
+                        label: string;
+                    }
+
+                    export function Button(props: ButtonProps) {
+                        return null;
+                    }
+                `,
+            },
+            entryFile: 'Button.tsx',
+            exportName: 'Button',
+            maxPropCount: 40,
+            absentProps: [
+                'use:clickOutside',
+                'prop:value',
+                'attr:href',
+                'bool:open',
+                'on:custom',
+                'oncapture:captured',
+            ],
+            expectations: [
+                { prop: 'label', rcmName: 'string', control: 'text' },
             ],
         }, tempDirs);
     });
@@ -45,7 +104,7 @@ describe('discriminated union auto-if', () => {
             ],
         }, tempDirs);
 
-        expect(doc?.props.variant?.if).toBeUndefined();
+        expect(doc?.props['variant']?.if).toBeUndefined();
     });
 
     it('maps auto-if through docgen to Storybook argTypes', () => {
@@ -54,8 +113,8 @@ describe('discriminated union auto-if', () => {
         const extractArgTypes = parameters.docs.extractArgTypes;
         const argTypes = extractArgTypes({ __docgenInfo: docgenInfo });
 
-        expect(argTypes?.padding?.if).toEqual({ arg: 'variant', eq: 'solid' });
-        expect(argTypes?.transparent?.if).toEqual({ arg: 'variant', eq: 'ghost' });
+        expect(argTypes?.['padding']?.if).toEqual({ arg: 'variant', eq: 'solid' });
+        expect(argTypes?.['transparent']?.if).toEqual({ arg: 'variant', eq: 'ghost' });
     });
 });
 
@@ -100,8 +159,8 @@ describe('story pipeline integration', () => {
             tempDirs,
         });
 
-        expect(pipeline.doc?.props.label?.defaultValue).toEqual({ value: '\'Click me\'' });
-        expect(pipeline.doc?.props.size?.defaultValue).toEqual({ value: '\'sm\'' });
+        expect(pipeline.doc?.props['label']?.defaultValue).toEqual({ value: '\'Click me\'' });
+        expect(pipeline.doc?.props['size']?.defaultValue).toEqual({ value: '\'sm\'' });
     });
 });
 

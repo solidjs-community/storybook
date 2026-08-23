@@ -14,7 +14,7 @@ import {
 const root = process.cwd();
 const builtManifestPath = path.join(root, 'storybook-static/manifests/components.json');
 
-type ManifestComponent = {
+interface ManifestComponent {
     id?: string;
     name?: string;
     error?: { name: string; message: string };
@@ -28,9 +28,9 @@ type ManifestComponent = {
             if?: { arg: string; eq?: unknown };
         }>;
     };
-};
+}
 
-type Scenario = {
+interface Scenario {
     label: string;
     storyImportPath: string;
     storyId: string;
@@ -40,7 +40,7 @@ type Scenario = {
     componentExportName: string;
     expectedProps: string[];
     assert?: (props: NonNullable<ManifestComponent['reactComponentMeta']>['props']) => void;
-};
+}
 
 const scenarios: Scenario[] = [
     {
@@ -63,7 +63,7 @@ const scenarios: Scenario[] = [
         componentExportName: 'Card',
         expectedProps: ['variant', 'padding', 'transparent'],
         assert(props) {
-            const padding = props['padding'];
+            const padding = props?.['padding'];
 
             if (padding?.if?.arg !== 'variant' || padding.if.eq !== 'solid') {
                 fail('Card.padding missing auto-if { variant: solid }');
@@ -124,7 +124,6 @@ async function checkManifestScenario(scenario: Scenario) {
 
     const result = await experimental_manifests({}, {
         manifestEntries,
-        presets: { apply: async(_key, data) => data },
         watch: false,
     });
 
@@ -183,7 +182,7 @@ function checkBuiltManifest() {
     for (const scenario of scenarios) {
         const entry = Object.values(manifest.components ?? {}).find(
             component => component.id?.includes(scenario.storyId.split('--')[0] ?? '')
-              || component.reactComponentMeta?.exportName === scenario.componentExportName
+                || component.reactComponentMeta?.exportName === scenario.componentExportName
         );
 
         if (!entry?.reactComponentMeta?.props) {

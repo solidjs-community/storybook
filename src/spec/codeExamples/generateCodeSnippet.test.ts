@@ -1,7 +1,7 @@
 import { recast, types as t } from 'storybook/internal/babel';
 import { loadCsf } from 'storybook/internal/csf-tools';
 import { dedent } from 'ts-dedent';
-import { expect, test } from 'vitest';
+import { expect, it } from 'vitest';
 
 import { getCodeSnippet } from '../../internal/codeExamples/generateCodeSnippet';
 
@@ -48,7 +48,7 @@ function withCSF4(body: string) {
     `;
 }
 
-test('Default', () => {
+it('default', () => {
     const input = withCSF3(`
         export const Default: Story = {};
     `);
@@ -58,7 +58,7 @@ test('Default', () => {
     );
 });
 
-test('Synthesizes self-closing when no children', () => {
+it('synthesizes self-closing when no children', () => {
     const input = dedent`
         import type { Meta } from 'storybook-solidjs-vite';
         import { Button } from '@design-system/button';
@@ -74,7 +74,7 @@ test('Synthesizes self-closing when no children', () => {
     expect(generateExample(input)).toMatchInlineSnapshot('"const NoChildren = () => <Button />;"');
 });
 
-test('Default satisfies or as', () => {
+it('default satisfies or as', () => {
     const input = withCSF3(`
         export const Default = {} satisfies Story;
         export const Other = {} as Story;
@@ -88,7 +88,7 @@ test('Default satisfies or as', () => {
     );
 });
 
-test('Default - CSF4', () => {
+it('default - CSF4', () => {
     const input = withCSF4(`
         export const Default = meta.story({});
     `);
@@ -98,7 +98,7 @@ test('Default - CSF4', () => {
     );
 });
 
-test('Replace children', () => {
+it('replace children', () => {
     const input = withCSF3(dedent`
         export const WithEmoji: Story = {
           args: {
@@ -112,7 +112,7 @@ test('Replace children', () => {
     );
 });
 
-test('Boolean', () => {
+it('boolean', () => {
     const input = withCSF3(dedent`
         export const Disabled: Story = {
           args: {
@@ -126,7 +126,7 @@ test('Boolean', () => {
     );
 });
 
-test('CSF2 - Template.bind', () => {
+it('cSF2 - Template.bind', () => {
     const input = withCSF3(dedent`
         const Template = (args) => <Button {...args} label="String"></Button>
         export const CSF2: StoryFn = Template.bind({});
@@ -137,7 +137,7 @@ test('CSF2 - Template.bind', () => {
     );
 });
 
-test('render: Template (identifier referencing local function)', () => {
+it('render: Template (identifier referencing local function)', () => {
     const input = withCSF3(dedent`
         const Template = (args) => <Button {...args} label="String"></Button>
         export const Interactive: Story = { render: Template }
@@ -148,7 +148,7 @@ test('render: Template (identifier referencing local function)', () => {
     );
 });
 
-test('Custom Render', () => {
+it('custom Render', () => {
     const input = withCSF3(dedent`
         export const CustomRender: Story = { render: () => <Button label="String"></Button> }
     `);
@@ -158,7 +158,7 @@ test('Custom Render', () => {
     );
 });
 
-test('CustomRenderWithOverideArgs only', () => {
+it('customRenderWithOverideArgs only', () => {
     const input = withCSF3(
         `export const CustomRenderWithOverideArgs = {
       render: (args) => <Button {...args} override="overide">Render</Button>,
@@ -171,7 +171,7 @@ test('CustomRenderWithOverideArgs only', () => {
     );
 });
 
-test('ObjectInvalidAttr only', () => {
+it('objectInvalidAttr only', () => {
     const input = withCSF3(
         `export const ObjectInvalidAttr = {
       args: { '1x': 'a', 'bad key': 'b', '@foo': 'c', '-dash': 'd' }
@@ -189,7 +189,7 @@ test('ObjectInvalidAttr only', () => {
     `);
 });
 
-test('CSF Next preview.meta story with args', () => {
+it('cSF Next preview.meta story with args', () => {
     const input = dedent`
         import { fn } from 'storybook/test';
         import preview from '../../.storybook/preview';
@@ -213,7 +213,7 @@ test('CSF Next preview.meta story with args', () => {
     );
 });
 
-test('top level args injection and spreading in different places', () => {
+it('top level args injection and spreading in different places', () => {
     const input = withCSF3(dedent`
         export const MultipleSpreads: Story = {
           args: { disabled: false, count: 0, empty: '' },

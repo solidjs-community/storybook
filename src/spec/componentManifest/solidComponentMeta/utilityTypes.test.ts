@@ -51,7 +51,7 @@ describe('component props', () => {
         });
 
         expect(Object.keys(doc?.props ?? {}).sort()).toEqual(['badge', 'label', 'size']);
-        expect(doc?.props.children).toBeUndefined();
+        expect(doc?.props['children']).toBeUndefined();
     });
 
     it('resolves Pick and Omit type aliases on the component', () => {

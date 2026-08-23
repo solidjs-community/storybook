@@ -8,24 +8,24 @@ export type SolidRuntimeCreateComponent = (
     props: object
 ) => SolidRenderer['storyResult'];
 
-export type SolidRendererRuntime = {
+export interface SolidRendererRuntime {
     storyStore: StoryStateStore;
     createComponent: SolidRuntimeCreateComponent;
     render: (
         renderFn: () => SolidRenderer['storyResult'],
         canvasElement: SolidRenderer['canvasElement']
     ) => () => void;
-};
+}
 
 export type StoryThunk = () => SolidRenderer['storyResult'];
 
-export type StoryAppContext = {
+export interface StoryAppContext {
     Story: StoryThunk;
     storyContext: RenderContext['storyContext'];
     showMain: RenderContext['showMain'];
     showException: RenderContext['showException'];
     storyId: string;
-};
+}
 
 type RenderToCanvasOptions = SolidRendererRuntime & {
     createStoryApp: (context: StoryAppContext) => SolidComponent;

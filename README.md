@@ -47,7 +47,7 @@ as needed.
 import { defineMain } from 'storybook-solidjs-vite';
 
 export default defineMain({
-  framework: { name: 'storybook-solidjs-vite' },
+    framework: { name: 'storybook-solidjs-vite' },
 });
 ```
 
@@ -57,7 +57,7 @@ import addonDocs from '@storybook/addon-docs';
 import { definePreview } from 'storybook-solidjs-vite';
 
 export default definePreview({
-  addons: [addonDocs()],
+    addons: [addonDocs()],
 });
 ```
 
@@ -67,11 +67,11 @@ import preview from '../.storybook/preview';
 import { Button } from './Button';
 
 const meta = preview.meta({
-  component: Button,
+    component: Button,
 });
 
 export const Primary = meta.story({
-  args: { label: 'Button' },
+    args: { label: 'Button' },
 });
 ```
 
@@ -82,25 +82,25 @@ export const Primary = meta.story({
 import type { StorybookConfig } from 'storybook-solidjs-vite';
 
 export default {
-  framework: 'storybook-solidjs-vite',
+    framework: 'storybook-solidjs-vite',
 } satisfies StorybookConfig;
 ```
 
 ```ts
+import { Button } from './Button';
+
 // src/Button.stories.ts
 import type { Meta, StoryObj } from 'storybook-solidjs-vite';
 
-import { Button } from './Button';
-
 const meta = {
-  component: Button,
+    component: Button,
 } satisfies Meta<typeof Button>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-  args: { label: 'Button' },
+    args: { label: 'Button' },
 };
 ```
 
@@ -116,10 +116,10 @@ To disable:
 import type { StorybookConfig } from 'storybook-solidjs-vite';
 
 const config: StorybookConfig = {
-  framework: {
-    name: 'storybook-solidjs-vite',
-    options: { docgen: false },
-  },
+    framework: {
+        name: 'storybook-solidjs-vite',
+        options: { docgen: false },
+    },
 };
 
 export default config;
@@ -135,9 +135,9 @@ To disable:
 import type { StorybookConfig } from 'storybook-solidjs-vite';
 
 const config: StorybookConfig = {
-  features: {
-    experimentalCodeExamples: false
-  },
+    features: {
+        experimentalCodeExamples: false,
+    },
 };
 
 export default config;

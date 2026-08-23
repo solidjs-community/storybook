@@ -12,7 +12,7 @@ import {
 import { resolvePropDeclarationType, serializeType } from './serializeType';
 import { resolveAliasedSymbol } from './typeUtils';
 
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 import type { ResolvedComponent, SerializedProp, SolidComponentDoc } from '../types';
 
 function extractDefaultValueFromJsDoc(

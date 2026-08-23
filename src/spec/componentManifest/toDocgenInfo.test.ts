@@ -38,7 +38,7 @@ describe('solidComponentDocToDocgenInfo', () => {
             },
         });
 
-        expect(solidComponentDocToDocgenInfo(doc).props.size).toMatchObject({
+        expect(solidComponentDocToDocgenInfo(doc).props['size']).toMatchObject({
             description: 'Visual size of the button.',
             defaultValue: { value: 'medium' },
             type: {
@@ -51,7 +51,7 @@ describe('solidComponentDocToDocgenInfo', () => {
                 ],
             },
         });
-        expect(solidComponentDocToDocgenInfo(doc).props.padding?.if).toEqual({ arg: 'variant', eq: 'solid' });
+        expect(solidComponentDocToDocgenInfo(doc).props['padding']?.if).toEqual({ arg: 'variant', eq: 'solid' });
     });
 });
 

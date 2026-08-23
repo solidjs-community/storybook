@@ -1,7 +1,7 @@
+import ts from '@typescript/typescript6';
 import { watch } from 'node:fs';
 import * as path from 'node:path';
 import { logger } from 'storybook/internal/node-logger';
-import ts from 'typescript';
 
 import { SolidComponentMetaProject } from './SolidComponentMetaProject';
 
@@ -239,19 +239,15 @@ export async function getOrCreateSolidComponentMetaManager(
         return watchManager;
     }
 
-    try {
-        const ts = await import('typescript');
-        const instance = new SolidComponentMetaManager(ts);
+    // Always use the JS Compiler API from @typescript/typescript6 — independent of the
+    // consumer's `typescript` peer (which may be TypeScript 7 without a programmatic API).
+    const instance = new SolidComponentMetaManager(ts);
 
-        if (watchMode) {
-            watchManager = instance;
-        }
+    if (watchMode) {
+        watchManager = instance;
+    }
 
-        return instance;
-    }
-    catch {
-        return undefined;
-    }
+    return instance;
 }
 
 export const DOCGEN_ENGINE = 'solid-component-meta' as const;

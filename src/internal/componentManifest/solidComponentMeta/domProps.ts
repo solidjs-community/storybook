@@ -1,4 +1,4 @@
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 
 const INHERITED_DOM_PROP_ALLOWLIST = new Set([
     'accesskey',
@@ -35,7 +35,21 @@ function isDomLibrarySource(fileName: string) {
 }
 
 function isEventHandlerPropName(name: string) {
-    return /^on[A-Z]/.test(name) || name.startsWith('on:') || name.startsWith('prop:');
+    return /^on[A-Z]/.test(name) || name.startsWith('on:') || name.startsWith('oncapture:');
+}
+
+/**
+ * Solid JSX-only attribute namespaces from `JSX.DOMAttributes` / module augmentation.
+ * They are compile-time JSX syntax (`<div prop:id={x} />`), not runtime prop keys on
+ * `createComponent(Component, args)` — so they cannot be meaningful Storybook args.
+ */
+function isSolidJsxOnlyPropName(name: string) {
+    return name.startsWith('use:')
+        || name.startsWith('prop:')
+        || name.startsWith('attr:')
+        || name.startsWith('bool:')
+        || name.startsWith('on:')
+        || name.startsWith('oncapture:');
 }
 
 function isAllowlistedInheritedDomProp(name: string) {
@@ -78,6 +92,10 @@ export function shouldIncludeComponentProp(
     bulkExcluded: Set<string>
 ) {
     const propName = prop.getName();
+
+    if (isSolidJsxOnlyPropName(propName)) {
+        return false;
+    }
 
     if (isPropDeclaredInSource(prop, sourceFile)) {
         return true;

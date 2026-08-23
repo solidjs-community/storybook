@@ -4,7 +4,7 @@ import {
     SOLID_COMPONENT_TYPE_ALIASES,
 } from './typeUtils';
 
-import type ts from 'typescript';
+import type ts from '@typescript/typescript6';
 import type { ComponentRef, ResolvedComponent } from '../types';
 
 export function resolvePropsFromComponentType(
@@ -343,7 +343,7 @@ export function isSolidComponentType(
 
     const typeString = checker.typeToString(type);
 
-    if (/Component<|VoidComponent<|ParentComponent<|FlowComponent</.test(typeString)) {
+    if (/(?:Component|VoidComponent|ParentComponent|FlowComponent)</.test(typeString)) {
         return true;
     }
 
@@ -354,8 +354,8 @@ export function isSolidComponentType(
 
         if (declarations?.some(
             decl => typescript.isFunctionDeclaration(decl)
-              || typescript.isArrowFunction(decl)
-              || typescript.isFunctionExpression(decl)
+                || typescript.isArrowFunction(decl)
+                || typescript.isFunctionExpression(decl)
         )) {
             return true;
         }

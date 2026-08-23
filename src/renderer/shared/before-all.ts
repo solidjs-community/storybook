@@ -1,7 +1,7 @@
 import { configure } from 'storybook/test';
 
 /** Configures `storybook/test` wrappers so Solid updates flush after async play steps. */
-export const beforeAll = async() => {
+export async function beforeAll() {
     try {
         configure({
             unstable_advanceTimersWrapper: (cb: () => any) => cb(),
@@ -9,10 +9,10 @@ export const beforeAll = async() => {
                 const result = await cb();
 
                 await new Promise<void>((resolve) => {
-                    setTimeout(() => resolve(), 0);
+                    setTimeout(resolve, 0);
 
                     // @ts-expect-error global jest
-                    if (typeof jest !== 'undefined' && jest != null && ((setTimeout as any)._isMockFunction === true || Object.prototype.hasOwnProperty.call(setTimeout, 'clock'))) {
+                    if (typeof jest !== 'undefined' && jest != null && ((setTimeout as any)._isMockFunction === true || Object.hasOwn(setTimeout, 'clock'))) {
                         // @ts-expect-error global jest
                         jest!.advanceTimersByTime(0);
                     }
@@ -26,4 +26,4 @@ export const beforeAll = async() => {
     catch {
         // storybook/test might not be available; noop
     }
-};
+}
