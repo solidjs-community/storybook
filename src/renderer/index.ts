@@ -1,6 +1,8 @@
 import { fileURLToPath } from 'node:url';
 
 import { enrichCsf } from '../internal/codeExamples/enrichCsf';
+import { experimental_docgenProvider } from '../internal/componentManifest/docgen/docgenProvider';
+import { experimental_storyDocsProvider } from '../internal/componentManifest/docgen/storyDocsProvider';
 import { generateComponentManifests, getArgTypesData } from '../internal/componentManifest/manifests';
 import { resolveSolidRendererEntry, resolveSolidVersion } from '../internal/solidVersion';
 
@@ -11,6 +13,8 @@ export {
     enrichCsf as experimental_enrichCsf,
     /** @see https://storybook.js.org/docs/ai/manifests */
     generateComponentManifests as experimental_manifests,
+    experimental_docgenProvider,
+    experimental_storyDocsProvider,
     /** Used by Storybook MCP / story creation tooling */
     getArgTypesData as internal_getArgTypesData,
 };

@@ -13,6 +13,7 @@ export default defineConfig((options) => {
             'renderer/solid-legacy': 'src/renderer/solid-legacy.ts',
             'renderer/solid-next': 'src/renderer/solid-next.ts',
             'renderer/docs': 'src/renderer/docs.ts',
+            'internal/docgen-worker': 'src/internal/componentManifest/docgen/docgen-worker.ts',
         },
         format: ['esm'],
         outDir: 'dist',

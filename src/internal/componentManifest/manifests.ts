@@ -8,7 +8,8 @@ import { extractDescription, loadCsf } from 'storybook/internal/csf-tools';
 
 import { getCodeSnippet } from '../codeExamples/generateCodeSnippet';
 import { invariant } from '../codeExamples/invariant';
-import { findMatchingComponent, getComponents } from './getComponents';
+import { findExactComponentMatch, findMatchingComponent, getComponents } from './getComponents';
+import { extractDeclaredSubcomponents } from './subcomponents';
 import {
     DOCGEN_ENGINE,
     getOrCreateSolidComponentMetaManager,
@@ -112,14 +113,40 @@ export async function generateComponentManifests(
     options: {
         manifestEntries: ManifestEntry[];
         watch?: boolean;
+        presets?: {
+            apply: (key: string, initial?: unknown) => Promise<unknown>;
+        };
     }
 ) {
-    const { manifestEntries, watch: watchMode = false } = options;
+    const { manifestEntries, watch: watchMode = false, presets } = options;
+    const features = await presets?.apply('features', {}) as { experimentalDocgenServer?: boolean } | undefined;
+
+    /**
+     * Flag on: skip extract. This envelope stays `v: 0` (legacy preset shape). Core ignores the
+     * empty `components` map, keeps `meta.docgen`, and writes `manifests/components.json` as `v: 1`
+     * with `$ref`s into the docgen / story-docs snapshots.
+     */
+    if (features?.experimentalDocgenServer) {
+        return {
+            ...existingManifests,
+            components: {
+                v: 0,
+                components: {},
+                meta: {
+                    docgen: MANIFEST_DOCGEN_ENGINE,
+                    durationMs: 0,
+                },
+            },
+        };
+    }
+
     const startTime = performance.now();
     const manager = await getOrCreateSolidComponentMetaManager(watchMode);
 
     try {
         const entriesByUniqueComponent = selectComponentEntries(manifestEntries);
+
+        // Step 1: Resolve components for all entries (one CSF file each).
         const resolvedEntries = await Promise.all(
             entriesByUniqueComponent.map(async(entry) => {
                 const storyFilePath = entry.type === 'story'
@@ -134,12 +161,22 @@ export async function generateComponentManifests(
                 const storyFile = readFileSync(storyPath, 'utf8');
                 const csf = loadCsf(storyFile, { makeTitle: () => entry.title }).parse();
                 const componentName = csf._meta?.component;
-                const allComponents = await getComponents({ csf: csf as Parameters<typeof getComponents>[0]['csf'], storyFilePath: storyPath });
+                const declaredSubcomponents = extractDeclaredSubcomponents(csf);
+                const allComponents = await getComponents({
+                    csf: csf as Parameters<typeof getComponents>[0]['csf'],
+                    storyFilePath: storyPath,
+                    additionalComponentNames: declaredSubcomponents.map(subcomponent => subcomponent.componentName),
+                });
                 const component = findMatchingComponent(allComponents, componentName, entry.title);
+                const subcomponents = declaredSubcomponents.map(declared => ({
+                    name: declared.name,
+                    component: findExactComponentMatch(allComponents, declared.componentName),
+                }));
 
                 return {
                     storyPath,
                     component,
+                    subcomponents,
                     entry,
                     storyFilePath,
                     csf,
@@ -149,16 +186,31 @@ export async function generateComponentManifests(
             })
         );
 
+        // Step 2: Batch extract solid-component-meta props (one TS program per tsconfig project).
         if (manager) {
             manager.batchExtract(
-                resolvedEntries.flatMap(({ storyPath, component }) => (
-                    component ? [{ storyPath, component }] : []
-                ))
+                resolvedEntries.flatMap(({ storyPath, component, subcomponents }) => {
+                    const refs = [];
+
+                    if (component) {
+                        refs.push({ storyPath, component });
+                    }
+
+                    for (const subcomponent of subcomponents) {
+                        if (subcomponent.component) {
+                            refs.push({ storyPath, component: subcomponent.component });
+                        }
+                    }
+
+                    return refs;
+                })
             );
         }
 
+        // Step 3: Build manifests.
         const components = resolvedEntries.map(({
             component,
+            subcomponents,
             entry,
             storyFilePath,
             csf,
@@ -168,6 +220,21 @@ export async function generateComponentManifests(
             const title = entry.title.split('/').at(-1)?.replace(/\s+/g, '') ?? id;
             const reactComponentMeta = normalizeComponentMeta(component?.reactComponentMeta);
             const stories = extractStories(csf, componentName, manifestEntries);
+            const subcomponentEntries = Object.fromEntries(
+                subcomponents
+                    .filter(subcomponent => subcomponent.component)
+                    .map(subcomponent => [
+                        subcomponent.name,
+                        {
+                            name: subcomponent.component!.componentName,
+                            path: subcomponent.component!.path,
+                            import: subcomponent.component!.importId
+                                ? `import { ${ subcomponent.component!.importName } } from "${ subcomponent.component!.importId }";`
+                                : '',
+                            reactComponentMeta: normalizeComponentMeta(subcomponent.component!.reactComponentMeta),
+                        },
+                    ])
+            );
             const base = {
                 id,
                 name: componentName ?? title,
@@ -177,6 +244,7 @@ export async function generateComponentManifests(
                     ? `import { ${ component.importName } } from "${ component.importId }";`
                     : '',
                 jsDocTags: component?.componentJsDocTags ?? {},
+                subcomponents: subcomponentEntries,
             };
 
             if (!reactComponentMeta) {
@@ -198,6 +266,7 @@ export async function generateComponentManifests(
             };
         });
 
+        // Watch after extraction — TS programs are populated, so we can discover source dirs.
         if (manager && watchMode) {
             manager.startWatching();
         }

@@ -38,7 +38,7 @@ export class SolidComponentMetaProject {
     constructor(
         private readonly typescript: typeof ts,
         private commandLine: ts.ParsedCommandLine,
-        private readonly configFileName: string | undefined,
+        readonly configFileName: string | undefined,
         private readonly fsFileSnapshots: Map<string, [number | undefined, ts.IScriptSnapshot | undefined]>,
         private readonly getCommandLineFn?: () => ts.ParsedCommandLine
     ) {

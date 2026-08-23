@@ -77,6 +77,11 @@
             "types": "./dist/renderer/docs.d.ts",
             "code": "./src/renderer/docs.ts",
             "default": "./dist/renderer/docs.js"
+        },
+        "./internal/docgen-worker": {
+            "types": "./dist/internal/componentManifest/docgen/docgen-worker.d.ts",
+            "code": "./src/internal/componentManifest/docgen/docgen-worker.ts",
+            "default": "./dist/internal/docgen-worker.js"
         }
     },
     "main": "dist/index.js",

@@ -81,7 +81,9 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, 
         ]
         : [];
 
-    if (frameworkOptions.docgen !== false) {
+    const features = await presets.apply('features') as { experimentalDocgenServer?: boolean } | undefined;
+
+    if (frameworkOptions.docgen !== false && !features?.experimentalDocgenServer) {
         plugins.push(
             solidComponentMetaPlugin({ enabled: true })
         );

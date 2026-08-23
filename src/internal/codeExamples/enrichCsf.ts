@@ -10,7 +10,7 @@ import type { PresetPropertyFn } from 'storybook/internal/types';
 export const enrichCsf: PresetPropertyFn<'experimental_enrichCsf'> = async(_input, options) => {
     const features = await options.presets.apply('features');
 
-    if (!features.experimentalCodeExamples) {
+    if (!features.experimentalCodeExamples || features.experimentalDocgenServer) {
         return;
     }
 

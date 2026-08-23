@@ -1,13 +1,14 @@
 import ts from '@typescript/typescript6';
 import { watch } from 'node:fs';
 import * as path from 'node:path';
+import { getHeapStatistics } from 'node:v8';
 import { logger } from 'storybook/internal/node-logger';
 
+import { findTsConfigForFile } from './findTsConfigForFile';
 import { SolidComponentMetaProject } from './SolidComponentMetaProject';
 
 import type { SolidComponentDoc, StoryExtractionEntry } from '../types';
 
-const ROOT_TS_CONFIG_NAMES = ['tsconfig.json', 'jsconfig.json'];
 const DEFAULT_INFERRED_OPTIONS: ts.CompilerOptions = {
     strict: true,
     esModuleInterop: true,
@@ -16,14 +17,30 @@ const DEFAULT_INFERRED_OPTIONS: ts.CompilerOptions = {
     jsx: ts.JsxEmit.Preserve,
 };
 
+/** Recycle shared TS programs once heap usage crosses this fraction of the V8 heap limit. */
+const RECYCLE_HEAP_PRESSURE_RATIO = 0.7;
+
 export class SolidComponentMetaManager {
     private readonly configProjects = new Map<string, SolidComponentMetaProject>();
     private readonly fsFileSnapshots = new Map<string, [number | undefined, ts.IScriptSnapshot | undefined]>();
     private inferredProject: SolidComponentMetaProject | undefined;
     private watching = false;
     private readonly watchersByDir = new Map<string, ReturnType<typeof watch>>();
+    private readonly heapRecycleThresholdBytes: number;
+    private hasWarnedHeapRecycle = false;
 
-    constructor(private readonly typescript: typeof ts) {}
+    /**
+     * @param recycleHeapPressureRatio Fraction of the V8 heap limit at which programs are recycled.
+     *   Pass `Infinity` in tests to disable; pass `0` to recycle after every extract.
+     */
+    constructor(
+        private readonly typescript: typeof ts,
+        recycleHeapPressureRatio = RECYCLE_HEAP_PRESSURE_RATIO
+    ) {
+        this.heapRecycleThresholdBytes = Math.floor(
+            getHeapStatistics().heap_size_limit * recycleHeapPressureRatio
+        );
+    }
 
     dispose() {
         for (const watcher of this.watchersByDir.values()) {
@@ -31,18 +48,12 @@ export class SolidComponentMetaManager {
         }
 
         this.watchersByDir.clear();
-
-        for (const project of this.configProjects.values()) {
-            project.dispose();
-        }
-
-        this.configProjects.clear();
-        this.inferredProject?.dispose();
-        this.inferredProject = undefined;
+        this.disposeProjects();
+        this.fsFileSnapshots.clear();
     }
 
     getProjectForFile(fileName: string) {
-        const tsconfig = this.findNearestTsConfig(fileName);
+        const tsconfig = findTsConfigForFile(this.typescript, fileName);
 
         if (tsconfig) {
             return this.getOrCreateConfiguredProject(tsconfig) ?? this.getOrCreateInferredProject(fileName);
@@ -74,19 +85,29 @@ export class SolidComponentMetaManager {
                 logger.debug(`[solidComponentMeta] Batch extraction failed: ${ String(error) }`);
             }
         }
+
+        this.recycleProjectsIfHeapPressured();
     }
 
     extractFromComponentFile(componentPath: string, exportName: string): SolidComponentDoc | undefined {
-        return this.getProjectForFile(componentPath).extractFromComponentFile(
+        const doc = this.getProjectForFile(componentPath).extractFromComponentFile(
             path.resolve(componentPath),
             exportName
         );
+
+        this.recycleProjectsIfHeapPressured();
+
+        return doc;
     }
 
     extractAllExportsFromFile(componentPath: string): SolidComponentDoc[] {
-        return this.getProjectForFile(componentPath).extractAllExportsFromFile(
+        const docs = this.getProjectForFile(componentPath).extractAllExportsFromFile(
             path.resolve(componentPath)
         );
+
+        this.recycleProjectsIfHeapPressured();
+
+        return docs;
     }
 
     startWatching() {
@@ -132,28 +153,6 @@ export class SolidComponentMetaManager {
         }
         catch(error) {
             logger.debug(`[solidComponentMeta] Failed to watch directory ${ normalized }: ${ String(error) }`);
-        }
-    }
-
-    private findNearestTsConfig(filePath: string) {
-        let dir = path.dirname(path.resolve(filePath));
-
-        while (true) {
-            for (const name of ROOT_TS_CONFIG_NAMES) {
-                const candidate = path.join(dir, name);
-
-                if (this.typescript.sys.fileExists(candidate)) {
-                    return candidate.replace(/\\/g, '/');
-                }
-            }
-
-            const parent = path.dirname(dir);
-
-            if (parent === dir) {
-                return null;
-            }
-
-            dir = parent;
         }
     }
 
@@ -227,6 +226,42 @@ export class SolidComponentMetaManager {
         );
 
         return this.inferredProject;
+    }
+
+    /**
+     * Drop LanguageServices when heap usage approaches the V8 limit so the next extract rebuilds
+     * instead of OOMing the docgen worker — same approach as React's ComponentMetaManager.
+     */
+    private recycleProjectsIfHeapPressured() {
+        if (this.configProjects.size === 0 && !this.inferredProject) {
+            return;
+        }
+
+        if (process.memoryUsage().heapUsed < this.heapRecycleThresholdBytes) {
+            return;
+        }
+
+        if (!this.hasWarnedHeapRecycle) {
+            this.hasWarnedHeapRecycle = true;
+            const heapLimitMb = Math.round(getHeapStatistics().heap_size_limit / (1024 * 1024));
+
+            logger.warn(
+                `storybook-solidjs-vite recycled its TypeScript program after heap pressure (~${ heapLimitMb } MB) to avoid an out-of-memory crash. Docs/Controls may hitch briefly. If this repeats, raise Node's limit, e.g. NODE_OPTIONS="--max-old-space-size=${ heapLimitMb * 2 }"`
+            );
+        }
+
+        this.disposeProjects();
+        this.fsFileSnapshots.clear();
+    }
+
+    private disposeProjects() {
+        for (const project of this.configProjects.values()) {
+            project.dispose();
+        }
+
+        this.configProjects.clear();
+        this.inferredProject?.dispose();
+        this.inferredProject = undefined;
     }
 }
 
