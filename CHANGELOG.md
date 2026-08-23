@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.7.1
+
+### Patch Changes
+
+- 15d74bd: Rewrite the CLI example components to avoid Solid 1-only `mergeProps`/`splitProps`, so `create-storybook --type=solid` works on both Solid 1 and Solid 2. Fixes [#57](https://github.com/solidjs-community/storybook/issues/57).
+
 ## 10.7.0
 
 ### Minor Changes
