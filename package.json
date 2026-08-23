@@ -102,6 +102,7 @@
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "dev": "tsup --watch",
         "lab": "cd examples/lab && bun run storybook",
+        "lab:solid1": "cd examples/lab-solid1 && bun run storybook",
         "test": "vitest run --passWithNoTests",
         "test:lab": "cd examples/lab && bun run test",
         "check-docgen": "cd examples/lab && bun run build-storybook && bun run check-docgen",

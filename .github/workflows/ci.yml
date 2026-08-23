@@ -46,3 +46,13 @@ jobs:
             - name: Vitest browser tests (lab)
               working-directory: examples/lab
               run: bun run test
+
+            - name: Install Solid 1 lab dependencies
+              working-directory: examples/lab-solid1
+              env:
+                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
+              run: bun install --frozen-lockfile
+
+            - name: Build Solid 1 lab
+              working-directory: examples/lab-solid1
+              run: bun run build-storybook

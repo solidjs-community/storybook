@@ -1,6 +1,6 @@
 # Storybook SolidJS lab
 
-Manual and automated checks for docgen, interactions, CSF Next `.test()`, Autodocs, and legacy CSF 3. Runs on **Solid 2**.
+Manual and automated checks for docgen, interactions, CSF Next `.test()`, Autodocs, and legacy CSF 3. Runs on **Solid 2**. For Solid 1 / `solid-legacy`, see [`examples/lab-solid1`](../lab-solid1).
 
 **Default for new scenarios:** CSF Next (`preview.meta()` + `meta.story()`).
 
