@@ -1,7 +1,7 @@
 {
     "name": "storybook-solidjs-vite",
     "type": "module",
-    "version": "10.7.0",
+    "version": "10.7.1",
     "private": false,
     "packageManager": "bun@1.3.14",
     "description": "SolidJS integration with Storybook",
@@ -107,8 +107,9 @@
         "lint": "eslint . --fix --max-warnings=9999 --quiet",
         "changelog": "changeset",
         "version-packages": "changeset version",
+        "version-packages:next": "changeset version --snapshot next",
         "release": "changeset publish",
-        "release:next": "changeset publish --tag next"
+        "release:next": "changeset publish --no-git-tag --tag next"
     },
     "peerDependencies": {
         "@solidjs/web": "^2.0.0-0",
