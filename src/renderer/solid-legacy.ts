@@ -44,8 +44,8 @@ const storyStore = createStoryState(createStore);
 
 const runtime: SolidRendererRuntime = {
     storyStore,
-    createComponent,
-    render: solidRender,
+    createComponent: createComponent as SolidRendererRuntime['createComponent'],
+    render: solidRender as SolidRendererRuntime['render'],
 };
 
 const applyDecorators = createApplyDecorators({ storyStore });
@@ -64,13 +64,13 @@ const renderToCanvas = createRenderToCanvas({
                 storyStore.setRendered(storyId, false);
             });
 
-            return createComponent(ErrorBoundary, {
+            return createComponent(ErrorBoundary as any, {
                 fallback: (err: Error) => {
                     showException(err);
 
                     return err as any;
                 },
-                children: createComponent(() => Story(), {}),
+                children: createComponent((() => Story()) as any, {}),
             });
         };
 

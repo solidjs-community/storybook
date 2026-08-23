@@ -25,14 +25,14 @@ function readEntry(input: { entry?: Record<string, unknown> } | Record<string, u
 		? input.entry as Record<string, unknown>
 		: input as Record<string, unknown>;
 
-	const importPath = typeof entry.importPath === 'string'
-		? entry.importPath
-		: Array.isArray(entry.storiesImports) && typeof entry.storiesImports[0] === 'string'
-			? entry.storiesImports[0]
+	const importPath = typeof entry['importPath'] === 'string'
+		? entry['importPath']
+		: Array.isArray(entry['storiesImports']) && typeof entry['storiesImports'][0] === 'string'
+			? entry['storiesImports'][0]
 			: undefined;
-	const title = typeof entry.title === 'string' ? entry.title : 'Component';
-	const id = typeof entry.id === 'string'
-		? (entry.id.split('--')[0] ?? entry.id)
+	const title = typeof entry['title'] === 'string' ? entry['title'] : 'Component';
+	const id = typeof entry['id'] === 'string'
+		? (entry['id'].split('--')[0] ?? entry['id'])
 		: title.replace(/\s+/g, '');
 
 	return { importPath, title, id };
@@ -80,10 +80,14 @@ async function extractDocgen(input: any) {
 	const metaManager = getManager();
 
 	if (component?.path && component.importName) {
-		component.reactComponentMeta = metaManager.extractFromComponentFile(
+		const extracted = metaManager.extractFromComponentFile(
 			component.path,
 			component.member ?? component.importName
-		) ?? component.reactComponentMeta;
+		);
+
+		if (extracted) {
+			component.reactComponentMeta = extracted;
+		}
 	}
 
 	const subcomponents = Object.fromEntries(
@@ -94,10 +98,14 @@ async function extractDocgen(input: any) {
 				return [];
 			}
 
-			resolved.reactComponentMeta = metaManager.extractFromComponentFile(
+			const extracted = metaManager.extractFromComponentFile(
 				resolved.path,
 				resolved.member ?? resolved.importName
-			) ?? resolved.reactComponentMeta;
+			);
+
+			if (extracted) {
+				resolved.reactComponentMeta = extracted;
+			}
 
 			const payload = docPayload(resolved.reactComponentMeta, resolved);
 
