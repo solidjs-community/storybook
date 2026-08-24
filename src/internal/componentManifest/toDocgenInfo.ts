@@ -82,15 +82,15 @@ export function solidComponentDocToArgTypesData(doc: SolidComponentDoc): StrictA
             const sbType = toSbType(prop);
             const argType: StrictInputType = {
                 name,
-                description: prop.description,
+                description: prop.description ?? '',
                 type: sbType
                     ? { required: prop.required, ...sbType }
                     : { name: 'other', value: prop.type.name, required: prop.required },
                 table: {
                     type: { summary: prop.type.raw ?? prop.type.name },
-                    defaultValue: prop.defaultValue
-                        ? { summary: prop.defaultValue.value }
-                        : undefined,
+                    ...(prop.defaultValue
+                        ? { defaultValue: { summary: prop.defaultValue.value } }
+                        : {}),
                 },
             };
 

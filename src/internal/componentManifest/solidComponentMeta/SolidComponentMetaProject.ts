@@ -318,7 +318,7 @@ export class SolidComponentMetaProject {
                 const doc = serializeComponentDoc(this.typescript, checker, {
                     sourceFile: serializationContext.sourceFile,
                     resolvedComponent,
-                    referencedArgNames,
+                    ...(referencedArgNames ? { referencedArgNames } : {}),
                 });
 
                 if (doc) {
@@ -383,7 +383,7 @@ export class SolidComponentMetaProject {
         return serializeComponentDoc(this.typescript, checker, {
             sourceFile,
             resolvedComponent: resolved,
-            referencedArgNames,
+            ...(referencedArgNames ? { referencedArgNames } : {}),
         });
     }
 
