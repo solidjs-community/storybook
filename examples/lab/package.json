@@ -18,8 +18,8 @@
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@storybook/addon-docs": "^10.5.10",
-        "@storybook/addon-vitest": "^10.5.10",
+        "@storybook/addon-docs": "next",
+        "@storybook/addon-vitest": "next",
         "@tailwindcss/vite": "^4.3.3",
         "@tsconfig/strictest": "^2.0.8",
         "@vitest/browser-playwright": "^4.1.11",
@@ -27,7 +27,7 @@
         "eslint": "^10.9.0",
         "jsdom": "30.0.1",
         "playwright": "^1.55.0",
-        "storybook": "^10.5.10",
+        "storybook": "next",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",

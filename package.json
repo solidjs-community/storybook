@@ -118,7 +118,7 @@
     "peerDependencies": {
         "@solidjs/web": "^2.0.0-0",
         "solid-js": "^1.8.0-0 || ^2.0.0-0",
-        "storybook": "^0.0.0-0 || ^10.0.0",
+        "storybook": "^0.0.0-0 || ^10.0.0-0 || ^10.0.0",
         "typescript": "*",
         "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
         "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0"
@@ -132,7 +132,7 @@
         }
     },
     "dependencies": {
-        "@storybook/builder-vite": "^10.5.10",
+        "@storybook/builder-vite": "next",
         "@storybook/global": "^5.0.0",
         "@typescript/typescript6": "^6.0.2",
         "@volar/language-core": "^2.4.28",
@@ -157,7 +157,7 @@
         "simple-git-hooks": "^2.13.1",
         "solid-js": "^2.0.0-rc.1",
         "solid-js-legacy": "npm:solid-js@^1.9.15",
-        "storybook": "^10.5.10",
+        "storybook": "next",
         "tsup": "^8.5.1",
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",
