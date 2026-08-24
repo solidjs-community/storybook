@@ -23,20 +23,4 @@ const meta = preview.meta({
     },
 });
 
-export const Solid = meta.story({});
-
-export const Ghost = meta.story({
-    args: {
-        appearance: 'ghost',
-        transparent: true,
-        tone: 'info',
-    },
-});
-
-export const Disabled = meta.story({
-    args: {
-        enabled: false,
-        tone: 'danger',
-        label: 'Locked',
-    },
-});
+export const Default = meta.story({});

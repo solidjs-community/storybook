@@ -16,9 +16,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
-
-export const IncrementsOnClick: Story = {
+export const Default: Story = {
     play: async ({ canvas, userEvent }) => {
         const output = canvas.getByTestId('counter-value');
 

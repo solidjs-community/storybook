@@ -4,7 +4,7 @@ interface ButtonProps extends JSX.HTMLAttributes<HTMLDivElement> {
     label: string;
 }
 
-/** HTMLAttributes heritage — DOM props filtered, allowlist kept. */
+/** HTMLAttributes heritage — class/style always extracted; other inherited DOM only if set in args. */
 export function Button(props: ButtonProps) {
     return (
         <div

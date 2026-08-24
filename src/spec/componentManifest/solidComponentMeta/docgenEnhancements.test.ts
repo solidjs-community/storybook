@@ -20,16 +20,17 @@ afterEach(() => {
 
 describe('dOM prop filtering', () => {
     it('keeps allowlisted inherited DOM props but drops event handlers and bulk attrs', () => {
-        expectScenario('DOM allowlist', {
+        const doc = expectScenario('DOM allowlist', {
             ...htmlAttributesButton,
             maxPropCount: 40,
-            absentProps: ['onClick', 'innerText'],
+            absentProps: ['onClick', 'innerText', 'id', 'aria-label', 'tabindex'],
             expectations: [
                 { prop: 'label', rcmName: 'string', control: 'text' },
-                { prop: 'id', rcmName: 'string', control: 'text' },
                 { prop: 'class', rcmName: 'string', control: 'text' },
             ],
         }, tempDirs);
+
+        expect(doc?.props['style']).toBeDefined();
     });
 
     it('keeps allowlisted DOM props from HTMLAttributes intersection aliases', () => {
@@ -44,16 +45,15 @@ describe('dOM prop filtering', () => {
             entryFile: 'Button.tsx',
             exportName: 'Button',
             maxPropCount: 40,
-            absentProps: ['onClick', 'innerText'],
+            absentProps: ['onClick', 'innerText', 'id', 'aria-label'],
             expectations: [
                 { prop: 'label', rcmName: 'string', control: 'text' },
-                { prop: 'id', rcmName: 'string', control: 'text' },
                 { prop: 'class', rcmName: 'string', control: 'text' },
             ],
         }, tempDirs);
     });
 
-    it('keeps Solid 2 lowercase tabindex from @solidjs/web HTMLAttributes', () => {
+    it('keeps class and style from Solid 2 HTMLAttributes without other inherited DOM', () => {
         const doc = expectScenario('Solid 2 HTMLAttributes', {
             files: {
                 'Button.tsx': `
@@ -67,17 +67,79 @@ describe('dOM prop filtering', () => {
             entryFile: 'Button.tsx',
             exportName: 'Button',
             compilerOptions: solid2CompilerOptions(),
-            maxPropCount: 40,
-            absentProps: ['onClick', 'innerText', 'tabIndex'],
+            maxPropCount: 20,
+            absentProps: [
+                'onClick',
+                'innerText',
+                'tabIndex',
+                'tabindex',
+                'id',
+                'aria-label',
+                'aria-hidden',
+                'dir',
+                'contenteditable',
+                'accesskey',
+                'inputmode',
+                'lang',
+            ],
             expectations: [
                 { prop: 'label', rcmName: 'string', control: 'text' },
             ],
         }, tempDirs);
 
-        expect(doc?.props['id']).toBeDefined();
         expect(doc?.props['class']).toBeDefined();
-        expect(doc?.props['tabindex']).toBeDefined();
-        expect(doc?.props['aria-label']).toBeDefined();
+        expect(doc?.props['style']).toBeDefined();
+        expect(doc?.props['id']).toBeUndefined();
+        expect(doc?.props['aria-label']).toBeUndefined();
+        expect(doc?.props['tabindex']).toBeUndefined();
+    });
+
+    it('promotes inherited DOM props that appear in story args', () => {
+        const doc = expectScenario('Solid 2 HTMLAttributes args-gated', {
+            files: {
+                'Button.tsx': `
+                    import type { JSX } from '@solidjs/web';
+                    interface ButtonProps extends JSX.HTMLAttributes<HTMLDivElement> {
+                        label: string;
+                    }
+                    export function Button(props: ButtonProps) { return null; }
+                `,
+            },
+            entryFile: 'Button.tsx',
+            exportName: 'Button',
+            compilerOptions: solid2CompilerOptions(),
+            referencedArgNames: ['aria-label', 'tabindex'],
+            absentProps: ['id', 'aria-hidden', 'dir', 'onClick'],
+            expectations: [
+                { prop: 'label', rcmName: 'string', control: 'text' },
+                { prop: 'aria-label', rcmName: 'string', control: 'text' },
+                { prop: 'tabindex', rcmName: 'string', control: 'text' },
+            ],
+        }, tempDirs);
+
+        expect(doc?.props['class']).toBeDefined();
+        expect(doc?.props['style']).toBeDefined();
+        expect(doc?.props['id']).toBeUndefined();
+    });
+
+    it('always keeps source-declared aria-label even without args', () => {
+        expectScenario('source-declared aria-label', {
+            files: {
+                'Callout.tsx': `
+                    interface CalloutProps {
+                        label: string;
+                        'aria-label'?: string;
+                    }
+                    export function Callout(props: CalloutProps) { return null; }
+                `,
+            },
+            entryFile: 'Callout.tsx',
+            exportName: 'Callout',
+            expectations: [
+                { prop: 'label', rcmName: 'string', control: 'text' },
+                { prop: 'aria-label', rcmName: 'string', control: 'text' },
+            ],
+        }, tempDirs);
     });
 
     it('excludes Solid JSX-only namespaces from globally augmented JSX types', () => {

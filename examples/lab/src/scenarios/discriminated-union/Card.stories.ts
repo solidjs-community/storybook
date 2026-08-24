@@ -6,18 +6,10 @@ const meta = preview.meta({
     title: 'Docgen/Discriminated union',
     component: Card,
     tags: ['autodocs'],
-});
-
-export const Solid = meta.story({
     args: {
         variant: 'solid',
         padding: 16,
     },
 });
 
-export const Ghost = meta.story({
-    args: {
-        variant: 'ghost',
-        transparent: true,
-    },
-});
+export const Default = meta.story({});

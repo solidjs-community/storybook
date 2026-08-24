@@ -1,34 +1,8 @@
 import type ts from '@typescript/typescript6';
 
-const INHERITED_DOM_PROP_ALLOWLIST = new Set([
-    'accesskey',
-    'aria-controls',
-    'aria-current',
-    'aria-describedby',
-    'aria-disabled',
-    'aria-expanded',
-    'aria-hidden',
-    'aria-label',
-    'aria-labelledby',
-    'aria-live',
+const ALWAYS_INHERITED_DOM_PROPS = new Set([
     'class',
-    'contenteditable',
-    'dir',
-    'draggable',
-    'hidden',
-    'id',
-    'inert',
-    'inputmode',
-    'lang',
-    'popover',
-    'role',
-    'slot',
-    'spellcheck',
     'style',
-    'tabIndex',
-    'tabindex',
-    'title',
-    'translate',
 ]);
 
 function isDomLibrarySource(fileName: string) {
@@ -53,28 +27,35 @@ function isSolidJsxOnlyPropName(name: string) {
         || name.startsWith('oncapture:');
 }
 
-function isAllowlistedInheritedDomProp(name: string) {
-    if (isEventHandlerPropName(name)) {
-        return false;
-    }
-
-    if (name.startsWith('data-')) {
+function namesMatchCaseInsensitive(names: ReadonlySet<string>, propName: string) {
+    if (names.has(propName)) {
         return true;
     }
 
-    if (INHERITED_DOM_PROP_ALLOWLIST.has(name)) {
-        return true;
-    }
+    const lower = propName.toLowerCase();
 
-    const lower = name.toLowerCase();
-
-    for (const allowed of INHERITED_DOM_PROP_ALLOWLIST) {
-        if (allowed.toLowerCase() === lower) {
+    for (const name of names) {
+        if (name.toLowerCase() === lower) {
             return true;
         }
     }
 
     return false;
+}
+
+function shouldIncludeInheritedDomProp(
+    name: string,
+    referencedArgNames?: ReadonlySet<string>
+) {
+    if (isEventHandlerPropName(name)) {
+        return false;
+    }
+
+    if (namesMatchCaseInsensitive(ALWAYS_INHERITED_DOM_PROPS, name)) {
+        return true;
+    }
+
+    return referencedArgNames !== undefined && namesMatchCaseInsensitive(referencedArgNames, name);
 }
 
 function isPropDeclaredInSource(prop: ts.Symbol, sourceFile: ts.SourceFile) {
@@ -138,7 +119,8 @@ export function shouldIncludeComponentProp(
     prop: ts.Symbol,
     sourceFile: ts.SourceFile,
     hasInterfaceHeritage: boolean,
-    bulkExcluded: Set<string>
+    bulkExcluded: Set<string>,
+    referencedArgNames?: ReadonlySet<string>
 ) {
     const propName = prop.getName();
 
@@ -154,7 +136,7 @@ export function shouldIncludeComponentProp(
         const declaration = prop.declarations?.[0];
 
         if (declaration && isDomLibrarySource(declaration.getSourceFile().fileName)) {
-            return isAllowlistedInheritedDomProp(propName);
+            return shouldIncludeInheritedDomProp(propName, referencedArgNames);
         }
 
         return true;

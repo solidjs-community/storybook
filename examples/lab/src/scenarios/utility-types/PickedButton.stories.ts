@@ -13,9 +13,3 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({});
-
-export const Large = meta.story({
-    args: {
-        size: 'lg',
-    },
-});

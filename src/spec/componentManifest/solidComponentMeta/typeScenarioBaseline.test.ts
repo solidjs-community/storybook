@@ -242,7 +242,6 @@ describe('solid JSX & DOM props', () => {
             entryFile: 'Button.tsx',
             exportName: 'Button',
             expectations: [
-                { prop: 'id', rcmName: 'string', control: 'text' },
                 { prop: 'class', rcmName: 'string', control: 'text' },
                 { prop: 'label', rcmName: 'string', control: 'text' },
             ],

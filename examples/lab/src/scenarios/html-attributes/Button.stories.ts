@@ -12,11 +12,3 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({});
-
-export const WithAria = meta.story({
-    args: {
-        label: 'Accessible',
-        'aria-label': 'Primary action',
-        tabindex: 0,
-    },
-});

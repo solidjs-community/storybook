@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadCsf } from 'storybook/internal/csf-tools';
 
+import { collectCsfArgNames } from '../collectCsfArgNames';
 import { findExactComponentMatch, findMatchingComponent, getComponents } from '../getComponents';
 import { SolidComponentMetaManager } from '../solidComponentMeta/SolidComponentMetaManager';
 import { extractDeclaredSubcomponents } from '../subcomponents';
@@ -78,11 +79,13 @@ async function extractDocgen(input: any) {
 	});
 	const component = findMatchingComponent(allComponents, csf._meta?.component, title);
 	const metaManager = getManager();
+	const referencedArgNames = collectCsfArgNames(csf);
 
 	if (component?.path && component.importName) {
 		const extracted = metaManager.extractFromComponentFile(
 			component.path,
-			component.member ?? component.importName
+			component.member ?? component.importName,
+			referencedArgNames
 		);
 
 		if (extracted) {

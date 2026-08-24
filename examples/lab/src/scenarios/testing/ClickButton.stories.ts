@@ -15,13 +15,7 @@ const meta = preview.meta({
 
 export const Default = meta.story({});
 
-export const CallsHandler = meta.story({
-    args: {
-        onClick: fn(),
-    },
-});
-
-CallsHandler.test('increments label count and invokes onClick', async ({ canvas, userEvent, args }) => {
+Default.test('increments label count and invokes onClick', async ({ canvas, userEvent, args }) => {
     const button = canvas.getByRole('button', { name: /Click me/ });
 
     await expect(button).toHaveTextContent('Click me (0)');

@@ -21,7 +21,8 @@ Each folder is a different extraction/runtime path. If two folders would catch t
 |------|---------|----------------|
 | `src/scenarios/all-types` | Docgen / All types | Type matrix on one component: string, number, boolean, short enum, long enum, object, array, fn, color/date matchers, a few DOM props |
 | `src/scenarios/discriminated-union` | Docgen / Discriminated union | Auto-`if` on variant-only props — not expressible as a flat matrix |
-| `src/scenarios/html-attributes` | Docgen / HTML attributes | `extends JSX.HTMLAttributes` + DOM allowlist vs bulk filter |
+| `src/scenarios/html-attributes` | Docgen / HTML attributes | `extends JSX.HTMLAttributes` — always `class`/`style`; other inherited DOM only if set in args |
+| `src/scenarios/jsx-directives` | Docgen / JSX directives | `use:` / `prop:` namespaces must not become Controls ([#56](https://github.com/solidjs-community/storybook/issues/56)) |
 | `src/scenarios/utility-types` | Docgen / Utility types | `Pick` / `Omit` resolution |
 | `src/scenarios/package-import` | Docgen / Package import | Component from `node_modules`, not project source |
 | `src/scenarios/subcomponents` | Docgen / Subcomponents | `meta.subcomponents` |

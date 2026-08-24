@@ -1,14 +1,13 @@
 import preview from '../../../.storybook/preview';
 
-import { Button } from '@design-system/button';
+import { Panel } from './Panel';
 
 const meta = preview.meta({
-    title: 'Docgen/Package import',
-    component: Button,
+    title: 'Docgen/JSX directives',
+    component: Panel,
     tags: ['autodocs'],
     args: {
-        label: 'From package',
-        size: 'sm',
+        title: 'Click outside',
     },
 });
 
