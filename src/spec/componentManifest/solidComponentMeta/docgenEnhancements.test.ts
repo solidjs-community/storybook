@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
     expectScenario,
-    extractComponentDoc,
 } from '../../helpers/controlScenario';
 import { cardDiscriminatedUnion, htmlAttributesButton } from '../../helpers/scenarioFixtures';
 import { expectStoryMatchesDirectExtract } from '../../helpers/storyScenario';

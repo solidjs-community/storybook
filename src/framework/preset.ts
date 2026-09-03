@@ -16,7 +16,9 @@ import {
     SOLID_PREVIEW_ADDON_IMPORT,
 } from '../internal/solidVersion';
 
-import type { PresetProperty } from 'storybook/internal/types';
+import { isFrameworkDocgenEnabled } from './docgenOption';
+
+import type { Options, PresetProperty } from 'storybook/internal/types';
 import type { StorybookConfig } from './public-api';
 
 /** Force a single copy of Solid packages (renderer + app + linked deps). */
@@ -46,14 +48,26 @@ export const core: PresetProperty<'core', StorybookConfig> = {
 
 /**
  * Enable the components manifest, docgen server, and CSF Next test syntax by default.
+ * `framework.options.docgen: false` turns off `experimentalDocgenServer` so Controls /
+ * Docs / manifest stop using the Solid component-meta worker.
  *
  * @see https://storybook.js.org/docs/api/main-config/main-config-features
  */
-export const features: PresetProperty<'features', StorybookConfig> = {
-    componentsManifest: true,
-    experimentalCodeExamples: true,
-    experimentalDocgenServer: true,
-    experimentalTestSyntax: true,
+export const features: PresetProperty<'features', StorybookConfig> = async(
+    existing = {},
+    { presets }: Options
+) => {
+    const framework = await presets.apply('framework');
+    const docgenEnabled = isFrameworkDocgenEnabled(framework);
+
+    return {
+        componentsManifest: true,
+        experimentalCodeExamples: true,
+        experimentalDocgenServer: true,
+        experimentalTestSyntax: true,
+        ...existing,
+        ...(docgenEnabled ? {} : { experimentalDocgenServer: false }),
+    };
 };
 
 /**

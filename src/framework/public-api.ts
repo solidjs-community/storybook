@@ -9,7 +9,10 @@ type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
 export interface FrameworkOptions {
     builder?: BuilderOptions;
-    /** Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest). */
+    /**
+     * Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest).
+     * Turns off `features.experimentalDocgenServer` from this framework preset.
+     */
     docgen?: false;
 }
 

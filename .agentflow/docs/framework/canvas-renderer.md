@@ -46,7 +46,7 @@ JSX decorators that close over non-reactive values will go stale; they must read
 | Errors / settled      | `Errored` + `onSettled` | `ErrorBoundary` + `onMount` / `onCleanup` |
 | `parameters.renderer` | `solid-next`            | `solid`                                   |
 
-`definePreview` always imports `solid-legacy`; on Solid 2 the preset aliases that import to `solid-next`. Preview annotations also pick the entry from `resolveSolidRendererEntry`.
+`definePreview` imports `preview-addon`; the preset aliases that (and the inactive major) onto the active renderer. Preview annotations also pick the entry from `resolveSolidRendererEntry`.
 
 ## Interaction tests and docs defaults
 

@@ -37,9 +37,9 @@ Verify with the smallest command that covers the change. Renderer/docgen work us
 
 - Match nearby code. Do not add a new abstraction when an existing one fits.
 - JSX decorators for stories must use `createJSXDecorator` so they do not remount on args/globals updates. Side-effect-only decorators use `createDecorator`.
-- Default docgen injects `__docgenInfo` via the Vite `solidComponentMetaPlugin`. If `features.experimentalDocgenServer` is on, skip the inject and use the docgen worker instead.
-- `framework.options.docgen: false` disables the Vite docgen inject.
-- The preset injects `vite-plugin-solid` when the user's Vite config does not already include a Solid plugin.
+- Docgen runs on the Storybook server (`features.experimentalDocgenServer`, on by default). There is no Vite `__docgenInfo` inject.
+- `framework.options.docgen: false` turns off `experimentalDocgenServer` from this preset.
+- User Vite config must include `vite-plugin-solid`. This package does not inject it.
 - Commits: conventional (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `ci`, `perf`, `revert`) via commitlint.
 - User-facing changes: add a changeset (`bun run changelog`).
 - Do not commit `dist/`. `prepack` builds it.
