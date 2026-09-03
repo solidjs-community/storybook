@@ -203,6 +203,8 @@ See [Migration Guide](./MIGRATION.md) for breaking changes.
 
 Issues and PRs welcome — [open an issue](https://github.com/solidjs-community/storybook/issues) or submit a pull request.
 
+For any agent-driven changes, follow [AgentFlow](https://github.com/reforma-dev/agentflow).
+
 ## 📖 License
 
 MIT

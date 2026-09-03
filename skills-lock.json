@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "code-review": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "d541dba9dd3e3c2c980c79f33e61e5a3afcb3acbe0a4cf068a5041c2717b67ad"
+    },
+    "document": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/document/SKILL.md",
+      "computedHash": "5d5f89919cf85632d246100fa4a50cf1850c1d65c27d72302ed35eef34c58d72"
+    },
+    "grill": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/grill/SKILL.md",
+      "computedHash": "6009f32c8c68dd90f3345e7859ae48dc7429c7b4463c822d11e8e61b699114ea"
+    },
+    "handoff": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/handoff/SKILL.md",
+      "computedHash": "3c9d98cdf269522c4d5b85c513b49a456e99ae9925e68bf80ac6f5cecb520b37"
+    },
+    "plan": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/plan/SKILL.md",
+      "computedHash": "b262282b2e339968adcd9be4fddf40642af004bef9d6721503ee9e7f18a77b9d"
+    },
+    "research": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/research/SKILL.md",
+      "computedHash": "ed16f869daf3d9c266c24be21b18a1ac873c56966c23f54a5614d49050c47315"
+    },
+    "tdd": {
+      "source": "reforma-dev/agentflow",
+      "sourceType": "github",
+      "skillPath": "skills/tdd/SKILL.md",
+      "computedHash": "5df7ad786fda672ede98ed4fa310d5b9d86d2dc18f26bd2912b02b5d6db0f498"
+    }
+  }
+}
