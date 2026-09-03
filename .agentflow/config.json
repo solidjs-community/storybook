@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "components": [
+        "skills",
+        "workflow",
+        "agents"
+    ]
+}
