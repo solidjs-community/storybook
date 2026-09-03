@@ -1,7 +1,9 @@
 import { createLanguage, FileMap, type SourceScript } from '@volar/language-core';
 import { createLanguageServiceHost, resolveFileLanguageId } from '@volar/typescript';
+import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 
+import { collectCsfArgNamesFromSource } from '../collectCsfArgNames';
 import {
     resolveFromComponentFile,
     resolveFromMetaComponent,
@@ -304,9 +306,19 @@ export class SolidComponentMetaProject {
                     serializationContextByComponentPath.set(componentPath, serializationContext);
                 }
 
+                let referencedArgNames: Set<string> | undefined;
+
+                try {
+                    referencedArgNames = collectCsfArgNamesFromSource(readFileSync(entry.storyPath, 'utf8'));
+                }
+                catch {
+                    referencedArgNames = undefined;
+                }
+
                 const doc = serializeComponentDoc(this.typescript, checker, {
                     sourceFile: serializationContext.sourceFile,
                     resolvedComponent,
+                    ...(referencedArgNames ? { referencedArgNames } : {}),
                 });
 
                 if (doc) {
@@ -329,7 +341,11 @@ export class SolidComponentMetaProject {
         }
     }
 
-    extractFromComponentFile(componentPath: string, exportName: string): SolidComponentDoc | undefined {
+    extractFromComponentFile(
+        componentPath: string,
+        exportName: string,
+        referencedArgNames?: ReadonlySet<string>
+    ): SolidComponentDoc | undefined {
         this.ensureFiles([componentPath]);
         this.ensureFresh([componentPath]);
 
@@ -367,6 +383,7 @@ export class SolidComponentMetaProject {
         return serializeComponentDoc(this.typescript, checker, {
             sourceFile,
             resolvedComponent: resolved,
+            ...(referencedArgNames ? { referencedArgNames } : {}),
         });
     }
 

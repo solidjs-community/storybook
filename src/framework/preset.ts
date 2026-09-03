@@ -1,4 +1,3 @@
-import { hasVitePlugins } from '@storybook/builder-vite';
 /**
  * A preset is a configuration that enables developers to quickly set up and
  * customize their environment with a specific set of features, functionalities, or integrations.
@@ -9,16 +8,18 @@ import { hasVitePlugins } from '@storybook/builder-vite';
 import { fileURLToPath } from 'node:url';
 import { mergeConfig } from 'vite';
 
-import { solidComponentMetaPlugin } from '../internal/componentManifest/solidComponentMetaPlugin';
 import {
     resolveSolidRendererEntry,
     resolveSolidVersion,
+    SOLID_DEFAULT_RENDERER_IMPORT,
+    SOLID_LEGACY_RENDERER_IMPORT,
+    SOLID_PREVIEW_ADDON_IMPORT,
 } from '../internal/solidVersion';
 
-import type { PresetProperty } from 'storybook/internal/types';
-import type { FrameworkOptions, StorybookConfig } from './public-api';
+import { isFrameworkDocgenEnabled } from './docgenOption';
 
-const SOLID_LEGACY_RENDERER_IMPORT = 'storybook-solidjs-vite/renderer/solid-legacy';
+import type { Options, PresetProperty } from 'storybook/internal/types';
+import type { StorybookConfig } from './public-api';
 
 /** Force a single copy of Solid packages (renderer + app + linked deps). */
 const SOLID_DEDUPE_PACKAGES = [
@@ -46,13 +47,27 @@ export const core: PresetProperty<'core', StorybookConfig> = {
 };
 
 /**
- * Enable the components manifest debugger by default.
+ * Enable the components manifest, docgen server, and CSF Next test syntax by default.
+ * `framework.options.docgen: false` turns off `experimentalDocgenServer` so Controls /
+ * Docs / manifest stop using the Solid component-meta worker.
  *
- * @see https://storybook.js.org/docs/api/main-config/main-config-features#componentsmanifest
+ * @see https://storybook.js.org/docs/api/main-config/main-config-features
  */
-export const features: PresetProperty<'features', StorybookConfig> = {
-    componentsManifest: true,
-    experimentalCodeExamples: true,
+export const features: PresetProperty<'features', StorybookConfig> = async(
+    existing = {},
+    { presets }: Options
+) => {
+    const framework = await presets.apply('framework');
+    const docgenEnabled = isFrameworkDocgenEnabled(framework);
+
+    return {
+        componentsManifest: true,
+        experimentalCodeExamples: true,
+        experimentalDocgenServer: true,
+        experimentalTestSyntax: true,
+        ...existing,
+        ...(docgenEnabled ? {} : { experimentalDocgenServer: false }),
+    };
 };
 
 /**
@@ -60,40 +75,32 @@ export const features: PresetProperty<'features', StorybookConfig> = {
  *
  * @see https://storybook.js.org/docs/api/main-config/main-config-vite-final
  */
-export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, configDir }) => {
-    const existPlugins = [...(config?.plugins ?? [])];
-    const plugins = [];
-
-    const framework = await presets.apply('framework');
-    const frameworkOptions: FrameworkOptions = (typeof framework === 'string') ? {} : (framework.options ?? {});
+export const viteFinal: StorybookConfig['viteFinal'] = async(config, { configDir }) => {
     const solidVersion = await resolveSolidVersion(configDir);
     const solidLegacyEntry = fileURLToPath(
         import.meta.resolve(SOLID_LEGACY_RENDERER_IMPORT)
     );
+    const solidDefaultEntry = fileURLToPath(
+        import.meta.resolve(SOLID_DEFAULT_RENDERER_IMPORT)
+    );
     const solidRendererEntry = fileURLToPath(
         import.meta.resolve(resolveSolidRendererEntry(solidVersion))
     );
-    const aliasApplied = solidLegacyEntry !== solidRendererEntry;
-    const rendererAlias = aliasApplied
-        ? [
-            { find: SOLID_LEGACY_RENDERER_IMPORT, replacement: solidRendererEntry },
-            { find: solidLegacyEntry, replacement: solidRendererEntry },
-        ]
-        : [];
-
-    const features = await presets.apply('features') as { experimentalDocgenServer?: boolean } | undefined;
-
-    if (frameworkOptions.docgen !== false && !features?.experimentalDocgenServer) {
-        plugins.push(
-            solidComponentMetaPlugin({ enabled: true })
-        );
-    }
-
-    if (!(await hasVitePlugins(existPlugins, ['solid']))) {
-        plugins.push(
-            await import('vite-plugin-solid').then(module => module.default())
-        );
-    }
+    const previewAddonEntry = fileURLToPath(
+        import.meta.resolve(SOLID_PREVIEW_ADDON_IMPORT)
+    );
+    const inactiveRendererImport = solidVersion === 1
+        ? SOLID_DEFAULT_RENDERER_IMPORT
+        : SOLID_LEGACY_RENDERER_IMPORT;
+    const inactiveRendererEntry = solidVersion === 1
+        ? solidDefaultEntry
+        : solidLegacyEntry;
+    const rendererAlias = [
+        { find: SOLID_PREVIEW_ADDON_IMPORT, replacement: solidRendererEntry },
+        { find: previewAddonEntry, replacement: solidRendererEntry },
+        { find: inactiveRendererImport, replacement: solidRendererEntry },
+        { find: inactiveRendererEntry, replacement: solidRendererEntry },
+    ];
 
     const optimizeDeps = {
         ...config.optimizeDeps,
@@ -104,7 +111,6 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, 
     };
 
     return mergeConfig(config, {
-        plugins,
         optimizeDeps,
         resolve: {
             ...config.resolve,
@@ -112,12 +118,10 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { presets, 
                 ? [...config.resolve.alias, ...rendererAlias]
                 : {
                     ...config.resolve?.alias,
-                    ...(aliasApplied
-                        ? {
-                            [SOLID_LEGACY_RENDERER_IMPORT]: solidRendererEntry,
-                            [solidLegacyEntry]: solidRendererEntry,
-                        }
-                        : {}),
+                    [SOLID_PREVIEW_ADDON_IMPORT]: solidRendererEntry,
+                    [previewAddonEntry]: solidRendererEntry,
+                    [inactiveRendererImport]: solidRendererEntry,
+                    [inactiveRendererEntry]: solidRendererEntry,
                 },
             dedupe: mergeSolidDedupe(config.resolve?.dedupe),
         },

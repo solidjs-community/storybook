@@ -6,7 +6,7 @@ import {
     createStore,
     Errored,
     onSettled,
-} from 'solid-js-next';
+} from 'solid-js';
 import { definePreviewAddon } from 'storybook/internal/csf';
 
 import { createApplyDecorators } from './shared/apply-decorators';
@@ -55,7 +55,7 @@ const mount = createMount(runtime);
 const render = createDefaultRender(runtime.createComponent);
 const renderToCanvas = createRenderToCanvas({
     ...runtime,
-    createStoryApp: ({ Story, storyContext, showMain, showException, storyId }) => {
+    createStoryApp: ({ Story, showMain, showException, storyId }) => {
         const renderStory = () => createComponent(() => trackStory(Story), {});
 
         return (() => {
@@ -67,11 +67,6 @@ const renderToCanvas = createRenderToCanvas({
                     storyStore.setRendered(storyId, false);
                 };
             });
-
-
-            if (storyContext?.parameters?.['__isPortableStory']) {
-                return renderStory();
-            }
 
             return createComponent(Errored, {
                 fallback: (err: () => unknown, _reset: () => void) => {

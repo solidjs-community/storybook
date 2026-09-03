@@ -1,26 +1,15 @@
+import preview from '../../../.storybook/preview';
+
 import { Card } from './Card';
 
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
-
-const meta = {
-    title: 'Docgen Lab/Discriminated Union/Card',
+const meta = preview.meta({
+    title: 'Docgen/Discriminated union',
     component: Card,
     tags: ['autodocs'],
-} satisfies Meta<typeof Card>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Solid: Story = {
     args: {
         variant: 'solid',
         padding: 16,
     },
-};
+});
 
-export const Ghost: Story = {
-    args: {
-        variant: 'ghost',
-        transparent: true,
-    },
-};
+export const Default = meta.story({});

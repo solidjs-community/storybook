@@ -121,6 +121,98 @@ function resolveKeyofTypeofConstArray(
     return asExtendedChecker(checker).getUnionType(indexTypes);
 }
 
+function isEmptyStringLiteral(type: ts.Type) {
+    return type.isStringLiteral() && type.value === '';
+}
+
+function isFalseBooleanLiteral(checker: ts.TypeChecker, type: ts.Type, typescript: typeof ts) {
+    return isBooleanLiteralType(typescript, type) && checker.typeToString(type) === 'false';
+}
+
+function isTrueBooleanLiteral(checker: ts.TypeChecker, type: ts.Type, typescript: typeof ts) {
+    return isBooleanLiteralType(typescript, type) && checker.typeToString(type) === 'true';
+}
+
+function isBooleanishType(typescript: typeof ts, type: ts.Type) {
+    return isBooleanLiteralType(typescript, type)
+        || !!(type.getFlags() & typescript.TypeFlags.Boolean)
+        || isEmptyStringLiteral(type);
+}
+
+const SOLID_JSX_ATTRIBUTE_HELPER_NAMES = new Set([
+    'BooleanAttribute',
+    'BooleanProperty',
+    'EnumeratedAcceptsEmpty',
+    'EnumeratedPseudoBoolean',
+    'RemoveAttribute',
+    'RemoveProperty',
+]);
+
+function isSolidJsxAttributeHelperName(name: string | undefined) {
+    return name != null && SOLID_JSX_ATTRIBUTE_HELPER_NAMES.has(name);
+}
+
+function isSolidJsxAttributeUnion(checker: ts.TypeChecker, type: ts.UnionType) {
+    if (SOLID_JSX_ATTRIBUTE_HELPER_NAMES.has(type.aliasSymbol?.getName() ?? '')) {
+        return true;
+    }
+
+    if ([...SOLID_JSX_ATTRIBUTE_HELPER_NAMES].some(name => checker.typeToString(type).includes(name))) {
+        return true;
+    }
+
+    return type.types.some(member => isSolidJsxAttributeHelperName(member.aliasSymbol?.getName()));
+}
+
+function isSolidJsxRemoveAttributeAlias(type: ts.Type) {
+    const name = type.aliasSymbol?.getName();
+
+    return name === 'RemoveAttribute' || name === 'RemoveProperty';
+}
+
+// Solid JSX uses `RemoveAttribute` (`undefined | false`) to omit an attr, not as a value.
+function stripSolidJsxAttributeSentinels(
+    typescript: typeof ts,
+    checker: ts.TypeChecker,
+    members: readonly ts.Type[]
+) {
+    let remaining = members.filter(member =>
+        !isNullishType(typescript, member) && !isSolidJsxRemoveAttributeAlias(member)
+    );
+
+    const hasConcrete = remaining.some(member =>
+        !isBooleanLiteralType(typescript, member) && !isEmptyStringLiteral(member)
+    );
+
+    if (hasConcrete) {
+        remaining = remaining.filter(member => !isFalseBooleanLiteral(checker, member, typescript));
+    }
+
+    const hasNamedLiterals = remaining.some(member =>
+        (member.isStringLiteral() && member.value !== '')
+        || member.isNumberLiteral()
+    );
+
+    if (hasNamedLiterals) {
+        remaining = remaining.filter(member =>
+            !isTrueBooleanLiteral(checker, member, typescript) && !isEmptyStringLiteral(member)
+        );
+    }
+
+    return remaining;
+}
+
+function isStringAndNumberUnion(typescript: typeof ts, members: readonly ts.Type[]) {
+    if (members.length !== 2) {
+        return false;
+    }
+
+    const flags = members.map(member => member.getFlags());
+
+    return flags.some(flag => flag & typescript.TypeFlags.String)
+        && flags.some(flag => flag & typescript.TypeFlags.Number);
+}
+
 function unwrapUtilityTypeAlias(type: ts.Type): ts.Type | undefined {
     const aliasName = type.aliasSymbol?.getName();
 
@@ -425,43 +517,51 @@ export function serializeType(
     }
 
     if (type.isUnion()) {
-        const nonNullishTypes = type.types.filter(t => !isNullishType(typescript, t));
-
         if (isAutocompleteStringUnion(typescript, type)) {
             return { name: 'string', raw: checker.typeToString(type) };
         }
 
-        if (
-            nonNullishTypes.length > 0
-            && nonNullishTypes.every(member => isBooleanLiteralType(typescript, member))
-        ) {
-            return { name: 'boolean', raw: checker.typeToString(type) };
+        const members = isSolidJsxAttributeUnion(checker, type)
+            ? stripSolidJsxAttributeSentinels(typescript, checker, type.types)
+            : type.types.filter(member => !isNullishType(typescript, member));
+        const raw = checker.typeToString(type);
+
+        if (members.length === 0) {
+            return { name: 'boolean', raw };
         }
 
-        const literalMembers = nonNullishTypes.filter(isLiteralType);
+        if (members.every(member => isBooleanishType(typescript, member))) {
+            return { name: 'boolean', raw };
+        }
 
-        if (literalMembers.length > 0 && literalMembers.length === nonNullishTypes.length) {
+        if (members.length === 1) {
+            const soleType = members[0];
+
+            if (soleType) {
+                return serializeType(typescript, checker, soleType, isRequired, propName, depth + 1);
+            }
+        }
+
+        const literalMembers = members.filter(isLiteralType);
+
+        if (literalMembers.length > 0 && literalMembers.length === members.length) {
             return serializeEnumFromLiteralTypes(checker, literalMembers);
         }
 
-        if (nonNullishTypes.length >= 2) {
+        if (isStringAndNumberUnion(typescript, members)) {
+            return { name: 'string', raw };
+        }
+
+        if (members.length >= 2) {
             const discriminated = trySerializeDiscriminatedUnionEnumFromMembers(
                 typescript,
                 checker,
-                nonNullishTypes,
+                members,
                 propName
             );
 
             if (discriminated) {
                 return discriminated;
-            }
-        }
-
-        if (nonNullishTypes.length === 1 && nonNullishTypes.length < type.types.length) {
-            const soleType = nonNullishTypes[0];
-
-            if (soleType) {
-                return serializeType(typescript, checker, soleType, isRequired, propName, depth + 1);
             }
         }
     }

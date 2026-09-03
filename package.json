@@ -53,11 +53,6 @@
             "code": "./src/framework/preset.ts",
             "default": "./dist/framework/preset.js"
         },
-        "./experimental-playwright": {
-            "types": "./dist/playwright.d.ts",
-            "code": "./src/playwright.ts",
-            "default": "./dist/playwright.js"
-        },
         "./renderer": {
             "types": "./dist/renderer/index.d.ts",
             "code": "./src/renderer/index.ts",
@@ -72,6 +67,11 @@
             "types": "./dist/renderer/solid-legacy.d.ts",
             "code": "./src/renderer/solid-legacy.ts",
             "default": "./dist/renderer/solid-legacy.js"
+        },
+        "./renderer/preview-addon": {
+            "types": "./dist/renderer/preview-addon.d.ts",
+            "code": "./src/renderer/preview-addon.ts",
+            "default": "./dist/renderer/preview-addon.js"
         },
         "./renderer/docs": {
             "types": "./dist/renderer/docs.d.ts",
@@ -101,7 +101,11 @@
         "build:dts": "tsc -p tsconfig.build.json",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "dev": "tsup --watch",
+        "lab": "bun run build:js && cd examples/lab && bun run storybook",
+        "lab:solid1": "cd examples/solid1 && bun run storybook",
         "test": "vitest run --passWithNoTests",
+        "test:lab": "cd examples/lab && bun run test",
+        "check-docgen": "cd examples/lab && bun run build-storybook && bun run check-docgen",
         "storybook": "cd examples/lab && bun run storybook",
         "clean": "rm -rf dist && rm -rf node_modules",
         "lint": "eslint . --fix --max-warnings=9999 --quiet",
@@ -114,7 +118,7 @@
     "peerDependencies": {
         "@solidjs/web": "^2.0.0-0",
         "solid-js": "^1.8.0-0 || ^2.0.0-0",
-        "storybook": "^0.0.0-0 || ^10.0.0",
+        "storybook": "^0.0.0-0 || ^10.0.0-0 || ^10.0.0",
         "typescript": "*",
         "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
         "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0"
@@ -128,7 +132,7 @@
         }
     },
     "dependencies": {
-        "@storybook/builder-vite": "^10.5.10",
+        "@storybook/builder-vite": "next",
         "@storybook/global": "^5.0.0",
         "@typescript/typescript6": "^6.0.2",
         "@volar/language-core": "^2.4.28",
@@ -144,15 +148,16 @@
         "@tsconfig/strictest": "^2.0.8",
         "@types/node": "^25.9.5",
         "@types/semver": "^7.8.0",
+        "@vitest/coverage-v8": "4.1.11",
         "es-toolkit": "^1.51.0",
         "eslint": "^10.9.0",
         "eslint-plugin-format": "^2.0.1",
         "eslint-plugin-perfectionist": "^5.10.1",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
-        "solid-js": "^1.9.15",
-        "solid-js-next": "npm:solid-js@next",
-        "storybook": "^10.5.10",
+        "solid-js": "^2.0.0-rc.1",
+        "solid-js-legacy": "npm:solid-js@^1.9.15",
+        "storybook": "next",
         "tsup": "^8.5.1",
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",

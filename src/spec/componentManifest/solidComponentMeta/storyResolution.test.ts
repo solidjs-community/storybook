@@ -449,10 +449,57 @@ describe('dOM filtering through story pipeline', () => {
         expect(pipeline.doc?.props['onClick']).toBeUndefined();
         expect(pipeline.doc?.props['innerText']).toBeUndefined();
         expect(pipeline.doc?.props['label']?.type.name).toBe('string');
-        expect(pipeline.doc?.props['id']?.type.name).toBe('string');
+        expect(pipeline.doc?.props['id']).toBeUndefined();
         expect(pipeline.doc?.props['class']?.type.name).toBe('string');
+        expect(pipeline.doc?.props['style']).toBeDefined();
         expect(Object.keys(directDoc?.props ?? {}).length).toBe(
             Object.keys(pipeline.doc?.props ?? {}).length
         );
+    });
+
+    it('promotes inherited DOM props listed in story args', async() => {
+        const storyFiles = {
+            ...htmlAttributesButton.files,
+            'storybook-solidjs-vite.ts': storybookTypesStub,
+            'Button.stories.tsx': `
+                import type { Meta, StoryObj } from './storybook-solidjs-vite';
+                import { Button } from './Button';
+
+                const meta = {
+                    component: Button,
+                    title: 'Example/Button',
+                } satisfies Meta<typeof Button>;
+
+                export default meta;
+                type Story = StoryObj<typeof meta>;
+
+                export const WithAria: Story = {
+                    args: {
+                        label: 'Accessible',
+                        'aria-label': 'Primary action',
+                        tabindex: 0,
+                    },
+                };
+            `,
+        };
+
+        const pipeline = await extractViaStoryPipeline({
+            files: storyFiles,
+            storyFile: 'Button.stories.tsx',
+            componentFile: 'Button.tsx',
+            exportName: 'Button',
+            tempDirs,
+        });
+        const directDoc = extractViaComponentFile({
+            dir: pipeline.dir,
+            componentPath: pipeline.componentPath,
+            exportName: 'Button',
+            fileNames: Object.keys(storyFiles).map(relativePath => join(pipeline.dir, relativePath)),
+        });
+
+        expect(pipeline.doc?.props['aria-label']?.type.name).toBe('string');
+        expect(directDoc?.props['aria-label']).toBeUndefined();
+        expect(pipeline.doc?.props['id']).toBeUndefined();
+        expect(pipeline.doc?.props['class']).toBeDefined();
     });
 });

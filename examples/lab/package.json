@@ -5,22 +5,33 @@
     "scripts": {
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
+        "test": "vitest run",
+        "test:watch": "vitest",
         "typecheck": "tsc --noEmit",
         "lint": "eslint . --config ../../eslint.config.mjs --fix --max-warnings=9999 --quiet",
         "check-docgen": "bun scripts/check-docgen.ts"
     },
     "dependencies": {
         "@design-system/button": "file:./packages/design-system-button",
-        "solid-js": "^1.9.15",
+        "@solidjs/web": "^2.0.0-rc.1",
+        "solid-js": "^2.0.0-rc.1",
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@storybook/addon-docs": "^10.5.10",
+        "@storybook/addon-docs": "next",
+        "@storybook/addon-vitest": "next",
+        "@tailwindcss/vite": "^4.3.3",
         "@tsconfig/strictest": "^2.0.8",
+        "@vitest/browser-playwright": "^4.1.11",
+        "@vitest/coverage-v8": "4.1.11",
         "eslint": "^10.9.0",
-        "storybook": "^10.5.10",
+        "jsdom": "30.0.1",
+        "playwright": "^1.55.0",
+        "storybook": "next",
+        "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
-        "vite-plugin-solid": "^2.11.14"
+        "vite-plugin-solid": "3.0.0-next.27",
+        "vitest": "^4.1.11"
     }
 }
