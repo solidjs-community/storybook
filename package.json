@@ -54,7 +54,7 @@
             "default": "./dist/framework/preset.js"
         },
         "./renderer": {
-            "types": "./dist/renderer/index.d.ts",
+            "types": "./dist/renderer.d.ts",
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
@@ -74,7 +74,7 @@
             "default": "./dist/renderer/docs.js"
         },
         "./internal/docgen-worker": {
-            "types": "./dist/internal/componentManifest/docgen/docgen-worker.d.ts",
+            "types": "./dist/internal/docgen-worker.d.ts",
             "code": "./src/internal/componentManifest/docgen/docgen-worker.ts",
             "default": "./dist/internal/docgen-worker.js"
         }
@@ -91,11 +91,9 @@
     "scripts": {
         "prepare": "simple-git-hooks",
         "prepack": "bun run build",
-        "build": "tsup && bun run build:dts && bun scripts/rewrite-solid-imports.ts",
-        "build:js": "tsup",
-        "build:dts": "bun ./node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "build": "bun --bun tsdown",
+        "dev": "bun --bun tsdown --watch",
         "typecheck": "bun ./node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
-        "dev": "tsup --watch",
         "test": "vitest run --passWithNoTests",
         "storybook": "cd examples/lab && bun run storybook",
         "clean": "rm -rf dist && rm -rf node_modules",
@@ -148,7 +146,7 @@
         "solid-js": "^1.9.15",
         "solid-js-next": "npm:solid-js@2.0.0-rc.6",
         "storybook": "^10.6.0",
-        "tsup": "^8.5.1",
+        "tsdown": "^0.23.0",
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
