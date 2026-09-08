@@ -43,3 +43,4 @@ Verify with the smallest command that covers the change. Renderer/docgen work us
 - Commits: conventional (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `ci`, `perf`, `revert`) via commitlint.
 - User-facing changes: add a changeset (`bun run changelog`).
 - Do not commit `dist/`. `prepack` builds it.
+- Use English language in comments and docs.
