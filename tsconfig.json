@@ -25,10 +25,7 @@
         "moduleResolution": "bundler",
         "allowImportingTsExtensions": true,
         "allowJs": true,
-        "declaration": true,
-        "declarationMap": true,
-        "emitDeclarationOnly": true,
-        "outDir": "dist",
+        "noEmit": true,
         "sourceMap": true,
         "isolatedModules": true
     },
@@ -36,8 +33,8 @@
         "src/**/*.ts",
         "src/**/*.tsx",
         "src/**/*.d.ts",
-        "tsup.config.ts",
+        "tsdown.config.ts",
         "vitest.config.ts"
     ],
-    "exclude": ["dist", "node_modules"]
+    "exclude": ["dist", "node_modules", "src/spec/packageExports/consumer.ts"]
 }

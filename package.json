@@ -53,13 +53,8 @@
             "code": "./src/framework/preset.ts",
             "default": "./dist/framework/preset.js"
         },
-        "./experimental-playwright": {
-            "types": "./dist/playwright.d.ts",
-            "code": "./src/playwright.ts",
-            "default": "./dist/playwright.js"
-        },
         "./renderer": {
-            "types": "./dist/renderer/index.d.ts",
+            "types": "./dist/renderer.d.ts",
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
@@ -79,7 +74,7 @@
             "default": "./dist/renderer/docs.js"
         },
         "./internal/docgen-worker": {
-            "types": "./dist/internal/componentManifest/docgen/docgen-worker.d.ts",
+            "types": "./dist/internal/docgen-worker.d.ts",
             "code": "./src/internal/componentManifest/docgen/docgen-worker.ts",
             "default": "./dist/internal/docgen-worker.js"
         }
@@ -96,11 +91,9 @@
     "scripts": {
         "prepare": "simple-git-hooks",
         "prepack": "bun run build",
-        "build": "tsup && bun run build:dts && bun scripts/rewrite-solid-imports.ts",
-        "build:js": "tsup",
-        "build:dts": "tsc -p tsconfig.build.json",
-        "typecheck": "tsc -p tsconfig.json --noEmit",
-        "dev": "tsup --watch",
+        "build": "bun --bun tsdown",
+        "dev": "bun --bun tsdown --watch",
+        "typecheck": "bun ./node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
         "test": "vitest run --passWithNoTests",
         "storybook": "cd examples/lab && bun run storybook",
         "clean": "rm -rf dist && rm -rf node_modules",
@@ -128,7 +121,7 @@
         }
     },
     "dependencies": {
-        "@storybook/builder-vite": "^10.5.10",
+        "@storybook/builder-vite": "^10.6.0",
         "@storybook/global": "^5.0.0",
         "@typescript/typescript6": "^6.0.2",
         "@volar/language-core": "^2.4.28",
@@ -140,7 +133,7 @@
         "@changesets/cli": "^3.0.1",
         "@commitlint/cli": "^21.2.2",
         "@commitlint/config-conventional": "^21.2.2",
-        "@solidjs/web": "^2.0.0-rc.1",
+        "@solidjs/web": "2.0.0-rc.6",
         "@tsconfig/strictest": "^2.0.8",
         "@types/node": "^25.9.5",
         "@types/semver": "^7.8.0",
@@ -151,9 +144,9 @@
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
         "solid-js": "^1.9.15",
-        "solid-js-next": "npm:solid-js@next",
-        "storybook": "^10.5.10",
-        "tsup": "^8.5.1",
+        "solid-js-next": "npm:solid-js@2.0.0-rc.6",
+        "storybook": "^10.6.0",
+        "tsdown": "^0.23.0",
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",

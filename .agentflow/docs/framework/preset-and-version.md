@@ -22,7 +22,9 @@ On by default:
 
 ## Solid major detection
 
-`resolveSolidVersion(configDir)` (`src/internal/solidVersion.ts`) uses Storybook’s package manager against the **consumer** project (`getVersionSafe` on `solid-js`).
+`viteFinal` and `previewAnnotations` both call `resolveSolidVersion(configDir)` (`src/internal/solidVersion.ts`). The major is the `version` of the `solid-js` package.json that Node resolves from `.storybook`, via Storybook’s `readDependencyManifest`. That is the copy the bundler loads, whether the install is hoisted, isolated, or declared as `catalog:` / `workspace:*`. The walk goes up from `configDir`, not sideways into other workspace packages.
+
+If nothing on that walk resolves, it throws that `solid-js` is not installed.
 
 | Major | Renderer entry                                 |
 | ----- | ---------------------------------------------- |

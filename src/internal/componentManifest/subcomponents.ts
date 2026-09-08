@@ -9,7 +9,7 @@ export type DeclaredSubcomponent = {
 
 export function extractDeclaredSubcomponents(csf: CsfFile): DeclaredSubcomponent[] {
 	const rawSubcomponents = unwrapSubcomponentNode(
-		csf._metaAnnotations.subcomponents,
+		csf._metaAnnotations['subcomponents'],
 		csf._ast.program
 	);
 
