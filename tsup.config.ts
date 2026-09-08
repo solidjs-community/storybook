@@ -8,7 +8,6 @@ export default defineConfig((options) => {
             index: 'src/index.ts',
             node: 'src/node.ts',
             renderer: 'src/renderer/index.ts',
-            playwright: 'src/playwright.ts',
             'framework/preset': 'src/framework/preset.ts',
             'renderer/solid-legacy': 'src/renderer/solid-legacy.ts',
             'renderer/solid-next': 'src/renderer/solid-next.ts',

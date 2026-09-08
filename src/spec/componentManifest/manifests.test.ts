@@ -69,7 +69,7 @@ describe('enrichCsf with experimentalDocgenServer', () => {
                     experimentalDocgenServer: true,
                 }),
             },
-        } as Parameters<typeof enrichCsf>[1]);
+        } as unknown as Parameters<typeof enrichCsf>[1]);
 
         expect(result).toBeUndefined();
     });
