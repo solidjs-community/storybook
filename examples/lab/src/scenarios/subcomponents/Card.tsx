@@ -1,6 +1,6 @@
 export function Header(props: { heading: string }) {
     return (
-        <header>
+        <header class="text-sm font-semibold text-zinc-900">
             {props.heading}
         </header>
     );
@@ -8,7 +8,7 @@ export function Header(props: { heading: string }) {
 
 export function Footer(props: { note: string }) {
     return (
-        <footer>
+        <footer class="text-xs text-zinc-500">
             {props.note}
         </footer>
     );
@@ -16,7 +16,7 @@ export function Footer(props: { note: string }) {
 
 function CardRoot(props: { title: string }) {
     return (
-        <section>
+        <section class="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-800 shadow-sm">
             {props.title}
         </section>
     );
