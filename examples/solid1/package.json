@@ -11,9 +11,9 @@
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@storybook/addon-docs": "^10.5.10",
+        "@storybook/addon-docs": "next",
         "@tailwindcss/vite": "^4.3.3",
-        "storybook": "^10.5.10",
+        "storybook": "next",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",

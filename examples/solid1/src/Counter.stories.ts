@@ -1,10 +1,10 @@
 import { expect } from 'storybook/test';
 
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
+import preview from '../.storybook/preview';
 
 import { Counter } from './Counter';
 
-const meta = {
+const meta = preview.meta({
     title: 'Solid 1/Counter',
     component: Counter,
     tags: ['autodocs'],
@@ -12,21 +12,18 @@ const meta = {
         label: 'Clicks',
         initial: 0,
     },
-} satisfies Meta<typeof Counter>;
+});
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export const Default = meta.story({});
 
-export const Default: Story = {};
+export const IncrementsOnClick = meta.story({});
 
-export const IncrementsOnClick: Story = {
-    play: async ({ canvas, userEvent }) => {
-        const output = canvas.getByTestId('counter-value');
+IncrementsOnClick.test('increments the counter', async ({ canvas, userEvent }) => {
+    const output = canvas.getByTestId('counter-value');
 
-        await expect(output).toHaveTextContent('0');
+    await expect(output).toHaveTextContent('0');
 
-        await userEvent.click(canvas.getByRole('button', { name: 'Increment' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Increment' }));
 
-        await expect(output).toHaveTextContent('1');
-    },
-};
+    await expect(output).toHaveTextContent('1');
+});

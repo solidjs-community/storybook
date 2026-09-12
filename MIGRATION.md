@@ -2,9 +2,9 @@
 
 Upgrade paths for `storybook-solidjs-vite`:
 
-| From | To | Storybook | Guide |
-| ---- | -- | --------- | ----- |
-| 9.x | 10.x | Storybook 10 | [Version 9 → 10](#version-9--10) |
+| From | To   | Storybook    | Guide                              |
+| ---- | ---- | ------------ | ---------------------------------- |
+| 9.x  | 10.x | Storybook 10 | [Version 9 → 10](#version-9--10)   |
 | 10.x | 11.x | Storybook 11 | [Version 10 → 11](#version-10--11) |
 
 ---
@@ -41,11 +41,17 @@ The framework preset keeps `features.experimentalDocgenServer: true`. Do not set
 
 `framework.options.docgen: false` still disables docgen entirely.
 
+### Storybook 11 only
+
+Peer `storybook` is `^11.0.0` (including 11 prereleases). Stay on `storybook-solidjs-vite` 10.x for Storybook 10.
+
+Vite peer is `^6.3 || ^7 || ^8` (Storybook 11 dropped Vite 5). Node 22.12+ is required.
+
 ### Solid 2 default
 
 **Before (10.x):** Solid **1** is the default renderer; Solid 2 uses the `solid-next` entry when detected.
 
-**After (11.x):** Solid **2** is the default (`solid-next`). Projects on `solid-js` v1 still use `solid-legacy` automatically.
+**After (11.x):** Solid **2** is the default for the renderer, `definePreview`, and published types (`solid-next`). Projects on `solid-js` v1 still resolve `solid-legacy` at runtime from the installed `solid-js` major.
 
 Solid 2 apps should use:
 
@@ -60,10 +66,10 @@ Solid 2 apps should use:
 **After (11.x):** You must add it in `vite.config.ts` yourself (Storybook 8+ already stopped doing this for other frameworks):
 
 ```typescript
-import solid from 'vite-plugin-solid';
+import solid from "vite-plugin-solid";
 
 export default {
-    plugins: [solid()],
+  plugins: [solid()],
 };
 ```
 
@@ -88,29 +94,29 @@ Before migrating your `storybook-solidjs-vite` configuration, be aware of these 
 
 - **`.storybook/main.*` and `vite.config.ts` must be valid ESM** — `require`, `__dirname`, and `__filename` are not defined unless you add them:
 
-    ```typescript
-    import { createRequire } from 'node:module';
-    import { dirname } from 'node:path';
-    import { fileURLToPath } from 'node:url';
+  ```typescript
+  import { createRequire } from "node:module";
+  import { dirname } from "node:path";
+  import { fileURLToPath } from "node:url";
 
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const require = createRequire(import.meta.url);
-    ```
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const require = createRequire(import.meta.url);
+  ```
 
 #### TypeScript
 
 - Use a `moduleResolution` that supports the `types` condition:
 
-    ```json
-    {
-        "compilerOptions": {
-            "moduleResolution": "bundler"
-        }
+  ```json
+  {
+    "compilerOptions": {
+      "moduleResolution": "bundler"
     }
-    ```
+  }
+  ```
 
-    (`node16` / `nodenext` also work.)
+  (`node16` / `nodenext` also work.)
 
 #### Addon paths
 
@@ -174,10 +180,10 @@ You can keep `viteFinal` in `main.ts`, but a root `vite.config.ts` is usually cl
 
 ```typescript
 // vite.config.ts
-import solid from 'vite-plugin-solid';
+import solid from "vite-plugin-solid";
 
 export default {
-    plugins: [solid()],
+  plugins: [solid()],
 };
 ```
 

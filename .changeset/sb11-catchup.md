@@ -22,6 +22,12 @@
 - Default renderer is `solid-next` (`preview-addon` → Solid 2 APIs). Solid 1 uses `solid-legacy`; dev dependency `solid-js-legacy` rewrites to `solid-js` in published output.
 - Detect Solid major from the installed `solid-js` package (not peer dependency ranges), so bun and linked setups resolve Solid 2 correctly.
 - `examples/lab` targets Solid 2 (`solid-js@2.0.0-rc.1`, `vite-plugin-solid@3`).
+- `examples/solid1` is the Solid 1 crutch on Storybook 11 (`solid-js@1` + `vite-plugin-solid@2`).
+
+### Storybook 11 peers
+
+- Peer `storybook` is `^11.0.0` only (including 11 prereleases). Vite peer is `^6.3 || ^7 || ^8`.
+- CLI template `preview` registers `@storybook/addon-docs` in `addons` (CSF Next).
 
 ### Breaking
 

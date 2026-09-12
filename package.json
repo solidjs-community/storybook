@@ -116,9 +116,9 @@
     "peerDependencies": {
         "@solidjs/web": "^2.0.0-0",
         "solid-js": "^1.8.0-0 || ^2.0.0-0",
-        "storybook": "^0.0.0-0 || ^10.0.0-0 || ^10.0.0",
+        "storybook": "^11.0.0-0 || ^11.0.0",
         "typescript": "*",
-        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
+        "vite": "^6.3.0 || ^7.0.0 || ^8.0.0",
         "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0"
     },
     "peerDependenciesMeta": {
@@ -162,6 +162,9 @@
         "vite": "^8.2.2",
         "vite-plugin-solid": "^2.11.14",
         "vitest": "^4.1.11"
+    },
+    "engines": {
+        "node": ">=22.12.0"
     },
     "publishConfig": {
         "access": "public"
