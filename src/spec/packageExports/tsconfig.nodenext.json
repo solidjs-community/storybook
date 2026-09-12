@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "skipLibCheck": true,
+        "noEmit": true,
+        "target": "ESNext",
+        "lib": ["ESNext", "DOM"],
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "verbatimModuleSyntax": true,
+        "types": []
+    },
+    "include": ["./consumer.ts"]
+}

@@ -1,5 +1,21 @@
 # storybook-solidjs-vite
 
+## 10.7.2
+
+### Patch Changes
+
+- 17a6c29: Detect Solid 1 vs 2 from the `solid-js` package Node resolves next to `.storybook`, so Bun isolated installs and `catalog:` specifiers no longer look like a missing dependency.
+
+  Fix version detection under Bun `linker = "isolated"` ([#68](https://github.com/solidjs-community/storybook/issues/68)).
+
+- 17a6c29: Align integration dependencies with Storybook 10.6 and Solid 2.0.0-rc.6.
+
+  Drop `storybook-solidjs-vite/experimental-playwright`. Storybook 10.6 removed experimental Playwright CT (`createPlaywrightTest`);
+
+- 17a6c29: Build JS and declarations with `tsdown` instead of `tsup` + `tsc` emit, so published `.d.ts` files use NodeNext-legal relative specifiers.
+
+  Fix public types under `moduleResolution: "nodenext"` ([#67](https://github.com/solidjs-community/storybook/issues/67)).
+
 ## 10.7.1
 
 ### Patch Changes

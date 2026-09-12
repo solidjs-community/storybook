@@ -13,14 +13,18 @@ function readEntry(input: { entry?: Record<string, unknown> } | Record<string, u
         ? input.entry as Record<string, unknown>
         : input as Record<string, unknown>;
 
-    const importPath = typeof entry['importPath'] === 'string'
-        ? entry['importPath']
-        : Array.isArray(entry['storiesImports']) && typeof entry['storiesImports'][0] === 'string'
-            ? entry['storiesImports'][0]
+    const importPathValue = entry['importPath'];
+    const storiesImports = entry['storiesImports'];
+    const importPath = typeof importPathValue === 'string'
+        ? importPathValue
+        : Array.isArray(storiesImports) && typeof storiesImports[0] === 'string'
+            ? storiesImports[0]
             : undefined;
-    const title = typeof entry['title'] === 'string' ? entry['title'] : 'Component';
-    const id = typeof entry['id'] === 'string'
-        ? (entry['id'].split('--')[0] ?? entry['id'])
+    const titleValue = entry['title'];
+    const title = typeof titleValue === 'string' ? titleValue : 'Component';
+    const idValue = entry['id'];
+    const id = typeof idValue === 'string'
+        ? (idValue.split('--')[0] ?? idValue)
         : title.replace(/\s+/g, '');
 
     return { importPath, title, id };
