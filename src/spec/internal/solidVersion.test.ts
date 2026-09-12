@@ -67,4 +67,21 @@ describe('resolveSolidVersion', () => {
             'Could not detect Solid version: `solid-js` is not installed.'
         );
     });
+
+    it('throws when the installed major is not 1 or 2', async() => {
+        const dir = createSpecTempDir(tempDirs);
+
+        writeSpecFiles(dir, {
+            'package.json': JSON.stringify({ name: 'consumer' }),
+            '.storybook/main.ts': 'export default {};\n',
+            'node_modules/solid-js/package.json': JSON.stringify({
+                name: 'solid-js',
+                version: '3.0.0',
+            }),
+        });
+
+        await expect(resolveSolidVersion(join(dir, '.storybook'))).rejects.toThrow(
+            'Unsupported Solid version: 3.0.0'
+        );
+    });
 });

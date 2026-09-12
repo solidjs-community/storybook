@@ -89,10 +89,15 @@ export class SolidComponentMetaManager {
         this.recycleProjectsIfHeapPressured();
     }
 
-    extractFromComponentFile(componentPath: string, exportName: string): SolidComponentDoc | undefined {
+    extractFromComponentFile(
+        componentPath: string,
+        exportName: string,
+        referencedArgNames?: ReadonlySet<string>
+    ): SolidComponentDoc | undefined {
         const doc = this.getProjectForFile(componentPath).extractFromComponentFile(
             path.resolve(componentPath),
-            exportName
+            exportName,
+            referencedArgNames
         );
 
         this.recycleProjectsIfHeapPressured();

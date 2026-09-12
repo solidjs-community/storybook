@@ -6,7 +6,7 @@
         "module": "ESNext",
         "moduleResolution": "bundler",
         "jsx": "preserve",
-        "jsxImportSource": "solid-js",
+        "jsxImportSource": "@solidjs/web",
         "noEmit": true,
         "allowImportingTsExtensions": true,
         "verbatimModuleSyntax": true

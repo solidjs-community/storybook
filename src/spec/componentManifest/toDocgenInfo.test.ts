@@ -56,7 +56,7 @@ describe('solidComponentDocToDocgenInfo', () => {
 });
 
 describe('solidComponentDocToArgTypesData', () => {
-    it('maps prop names, types, required flags, and descriptions for manifests', () => {
+    it('emits StrictArgTypes so Controls can infer boolean / enum widgets', () => {
         const doc = buttonDoc({
             label: {
                 name: 'label',
@@ -64,9 +64,15 @@ describe('solidComponentDocToArgTypesData', () => {
                 required: true,
                 type: { name: 'string', raw: 'string' },
             },
+            disabled: {
+                name: 'disabled',
+                required: false,
+                type: { name: 'boolean', raw: 'boolean' },
+            },
             size: {
                 name: 'size',
                 required: false,
+                defaultValue: { value: 'medium' },
                 type: {
                     name: 'enum',
                     raw: '"small" | "medium" | "large"',
@@ -77,20 +83,42 @@ describe('solidComponentDocToArgTypesData', () => {
                     ],
                 },
             },
+            padding: {
+                name: 'padding',
+                required: false,
+                if: { arg: 'variant', eq: 'solid' },
+                type: { name: 'number', raw: 'number' },
+            },
         });
 
-        expect(solidComponentDocToArgTypesData(doc)).toEqual({
+        const argTypes = solidComponentDocToArgTypesData(doc);
+
+        expect(typeof argTypes['disabled']?.type).toBe('object');
+        expect(argTypes).toMatchObject({
             label: {
                 name: 'label',
-                type: 'string',
-                required: true,
                 description: 'Button text',
+                type: { name: 'string', required: true },
+            },
+            disabled: {
+                name: 'disabled',
+                type: { name: 'boolean', required: false },
             },
             size: {
                 name: 'size',
-                type: 'enum',
-                required: false,
-                description: undefined,
+                type: {
+                    name: 'enum',
+                    required: false,
+                    value: ['small', 'medium', 'large'],
+                },
+                table: {
+                    defaultValue: { summary: 'medium' },
+                },
+            },
+            padding: {
+                name: 'padding',
+                type: { name: 'number', required: false },
+                if: { arg: 'variant', eq: 'solid' },
             },
         });
     });

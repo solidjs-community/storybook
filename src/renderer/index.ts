@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url';
 
-import { enrichCsf } from '../internal/codeExamples/enrichCsf';
 import { experimental_docgenProvider } from '../internal/componentManifest/docgen/docgenProvider';
 import { experimental_storyDocsProvider } from '../internal/componentManifest/docgen/storyDocsProvider';
 import { generateComponentManifests, getArgTypesData } from '../internal/componentManifest/manifests';
@@ -9,8 +8,6 @@ import { resolveSolidRendererEntry, resolveSolidVersion } from '../internal/soli
 import type { PresetProperty } from 'storybook/internal/types';
 
 export {
-    /** Injects static JSX snippets into story parameters for Autodocs source blocks */
-    enrichCsf as experimental_enrichCsf,
     /** @see https://storybook.js.org/docs/ai/manifests */
     generateComponentManifests as experimental_manifests,
     experimental_docgenProvider,

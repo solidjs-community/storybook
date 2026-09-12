@@ -1,30 +1,14 @@
 # Docgen
 
-How Controls, Docs, and related tooling get Solid component props.
+How Controls, Docs, and related tooling get Solid component props on the `next` line.
 
 See also: [modules index](./modules.md), [preset and version](./preset-and-version.md), [manifests and snippets](./manifests-and-snippets.md).
 
-## Two paths
+## Server path (default)
 
-| Mode                      | When                                                  | How props reach the preview                                                                |
-| ------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **Vite inject (default)** | `docgen` not false and `experimentalDocgenServer` off | `solidComponentMetaPlugin` appends `Component.__docgenInfo = …` to component modules       |
-| **Docgen server**         | `features.experimentalDocgenServer: true`             | Storybook loads `experimental_docgenProvider` → `./internal/docgen-worker`; no Vite inject |
+`features.experimentalDocgenServer` is on by default. Storybook loads `experimental_docgenProvider` → `./internal/docgen-worker`. There is **no** Vite `__docgenInfo` inject.
 
-`framework.options.docgen: false` disables the Vite inject. Preview `src/renderer/docs.ts` still knows how to read `__docgenInfo` for Controls when the inject path is used (`extractArgTypes`).
-
-## Extractor
-
-Both paths use `SolidComponentMetaManager` / `SolidComponentMetaProject`: TypeScript LanguageService via `@typescript/typescript6` + Volar, shaped like Storybook’s `react-component-meta`.
-
-Typical behavior:
-
-- Resolve `meta.component` (and `subcomponents`) from CSF to a source file
-- Serialize prop types (unions, arrays, objects, discriminated unions → Controls `if`)
-- Filter inherited DOM/HTML/SVG noise; keep `class` / `style` and args-referenced names
-- Recycle programs under heap pressure to avoid OOM
-
-`getArgTypesData` is a one-shot extract for MCP / story-creation tooling.
+Worker flow: parse CSF → resolve `meta.component` / `subcomponents` → `SolidComponentMetaManager` extract → map to argTypes → merge with downstream providers.
 
 ## Disable
 
@@ -35,11 +19,19 @@ framework: {
 }
 ```
 
+That turns off `experimentalDocgenServer` from the framework preset so the worker is not registered.
+
+## Extractor
+
+`SolidComponentMetaManager` / `SolidComponentMetaProject`: TypeScript LanguageService via `@typescript/typescript6` + Volar, shaped like Storybook’s `react-component-meta`. Recycles programs under heap pressure. Filters inherited DOM noise; keeps `class` / `style` and args-referenced names. Discriminated unions become Controls `if`.
+
+`getArgTypesData` is a one-shot extract for MCP / story-creation tooling.
+
 ## Key modules and tests
 
-- `src/internal/componentManifest/solidComponentMetaPlugin.ts`
 - `src/internal/componentManifest/docgen/*`
 - `src/internal/componentManifest/solidComponentMeta/*`
 - `src/internal/componentManifest/toDocgenInfo.ts`
-- `src/renderer/docs.ts`
+- `src/framework/docgenOption.ts`
 - `src/spec/componentManifest/**`
+- `src/spec/framework/*`

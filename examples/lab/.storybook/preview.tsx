@@ -1,7 +1,7 @@
 import addonDocs from '@storybook/addon-docs';
 import { definePreview } from 'storybook-solidjs-vite';
 
-import './styles.css';
+import './lab.css';
 
 export default definePreview({
     parameters: {

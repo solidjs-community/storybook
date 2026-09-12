@@ -1,143 +1,174 @@
-# Migration Guide: Version 9 to 10
+# Migration Guide
 
-## Important Core Changes
+Upgrade paths for `storybook-solidjs-vite`:
 
-Before migrating your `storybook-solidjs-vite` configuration, be aware of these critical Storybook 10 core changes:
-
-### Node.js Requirements
-
-- **Node.js 20.19+ or 22.12+** is now required
-- Storybook 10 requires these versions for ESM support without flags
-
-### ESM Requirements
-
-- **`.storybook/main.*` and `vite.config.ts` files must be valid ESM** - CJS constants (`require`, `__dirname`, `__filename`) are no longer defined
-- If you need CJS constants, define them manually:
-
-    ```typescript
-    import { createRequire } from 'node:module';
-    import { dirname } from 'node:path';
-    import { fileURLToPath } from 'node:url';
-
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const require = createRequire(import.meta.url);
-    ```
-
-### TypeScript Configuration
-
-- **Update `tsconfig.json`** to use a `moduleResolution` that supports the `types` condition:
-    ```json
-    {
-        "compilerOptions": {
-            "moduleResolution": "bundler" // or "node16"/"nodenext"
-        }
-    }
-    ```
-
-### Addon Path Resolution
-
-- **Local addons must be fully resolved** - relative paths like `"./my-addon.ts"` must become `import.meta.resolve("./my-addon.ts")`
-
-For complete details on all Storybook 10 changes, see the [official Storybook migration guide](https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#from-version-9x-to-1000).
+| From | To   | Storybook    | Guide                              |
+| ---- | ---- | ------------ | ---------------------------------- |
+| 10.x | 11.x | Storybook 11 | [Version 10 → 11](#version-10--11) |
+| 9.x  | 10.x | Storybook 10 | [Version 9 → 10](#version-9--10)   |
 
 ---
 
-## Configuration Changes
+## Version 10 → 11
 
-### .storybook/main.ts Configuration
+`storybook-solidjs-vite` **11.x** requires **Storybook 11**. Stay on **10.x** until you upgrade Storybook.
 
-The main configuration file has several important changes:
+1. Upgrade `storybook` and `storybook-solidjs-vite` together.
+2. Follow the [Storybook 11 migration guide](https://storybook.js.org/docs/releases/migration-guide) for core Storybook changes.
+3. Do the Solid-specific steps below.
 
-#### 1. Docgen configuration
+### Create `vite.config.ts` and add the Solid Vite plugin
+
+Storybook 8+ already stopped injecting framework Vite plugins (same as React/Vue). This package used to add the Solid plugin for you, **11.x does not**.
+
+If you do not have a root `vite.config.ts`, create one. You also need to add the Solid Vite plugin to your `vite.config.ts` file.
+
+Solid 2 uses `@solidjs/vite-plugin`:
+
+```typescript
+import solid from "@solidjs/vite-plugin";
+
+export default {
+  plugins: [solid()],
+};
+```
+
+Solid 1 stays on `vite-plugin-solid@^2`:
+
+```typescript
+import solid from "vite-plugin-solid";
+
+export default {
+  plugins: [solid()],
+};
+```
+
+### Stories
+
+[CSF Next](./README.md#csf-next) is the default in Storybook 11.
+New `create-storybook --type=solid` apps use CSF Next as well.
+
+Existing projects can still use CSF 3.
+
+### Controls and Docs
+
+No action. They still work by default.
+
+To turn them off: `framework.options.docgen: false`.
+
+### If you used `experimental-playwright`
+
+That export is gone. Use `[@storybook/addon-vitest](https://storybook.js.org/docs/writing-tests/integrations/vitest-addon)`.
+
+---
+
+## Version 9 → 10
+
+### Storybook 10 core changes
+
+Before migrating your `storybook-solidjs-vite` configuration, be aware of these critical Storybook 10 core changes:
+
+#### Node.js
+
+- **Node.js 20.19+ or 22.12+** is required for ESM support without flags.
+
+#### ESM
+
+- **`.storybook/main.`\* and `vite.config.ts` must be valid ESM** — `require`, `__dirname`, and `__filename` are not defined unless you add them:
+
+  ```typescript
+  import { createRequire } from "node:module";
+  import { dirname } from "node:path";
+  import { fileURLToPath } from "node:url";
+
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const require = createRequire(import.meta.url);
+  ```
+
+#### TypeScript
+
+- Use a `moduleResolution` that supports the `types` condition:
+
+  ```json
+  {
+    "compilerOptions": {
+      "moduleResolution": "bundler"
+    }
+  }
+  ```
+
+  (`node16` / `nodenext` also work.)
+
+#### Addon paths
+
+- Local addons must be fully resolved — `"./my-addon.ts"` becomes `import.meta.resolve("./my-addon.ts")`.
+
+For all Storybook 10 core changes, see the [official Storybook migration guide](https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#from-version-9x-to-1000).
+
+### Framework configuration
+
+#### Docgen (RCM)
 
 **Before (v9):** `typescript.reactDocgen` / `reactDocgenTypescriptOptions` (react-docgen-typescript).
 
-**After (v10):** RCM only — no `typescript.reactDocgen` options.
+**After (v10):** Solid **component-meta (RCM)** only — remove the `typescript` docgen block from `main.ts`.
 
 ```typescript
 framework: {
     name: 'storybook-solidjs-vite',
     options: {
-        // docgen is enabled by default (Solid component-meta)
+        // docgen is enabled by default
         docgen: false, // → disable docgen (Controls, Docs, manifest)
     },
 },
 ```
 
-Component props are extracted via **React component-meta (RCM)**. Legacy react-docgen / react-docgen-typescript configuration is ignored — remove it from `main.ts`. The components manifest debugger is enabled by default (`features.componentsManifest` from the framework preset). View it at `/manifests/components.html` while Storybook is running.
+In **10.x**, props are extracted via TypeScript LanguageService and exposed to Controls/Docs through the preview (`__docgenInfo` Vite inject). The components manifest debugger is on by default (`features.componentsManifest` from the framework preset) at `/manifests/components.html`.
 
-#### 2. Addon Path Resolution
-
-To ensure that addons are correctly resolved, you need to use the `getAbsolutePath` helper function.
+#### Addon path resolution
 
 **Before (v9):**
 
 ```typescript
 addons: [
-    '@storybook/addon-onboarding',
     '@storybook/addon-docs',
     '@storybook/addon-a11y',
-    '@storybook/addon-links',
-    {
-        name: '@storybook/addon-vitest',
-        options: {
-            cli: false,
-        },
-    },
 ],
 ```
 
 **After (v10):**
 
 ```typescript
-// Add this helper function at the top
+import path from 'node:path';
+
 const getAbsolutePath = (packageName: string): string =>
     path.dirname(import.meta.resolve(path.join(packageName, 'package.json'))).replace(/^file:\/\//, '');
 
 addons: [
-    getAbsolutePath('@storybook/addon-onboarding'),
     getAbsolutePath('@storybook/addon-docs'),
     getAbsolutePath('@storybook/addon-a11y'),
-    getAbsolutePath('@storybook/addon-links'),
-    {
-        name: getAbsolutePath('@storybook/addon-vitest'),
-        options: {
-            cli: false,
-        },
-    },
 ],
 ```
 
-#### 3. Removed Configuration Sections
+#### Removed configuration sections
 
-**Removed from v10:**
+- `typescript` docgen options (use `framework.options.docgen` instead)
+- `viteFinal` in `main.ts` is optional — prefer `vite.config.ts` for app-level Vite plugins
 
-- `typescript` docgen configuration section (moved to framework options)
-- `viteFinal` function (moved to vite.config.ts)
+#### Vite configuration
 
-#### 4. Vite configuration
-
-**Before (v9):**
-
-```typescript
-viteFinal: async (config) => {
-    return mergeConfig(config, {
-        plugins: [
-            ...
-        ]
-    });
-},
-```
-
-**After (v10):**
-You still can use the `viteFinal` function if you want, but I do recommend using `vite.config.ts` instead.
+You can keep `viteFinal` in `main.ts`, but a root `vite.config.ts` is usually clearer:
 
 ```typescript
 // vite.config.ts
+import solid from "vite-plugin-solid";
+
 export default {
-    plugins: [
-        ...
-    ]
+  plugins: [solid()],
 };
 ```
+
+### Removed: `experimental-playwright`
+
+Storybook **10.6** dropped the experimental Playwright component-testing bridge (`createPlaywrightTest`). Upgrade to `@storybook/addon-vitest` (or run Playwright against a running Storybook) instead of `storybook-solidjs-vite/experimental-playwright`.

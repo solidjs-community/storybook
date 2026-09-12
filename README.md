@@ -37,6 +37,8 @@ Open the URL shown in the terminal.
 
 ## ⚙️ Configuration
 
+Put the Solid Vite plugin in your `vite.config.ts` — Storybook uses that Vite config and does not inject it for you (same as React/Vue since Storybook 8). Solid 2 uses `@solidjs/vite-plugin`; Solid 1 stays on `vite-plugin-solid@^2`.
+
 Customize Vite and Storybook as usual. Add stories in `src/**/*.stories.{tsx,js}` and install addons
 as needed.
 
@@ -44,34 +46,34 @@ as needed.
 
 ```ts
 // .storybook/main.ts
-import { defineMain } from 'storybook-solidjs-vite';
+import { defineMain } from "storybook-solidjs-vite";
 
 export default defineMain({
-    framework: { name: 'storybook-solidjs-vite' },
+  framework: { name: "storybook-solidjs-vite" },
 });
 ```
 
 ```ts
 // .storybook/preview.tsx
-import addonDocs from '@storybook/addon-docs';
-import { definePreview } from 'storybook-solidjs-vite';
+import addonDocs from "@storybook/addon-docs";
+import { definePreview } from "storybook-solidjs-vite";
 
 export default definePreview({
-    addons: [addonDocs()],
+  addons: [addonDocs()],
 });
 ```
 
 ```ts
 // src/Button.stories.ts
-import preview from '../.storybook/preview';
-import { Button } from './Button';
+import preview from "../.storybook/preview";
+import { Button } from "./Button";
 
 const meta = preview.meta({
-    component: Button,
+  component: Button,
 });
 
 export const Primary = meta.story({
-    args: { label: 'Button' },
+  args: { label: "Button" },
 });
 ```
 
@@ -79,28 +81,28 @@ export const Primary = meta.story({
 
 ```ts
 // .storybook/main.ts
-import type { StorybookConfig } from 'storybook-solidjs-vite';
+import type { StorybookConfig } from "storybook-solidjs-vite";
 
 export default {
-    framework: 'storybook-solidjs-vite',
+  framework: "storybook-solidjs-vite",
 } satisfies StorybookConfig;
 ```
 
 ```ts
-import { Button } from './Button';
+import { Button } from "./Button";
 
 // src/Button.stories.ts
-import type { Meta, StoryObj } from 'storybook-solidjs-vite';
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 
 const meta = {
-    component: Button,
+  component: Button,
 } satisfies Meta<typeof Button>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-    args: { label: 'Button' },
+  args: { label: "Button" },
 };
 ```
 
@@ -108,18 +110,20 @@ export const Primary: Story = {
 
 Props for **Controls**, **Docs**, and the **components manifest** come from a TypeScript LanguageService extractor aligned with Storybook's `react-component-meta` format.
 
+Extraction runs on the **Storybook server** (`features.experimentalDocgenServer`, enabled by default from the framework preset). There is no Vite preview `__docgenInfo` inject.
+
 Enabled by default. Inspect output in the [manifest debugger](#components-manifest-debugger).
 
 To disable:
 
 ```ts
-import type { StorybookConfig } from 'storybook-solidjs-vite';
+import type { StorybookConfig } from "storybook-solidjs-vite";
 
 const config: StorybookConfig = {
-    framework: {
-        name: 'storybook-solidjs-vite',
-        options: { docgen: false },
-    },
+  framework: {
+    name: "storybook-solidjs-vite",
+    options: { docgen: false },
+  },
 };
 
 export default config;
@@ -132,12 +136,12 @@ export default config;
 To disable:
 
 ```ts
-import type { StorybookConfig } from 'storybook-solidjs-vite';
+import type { StorybookConfig } from "storybook-solidjs-vite";
 
 const config: StorybookConfig = {
-    features: {
-        experimentalCodeExamples: false,
-    },
+  features: {
+    experimentalCodeExamples: false,
+  },
 };
 
 export default config;
@@ -172,7 +176,7 @@ On args or globals changes, Storybook re-runs decorators and stories functions f
 For decorators that return JSX. Runs once per story mount — `context.globals` and `context.args` are reactive stores, so bindings in JSX still update without re-running the decorator:
 
 ```tsx
-import { createJSXDecorator } from 'storybook-solidjs-vite';
+import { createJSXDecorator } from "storybook-solidjs-vite";
 
 export const withLayout = createJSXDecorator((Story, context) => (
   <main data-theme={context.globals.theme}>
@@ -186,18 +190,18 @@ export const withLayout = createJSXDecorator((Story, context) => (
 For side effects that should run on every story update — e.g. sync `document.body` when globals change:
 
 ```tsx
-import { createDecorator } from 'storybook-solidjs-vite';
+import { createDecorator } from "storybook-solidjs-vite";
 
 export const withTheme = createDecorator((Story, context) => {
   // Will run on every story update
-  document.body.setAttribute('data-theme', context.globals.theme);
+  document.body.setAttribute("data-theme", context.globals.theme);
   return Story();
 });
 ```
 
-## 🔄 Migration from v9
+## 🔄 Migration
 
-See [Migration Guide](./MIGRATION.md) for breaking changes.
+See [Migration Guide](./MIGRATION.md) for 9 → 10 and 10 → 11.
 
 ## 🤝 Contributing
 

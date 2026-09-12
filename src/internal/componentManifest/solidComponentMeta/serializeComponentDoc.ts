@@ -101,9 +101,11 @@ export function serializeComponentDoc(
     {
         sourceFile,
         resolvedComponent,
+        referencedArgNames,
     }: {
         sourceFile: ts.SourceFile;
         resolvedComponent: ResolvedComponent;
+        referencedArgNames?: ReadonlySet<string>;
     }
 ): SolidComponentDoc | undefined {
     const { componentRef, propsType, symbol } = resolvedComponent;
@@ -127,7 +129,7 @@ export function serializeComponentDoc(
     const props: Record<string, SerializedProp> = {};
 
     for (const prop of allProperties) {
-        if (!shouldIncludeComponentProp(prop, sourceFile, hasInterfaceHeritage, bulkExcluded)) {
+        if (!shouldIncludeComponentProp(prop, sourceFile, hasInterfaceHeritage, bulkExcluded, referencedArgNames)) {
             continue;
         }
 

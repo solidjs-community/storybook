@@ -1,4 +1,4 @@
-import { previewAddon } from 'storybook-solidjs-vite/renderer/solid-legacy';
+import { previewAddon } from 'storybook-solidjs-vite/renderer/preview-addon';
 
 import { createSolidDefinePreview, type SolidDefinePreview } from './preview/define-preview';
 
