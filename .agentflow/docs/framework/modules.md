@@ -2,7 +2,7 @@
 
 Explanation index for what `storybook-solidjs-vite` implements under `src/`, grouped by capability — not by file.
 
-Solid 1 and Solid 2 share one adapter. `definePreview` imports `preview-addon`; Vite aliases that (and the inactive major) onto the active renderer. Docgen and “Show code” run on the Storybook server — no Vite `__docgenInfo` inject. Consumers must add `vite-plugin-solid` themselves.
+Solid 1 and Solid 2 share one adapter. `definePreview` imports `preview-addon`; Vite aliases that (and the inactive major) onto the active renderer. Docgen and “Show code” run on the Storybook server — no Vite `__docgenInfo` inject. Consumers must add the Solid Vite plugin themselves (`@solidjs/vite-plugin` for Solid 2, `vite-plugin-solid` for Solid 1).
 
 | Page                                                  | Capability                                        |
 | ----------------------------------------------------- | ------------------------------------------------- |

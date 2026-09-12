@@ -4,66 +4,36 @@ Upgrade paths for `storybook-solidjs-vite`:
 
 | From | To   | Storybook    | Guide                              |
 | ---- | ---- | ------------ | ---------------------------------- |
-| 9.x  | 10.x | Storybook 10 | [Version 9 → 10](#version-9--10)   |
 | 10.x | 11.x | Storybook 11 | [Version 10 → 11](#version-10--11) |
+| 9.x  | 10.x | Storybook 10 | [Version 9 → 10](#version-9--10)   |
 
 ---
 
 ## Version 10 → 11
 
-This major targets **Storybook 11**. Stay on `storybook-solidjs-vite` **10.x** until you upgrade Storybook itself.
+`storybook-solidjs-vite` **11.x** requires **Storybook 11**. Stay on **10.x** until you upgrade Storybook.
 
-For Storybook 11 core changes, follow the upstream guide when it ships.
+1. Upgrade `storybook` and `storybook-solidjs-vite` together.
+2. Follow the [Storybook 11 migration guide](https://storybook.js.org/docs/releases/migration-guide) for core Storybook changes.
+3. Do the Solid-specific steps below.
 
-### CSF Next in the CLI scaffold
+### Create `vite.config.ts` and add the Solid Vite plugin
 
-**Before (10.x template):** CSF 3 (`export default meta`, `StoryObj`); `Page` used a `play` function.
+Storybook 8+ already stopped injecting framework Vite plugins (same as React/Vue). This package used to add the Solid plugin for you, **11.x does not**.
 
-**After (11.x template):** CSF Next (`preview.meta()`, `meta.story().test()`). Every scaffold story includes a test. A co-located `preview.ts` / `preview.js` in the stories folder calls `definePreview`.
+If you do not have a root `vite.config.ts`, create one. You also need to add the Solid Vite plugin to your `vite.config.ts` file.
 
-The framework preset enables `features.experimentalTestSyntax` by default. Set `experimentalTestSyntax: false` in `main.ts` only if you need legacy CSF 3 without `.test()` support.
+Solid 2 uses `@solidjs/vite-plugin`:
 
-### Docgen server only
+```typescript
+import solid from "@solidjs/vite-plugin";
 
-**Before (10.x):** RCM runs in the Vite preview via `__docgenInfo` injection; `experimental_enrichCsf` injects Autodocs snippets at index time.
+export default {
+  plugins: [solid()],
+};
+```
 
-**After (11.x):** Docgen runs **only on the Storybook server**:
-
-- `experimental_docgenProvider` — Controls and component metadata
-- `experimental_storyDocsProvider` — Autodocs snippets
-
-Removed with no replacement in preview:
-
-- Vite `__docgenInfo` plugin
-- `experimental_enrichCsf` preset hook
-
-The framework preset keeps `features.experimentalDocgenServer: true`. Do not set `experimentalDocgenServer: false` — there is no preview fallback.
-
-`framework.options.docgen: false` still disables docgen entirely.
-
-### Storybook 11 only
-
-Peer `storybook` is `^11.0.0` (including 11 prereleases). Stay on `storybook-solidjs-vite` 10.x for Storybook 10.
-
-Vite peer is `^6.3 || ^7 || ^8` (Storybook 11 dropped Vite 5). Node 22.12+ is required.
-
-### Solid 2 default
-
-**Before (10.x):** Solid **1** is the default renderer; Solid 2 uses the `solid-next` entry when detected.
-
-**After (11.x):** Solid **2** is the default for the renderer, `definePreview`, and published types (`solid-next`). Projects on `solid-js` v1 still resolve `solid-legacy` at runtime from the installed `solid-js` major.
-
-Solid 2 apps should use:
-
-- `solid-js@^2`
-- `@solidjs/web@^2`
-- `vite-plugin-solid@^3`
-
-### Vite: `vite-plugin-solid`
-
-**Before (10.x):** The framework preset could inject `vite-plugin-solid` for you.
-
-**After (11.x):** You must add it in `vite.config.ts` yourself (Storybook 8+ already stopped doing this for other frameworks):
+Solid 1 stays on `vite-plugin-solid@^2`:
 
 ```typescript
 import solid from "vite-plugin-solid";
@@ -73,10 +43,22 @@ export default {
 };
 ```
 
-### Other breaking changes
+### Stories
 
-- `storybook-solidjs-vite/experimental-playwright` export removed (use `@storybook/addon-vitest`).
-- Portable-story (`__isPortableStory`) rendering paths removed from the renderer.
+[CSF Next](./README.md#csf-next) is the default in Storybook 11.
+New `create-storybook --type=solid` apps use CSF Next as well.
+
+Existing projects can still use CSF 3.
+
+### Controls and Docs
+
+No action. They still work by default.
+
+To turn them off: `framework.options.docgen: false`.
+
+### If you used `experimental-playwright`
+
+That export is gone. Use `[@storybook/addon-vitest](https://storybook.js.org/docs/writing-tests/integrations/vitest-addon)`.
 
 ---
 
@@ -92,7 +74,7 @@ Before migrating your `storybook-solidjs-vite` configuration, be aware of these 
 
 #### ESM
 
-- **`.storybook/main.*` and `vite.config.ts` must be valid ESM** — `require`, `__dirname`, and `__filename` are not defined unless you add them:
+- **`.storybook/main.`\* and `vite.config.ts` must be valid ESM** — `require`, `__dirname`, and `__filename` are not defined unless you add them:
 
   ```typescript
   import { createRequire } from "node:module";

@@ -8,8 +8,8 @@ export default defineConfig((options) => ({
         node: 'src/node.ts',
         renderer: 'src/renderer/index.ts',
         'framework/preset': 'src/framework/preset.ts',
-        'renderer/solid-legacy': 'src/renderer/solid-legacy.ts',
-        'renderer/solid-next': 'src/renderer/solid-next.ts',
+        'renderer/solid1': 'src/renderer/solid1.ts',
+        'renderer/solid2': 'src/renderer/solid2.ts',
         'renderer/preview-addon': 'src/renderer/preview-addon.ts',
         'renderer/docs': 'src/renderer/docs.ts',
         'internal/docgen-worker': 'src/internal/componentManifest/docgen/docgen-worker.ts',
@@ -27,7 +27,7 @@ export default defineConfig((options) => ({
         // and the root entry self-imports published renderer subpaths.
         neverBundle: [
             /^solid-js-legacy(?:\/|$)/,
-            'storybook-solidjs-vite/renderer/solid-legacy',
+            'storybook-solidjs-vite/renderer/solid1',
             'storybook-solidjs-vite/renderer/preview-addon',
         ],
     },

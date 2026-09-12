@@ -13,11 +13,12 @@
     },
     "dependencies": {
         "@design-system/button": "file:./packages/design-system-button",
-        "@solidjs/web": "^2.0.0-rc.1",
-        "solid-js": "^2.0.0-rc.1",
+        "@solidjs/web": "^2.0.0-0",
+        "solid-js": "^2.0.0-0",
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
+        "@solidjs/vite-plugin": "^3.0.0-0",
         "@storybook/addon-docs": "next",
         "@storybook/addon-vitest": "next",
         "@tailwindcss/vite": "^4.3.3",
@@ -31,7 +32,6 @@
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
-        "vite-plugin-solid": "3.0.0-next.27",
         "vitest": "^4.1.11"
     }
 }

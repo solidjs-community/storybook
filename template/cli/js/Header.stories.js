@@ -1,6 +1,6 @@
 import { expect, fn } from 'storybook/test';
 
-import preview from './preview';
+import preview from '../../.storybook/preview';
 
 import { Header } from './Header';
 

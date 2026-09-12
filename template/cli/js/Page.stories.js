@@ -1,6 +1,6 @@
 import { expect } from 'storybook/test';
 
-import preview from './preview';
+import preview from '../../.storybook/preview';
 
 import { Page } from './Page';
 

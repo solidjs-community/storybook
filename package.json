@@ -58,15 +58,15 @@
             "code": "./src/renderer/index.ts",
             "default": "./dist/renderer.js"
         },
-        "./renderer/solid-next": {
-            "types": "./dist/renderer/solid-next.d.ts",
-            "code": "./src/renderer/solid-next.ts",
-            "default": "./dist/renderer/solid-next.js"
+        "./renderer/solid2": {
+            "types": "./dist/renderer/solid2.d.ts",
+            "code": "./src/renderer/solid2.ts",
+            "default": "./dist/renderer/solid2.js"
         },
-        "./renderer/solid-legacy": {
-            "types": "./dist/renderer/solid-legacy.d.ts",
-            "code": "./src/renderer/solid-legacy.ts",
-            "default": "./dist/renderer/solid-legacy.js"
+        "./renderer/solid1": {
+            "types": "./dist/renderer/solid1.d.ts",
+            "code": "./src/renderer/solid1.ts",
+            "default": "./dist/renderer/solid1.js"
         },
         "./renderer/preview-addon": {
             "types": "./dist/renderer/preview-addon.d.ts",
@@ -114,6 +114,7 @@
         "release:next": "changeset publish --no-git-tag --tag next"
     },
     "peerDependencies": {
+        "@solidjs/vite-plugin": "^3.0.0-0",
         "@solidjs/web": "^2.0.0-0",
         "solid-js": "^1.8.0-0 || ^2.0.0-0",
         "storybook": "^11.0.0-0 || ^11.0.0",
@@ -122,10 +123,16 @@
         "vite-plugin-solid": "^2.0.0-0 || ^3.0.0-0"
     },
     "peerDependenciesMeta": {
+        "@solidjs/vite-plugin": {
+            "optional": true
+        },
         "@solidjs/web": {
             "optional": true
         },
         "typescript": {
+            "optional": true
+        },
+        "vite-plugin-solid": {
             "optional": true
         }
     },
@@ -160,7 +167,6 @@
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
-        "vite-plugin-solid": "^2.11.14",
         "vitest": "^4.1.11"
     },
     "engines": {

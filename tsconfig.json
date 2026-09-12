@@ -8,11 +8,11 @@
         "paths": {
             "solid-js-legacy": ["./node_modules/solid-js-legacy"],
             "solid-js-legacy/*": ["./node_modules/solid-js-legacy/*"],
-            "storybook-solidjs-vite/renderer/solid-legacy": [
-                "./src/renderer/solid-legacy.ts"
+            "storybook-solidjs-vite/renderer/solid1": [
+                "./src/renderer/solid1.ts"
             ],
-            "storybook-solidjs-vite/renderer/solid-next": [
-                "./src/renderer/solid-next.ts"
+            "storybook-solidjs-vite/renderer/solid2": [
+                "./src/renderer/solid2.ts"
             ],
             "storybook-solidjs-vite/renderer/preview-addon": [
                 "./src/renderer/preview-addon.ts"
@@ -20,7 +20,6 @@
         },
         "jsx": "preserve",
         "jsxImportSource": "solid-js",
-
 
         "lib": ["ESNext", "DOM"],
         "moduleDetection": "force",

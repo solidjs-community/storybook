@@ -1,12 +1,12 @@
+import { render as solidRender } from '@solidjs/web';
 import { global } from '@storybook/global';
 import {
     createComponent,
-    ErrorBoundary,
-    onCleanup,
-    onMount,
-} from 'solid-js-legacy';
-import { reconcile, createStore as solidCreateStore } from 'solid-js-legacy/store';
-import { render as solidRender } from 'solid-js-legacy/web';
+    createMemo,
+    createStore,
+    Errored,
+    onSettled,
+} from 'solid-js';
 import { definePreviewAddon } from 'storybook/internal/csf';
 
 import { createApplyDecorators } from './shared/apply-decorators';
@@ -17,10 +17,10 @@ import { createRenderToCanvas } from './shared/render-to-canvas';
 import { createStoryState } from './shared/story-store';
 
 import type { ProjectAnnotations, Renderer } from 'storybook/internal/types';
-import type { SolidComponent } from '../preview/public-api';
-import type { SolidRendererRuntime } from './shared/render-to-canvas';
+import type { SolidComponent, SolidRenderer } from '../preview/public-api';
+import type { SolidRendererRuntime, StoryThunk } from './shared/render-to-canvas';
 
-const SOLID_RENDERER_ID = 'solid' as const;
+const SOLID_RENDERER_ID = 'solid2' as const;
 
 if (global.window) {
     global.window.STORYBOOK_ENV = SOLID_RENDERER_ID;
@@ -30,22 +30,24 @@ const parameters = {
     renderer: SOLID_RENDERER_ID,
 };
 
-function createStore<T extends object>(initial: T) {
-    const [state, setStore] = solidCreateStore<T>(initial);
-
-    const setState = (update: (prev: T) => T) => {
-        setStore(reconcile(update(state)));
-    };
-
-    return [state, setState] as const;
+function trackStory(story: StoryThunk): SolidRenderer['storyResult'] {
+    return createMemo(story) as unknown as SolidRenderer['storyResult'];
 }
 
-const storyStore = createStoryState(createStore);
+const storyStore = createStoryState((initial: any) => {
+    const [state, setStore] = createStore(initial);
+
+    const setState = (update: (prev: any) => any) => {
+        setStore(() => update(state));
+    };
+
+    return [state, setState];
+});
 
 const runtime: SolidRendererRuntime = {
     storyStore,
+    render: solidRender,
     createComponent: createComponent as SolidRendererRuntime['createComponent'],
-    render: solidRender as SolidRendererRuntime['render'],
 };
 
 const applyDecorators = createApplyDecorators({ storyStore });
@@ -54,27 +56,29 @@ const render = createDefaultRender(runtime.createComponent);
 const renderToCanvas = createRenderToCanvas({
     ...runtime,
     createStoryApp: ({ Story, showMain, showException, storyId }) => {
-        const App: SolidComponent = () => {
-            onMount(() => {
+        const renderStory = () => createComponent(() => trackStory(Story), {});
+
+        return (() => {
+            onSettled(() => {
                 showMain();
                 storyStore.setRendered(storyId, true);
+
+                return () => {
+                    storyStore.setRendered(storyId, false);
+                };
             });
 
-            onCleanup(() => {
-                storyStore.setRendered(storyId, false);
-            });
+            return createComponent(Errored, {
+                fallback: (err: () => unknown, _reset: () => void) => {
+                    const error = err() as Error;
 
-            return createComponent(ErrorBoundary as any, {
-                fallback: (err: Error) => {
-                    showException(err);
+                    showException(error);
 
-                    return err as any;
+                    return error as any;
                 },
-                children: createComponent((() => Story()) as any, {}),
+                children: renderStory(),
             });
-        };
-
-        return App;
+        }) as SolidComponent;
     },
 });
 
@@ -94,5 +98,5 @@ export {
     parameters,
     previewAddon,
     render,
-    renderToCanvas
+    renderToCanvas,
 };

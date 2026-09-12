@@ -28,15 +28,15 @@ On by default:
 
 If nothing on that walk resolves, it throws that `solid-js` is not installed.
 
-| Major | Renderer entry                                 |
-| ----- | ---------------------------------------------- |
-| 2     | `storybook-solidjs-vite/renderer/solid-next`   |
-| 1     | `storybook-solidjs-vite/renderer/solid-legacy` |
+| Major | Renderer entry                           |
+| ----- | ---------------------------------------- |
+| 2     | `storybook-solidjs-vite/renderer/solid2` |
+| 1     | `storybook-solidjs-vite/renderer/solid1` |
 
 Stable import ids:
 
-- `SOLID_DEFAULT_RENDERER_IMPORT` — solid-next
-- `SOLID_LEGACY_RENDERER_IMPORT` — solid-legacy
+- `SOLID_2_RENDERER_IMPORT` — solid2
+- `SOLID_1_RENDERER_IMPORT` — solid1
 - `SOLID_PREVIEW_ADDON_IMPORT` — preview-addon
 
 ## Vite `viteFinal`
@@ -48,7 +48,7 @@ Aliases:
 
 `resolve.dedupe` always includes `solid-js`, `@solidjs/web`, `@solidjs/signals`, `@solidjs/router`, `@solidjs/meta`.
 
-This package never injects `vite-plugin-solid`; the user’s Vite config owns that. There is no Vite `__docgenInfo` plugin on this branch.
+This package never injects the Solid Vite plugin (`@solidjs/vite-plugin` / `vite-plugin-solid`); the user’s Vite config owns that. There is no Vite `__docgenInfo` plugin on this branch.
 
 ## Public `main` types
 

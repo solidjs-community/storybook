@@ -11,8 +11,8 @@ import { mergeConfig } from 'vite';
 import {
     resolveSolidRendererEntry,
     resolveSolidVersion,
-    SOLID_DEFAULT_RENDERER_IMPORT,
-    SOLID_LEGACY_RENDERER_IMPORT,
+    SOLID_1_RENDERER_IMPORT,
+    SOLID_2_RENDERER_IMPORT,
     SOLID_PREVIEW_ADDON_IMPORT,
 } from '../internal/solidVersion';
 
@@ -77,11 +77,11 @@ export const features: PresetProperty<'features', StorybookConfig> = async(
  */
 export const viteFinal: StorybookConfig['viteFinal'] = async(config, { configDir }) => {
     const solidVersion = await resolveSolidVersion(configDir);
-    const solidLegacyEntry = fileURLToPath(
-        import.meta.resolve(SOLID_LEGACY_RENDERER_IMPORT)
+    const solid1Entry = fileURLToPath(
+        import.meta.resolve(SOLID_1_RENDERER_IMPORT)
     );
-    const solidDefaultEntry = fileURLToPath(
-        import.meta.resolve(SOLID_DEFAULT_RENDERER_IMPORT)
+    const solid2Entry = fileURLToPath(
+        import.meta.resolve(SOLID_2_RENDERER_IMPORT)
     );
     const solidRendererEntry = fileURLToPath(
         import.meta.resolve(resolveSolidRendererEntry(solidVersion))
@@ -90,11 +90,11 @@ export const viteFinal: StorybookConfig['viteFinal'] = async(config, { configDir
         import.meta.resolve(SOLID_PREVIEW_ADDON_IMPORT)
     );
     const inactiveRendererImport = solidVersion === 1
-        ? SOLID_DEFAULT_RENDERER_IMPORT
-        : SOLID_LEGACY_RENDERER_IMPORT;
+        ? SOLID_2_RENDERER_IMPORT
+        : SOLID_1_RENDERER_IMPORT;
     const inactiveRendererEntry = solidVersion === 1
-        ? solidDefaultEntry
-        : solidLegacyEntry;
+        ? solid2Entry
+        : solid1Entry;
     const rendererAlias = [
         { find: SOLID_PREVIEW_ADDON_IMPORT, replacement: solidRendererEntry },
         { find: previewAddonEntry, replacement: solidRendererEntry },

@@ -1,1 +1,1 @@
-export { previewAddon } from './solid-next';
+export { previewAddon } from './solid2';
