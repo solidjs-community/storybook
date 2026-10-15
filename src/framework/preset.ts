@@ -47,8 +47,19 @@ export const core: PresetProperty<'core', StorybookConfig> = {
 };
 
 /**
+ * Core defaults `features.docgenServer` from this export.
+ * `framework.options.docgen: false` is applied in {@link features}, which runs after that default.
+ */
+export function isDocgenProviderEnabled(
+    _existing: unknown,
+    options: { docgen?: false } = {}
+): boolean {
+    return options.docgen !== false;
+}
+
+/**
  * Enable the components manifest, docgen server, and CSF Next test syntax by default.
- * `framework.options.docgen: false` turns off `experimentalDocgenServer` so Controls /
+ * `framework.options.docgen: false` turns off `docgenServer` so Controls /
  * Docs / manifest stop using the Solid component-meta worker.
  *
  * @see https://storybook.js.org/docs/api/main-config/main-config-features
@@ -63,10 +74,9 @@ export const features: PresetProperty<'features', StorybookConfig> = async(
     return {
         componentsManifest: true,
         experimentalCodeExamples: true,
-        experimentalDocgenServer: true,
         experimentalTestSyntax: true,
         ...existing,
-        ...(docgenEnabled ? {} : { experimentalDocgenServer: false }),
+        docgenServer: docgenEnabled,
     };
 };
 

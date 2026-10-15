@@ -17,10 +17,10 @@ On by default:
 
 - `componentsManifest`
 - `experimentalCodeExamples`
-- `experimentalDocgenServer`
+- `docgenServer`
 - `experimentalTestSyntax`
 
-`framework.options.docgen: false` forces `experimentalDocgenServer` off from this preset (Storybook then skips the docgen worker).
+`framework.options.docgen: false` forces `docgenServer` off from this preset (Storybook then skips the docgen worker). The same opt-out is `isDocgenProviderEnabled`, which core reads when it defaults the flag.
 
 ## Solid major detection
 

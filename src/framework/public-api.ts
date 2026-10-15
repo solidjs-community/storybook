@@ -11,7 +11,7 @@ export interface FrameworkOptions {
     builder?: BuilderOptions;
     /**
      * Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest).
-     * Turns off `features.experimentalDocgenServer` from this framework preset.
+     * Turns off `features.docgenServer` from this framework preset.
      */
     docgen?: false;
 }

@@ -6,7 +6,7 @@ See also: [modules index](./modules.md), [docgen](./docgen.md).
 
 ## Components manifest
 
-With `experimentalDocgenServer` on (default), `generateComponentManifests` returns an empty `components` map and keeps `meta.docgen: 'react-component-meta'`. Storybook core builds the ref-based `v: 1` manifest from docgen / story-docs snapshots.
+With `docgenServer` on (default), `generateComponentManifests` returns an empty `components` map and keeps `meta.docgen: 'react-component-meta'`. Storybook core builds the ref-based `v: 1` manifest from docgen / story-docs snapshots.
 
 Engine id reported to the UI is `react-component-meta` (`MANIFEST_DOCGEN_ENGINE`); internal name is `solid-component-meta`.
 

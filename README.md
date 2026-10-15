@@ -110,7 +110,7 @@ export const Primary: Story = {
 
 Props for **Controls**, **Docs**, and the **components manifest** come from a TypeScript LanguageService extractor aligned with Storybook's `react-component-meta` format.
 
-Extraction runs on the **Storybook server** (`features.experimentalDocgenServer`, enabled by default from the framework preset). There is no Vite preview `__docgenInfo` inject.
+Extraction runs on the **Storybook server** (`features.docgenServer`, enabled by default from the framework preset). There is no Vite preview `__docgenInfo` inject.
 
 Enabled by default. Inspect output in the [manifest debugger](#components-manifest-debugger).
 

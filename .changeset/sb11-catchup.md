@@ -5,7 +5,7 @@
 ### Docgen server (Storybook 11)
 
 - Add `experimental_docgenProvider` and `experimental_storyDocsProvider` so Controls, Docs, snippets, and the components manifest run on the Storybook server.
-- **Remove** the Vite `__docgenInfo` preview inject and `experimental_enrichCsf` — docgen server is the only path (`features.experimentalDocgenServer` stays enabled from the preset).
+- **Remove** the Vite `__docgenInfo` preview inject and `experimental_enrichCsf` — docgen server is the only path (`features.docgenServer` stays enabled from the preset via `isDocgenProviderEnabled`).
 - Resolve `meta.subcomponents` in the manifest.
 - Pick the tsconfig (including project `references`) whose `fileNames` contain the source file.
 - Recycle the TypeScript LanguageService when heap pressure hits 70% of the V8 limit.

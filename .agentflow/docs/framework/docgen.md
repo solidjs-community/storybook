@@ -6,7 +6,7 @@ See also: [modules index](./modules.md), [preset and version](./preset-and-versi
 
 ## Server path (default)
 
-`features.experimentalDocgenServer` is on by default. Storybook loads `experimental_docgenProvider` → `./internal/docgen-worker`. There is **no** Vite `__docgenInfo` inject.
+`features.docgenServer` is on by default. Core turns it on when the preset exports `isDocgenProviderEnabled`. Storybook loads `experimental_docgenProvider` → `./internal/docgen-worker`. There is **no** Vite `__docgenInfo` inject.
 
 Worker flow: parse CSF → resolve `meta.component` / `subcomponents` → `SolidComponentMetaManager` extract → map to argTypes → merge with downstream providers.
 
@@ -19,7 +19,7 @@ framework: {
 }
 ```
 
-That turns off `experimentalDocgenServer` from the framework preset so the worker is not registered.
+That turns off `docgenServer` from the framework preset so the worker is not registered.
 
 ## Extractor
 
