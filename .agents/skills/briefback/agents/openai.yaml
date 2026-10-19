@@ -1,0 +1,8 @@
+interface:
+  display_name: "Briefback"
+  short_description: "Research, decide, plan, implement, and review"
+  default_prompt: "Use $briefback to choose and run the next step for this change."
+
+policy:
+  allow_implicit_invocation: true
+
