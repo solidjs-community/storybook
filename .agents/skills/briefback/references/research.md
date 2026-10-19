@@ -1,12 +1,3 @@
----
-name: research
-description: >-
-  Use when an area, technology, or landscape must be mapped before changing
-  code, or when findings need to survive compaction or a fresh chat. Not for a
-  one-file lookup.
-license: MIT
----
-
 # Research
 
 Learn how an area works and leave a map that another chat can use without
@@ -15,12 +6,28 @@ repeating the investigation. Research only. Do not plan or implement the change.
 The user can ask for research in a regular prompt. Use this skill when the
 findings should survive context compaction or move to another chat.
 
+## Isolation
+
+Run the investigation in a **subagent**. The parent chat keeps the question,
+not the search trail.
+
+**Parent.** Pick the slug (reuse the existing `.briefback/<slug>/research/`
+directory when continuing). Launch one subagent with the question, this
+skill's rules, and the output path. When it finishes, read only `index.md`.
+Reply with that path and a short takeaway.
+
+**Subagent.** You were launched to research. Investigate, write the files,
+return the path and a one-paragraph takeaway. Do not launch another subagent.
+
+If this client cannot launch a subagent, write the files in this chat, then
+reply from `index.md` only.
+
 ## Output
 
 Write to:
 
 ```text
-.agentflow/<slug>/research/
+.briefback/<slug>/research/
 ├── index.md
 └── <topic>.md
 ```
@@ -44,7 +51,13 @@ its own file.
 Keep a narrow investigation in `index.md` instead of creating empty pages. For
 larger research, keep details out of `index.md` and link to the topic pages.
 
-Write the notes in the user's language.
+## Language
+
+Write the notes in the **project's** language. Read it from README, `AGENTS.md`,
+or other human docs in the repo. Missing, mixed, or English → English.
+
+The chat language does not decide this. Existing `.briefback/` notes do not
+either — they may be wrong. The reply to the user can match theirs.
 
 ## Research the code
 

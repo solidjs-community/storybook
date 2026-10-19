@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.7.3
+
+### Patch Changes
+
+- 9e700ca: Fix `Story.Component` so props stay reactive when a CSF factory story is rendered outside the Storybook canvas.
+
 ## 10.7.2
 
 ### Patch Changes

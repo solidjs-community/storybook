@@ -1,12 +1,3 @@
----
-name: tdd
-description: >-
-  Use when building or fixing behavior test-first, when the user mentions
-  red-green-refactor or integration tests, or when implementation would
-  otherwise proceed without a failing test at an agreed seam.
-license: MIT
----
-
 # Test-Driven Development
 
 TDD is the red → green loop. This skill is the reference that makes that loop produce tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. Every section applies on every cycle — consult them before and during the loop, not after.
@@ -18,7 +9,8 @@ equivalent) so test names and interface vocabulary match the area's language.
 
 Tests verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't. A good test reads like a specification — "user can checkout with valid cart" tells you exactly what capability exists — and survives refactors because it doesn't care about internal structure.
 
-See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
+See [testing.md](testing.md) for examples and [mocking.md](mocking.md) for
+mocking guidelines.
 
 ## Seams — where tests go
 
@@ -45,7 +37,8 @@ you own.
 - **One slice at a time.** One seam, one test, one minimal implementation per cycle.
 - **Watch the color.** Red is not “wrote a test”. Run it. Confirm it fails because the behavior is missing — not a typo, import error, or existing pass. Passes immediately → you tested existing behavior; fix the test. Errors → fix the harness until it fails correctly, then implement. Green: run the same command; claim pass only from that output.
 - **Name the break.** Before the test body, name the production change that should make it fail. Cannot name one → wrong seam.
-- **Refactoring is not part of the loop.** It belongs to the review stage (see the `code-review` skill), not the red → green implementation cycle.
+- **Refactoring is not part of the loop.** It belongs to the review stage (see
+  [review.md](review.md)), not the red → green implementation cycle.
 
 ## Done
 
