@@ -1,6 +1,7 @@
 import { definePreview as definePreviewBase } from 'storybook/internal/csf';
 
 import * as solidDocsAnnotations from '../renderer/docs';
+import { createReactiveStoryComponent } from './reactive-story-component';
 
 import type { AddonTypes, InferTypes, Meta, Preview, PreviewAddon, Story } from 'storybook/internal/csf';
 import type {
@@ -128,8 +129,8 @@ export function createSolidDefinePreview(
             meta.story = (__input: any) => {
                 const story = defineStory(__input);
 
-                // @ts-expect-error private compose helper used only for JSX story factory
-                story.Component = story.__compose();
+                // @ts-expect-error factory stories keep input and meta off the public type
+                story.Component = createReactiveStoryComponent(story);
 
                 return story;
             };
