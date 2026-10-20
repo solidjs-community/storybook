@@ -41,12 +41,22 @@ const isFunctionNode = (node: Node | null | undefined): node is FunctionNode => 
     || node?.type === 'FunctionDeclaration'
 );
 
-function buildInvalidSpread(entries: ReadonlyArray<[string, Node]>): string | null {
+/**
+ * Prints an arg value for a snippet line indented by `indent`, moving the value's continuation lines
+ * from where it was written to that line.
+ */
+type ValuePrinter = (node: Node) => string;
+
+const valuePrinter = (code: string, indent: string): ValuePrinter => node => (
+    reindent(isJsx(node) ? textOf(node) : placeableTextOf(node), lineIndent(code, node.start), indent)
+);
+
+function buildInvalidSpread(entries: ReadonlyArray<[string, Node]>, print: ValuePrinter): string | null {
     if (entries.length === 0) {
         return null;
     }
 
-    const members = entries.map(([k, v]) => `${ JSON.stringify(k) }: ${ placeableTextOf(v) }`);
+    const members = entries.map(([k, v]) => `${ JSON.stringify(k) }: ${ print(v) }`);
 
     return `{...{ ${ members.join(', ') } }}`;
 }
@@ -99,21 +109,22 @@ function metaArgsRecord(meta?: E.ObjectExpression | null): Args {
     return argsRecordFromObjectNode(argsProp.value);
 }
 
-function toAttr(key: string, value: Node): string {
+function toAttr(key: string, value: Node, print: ValuePrinter): string {
     if (value.type === 'Literal' && typeof value.value === 'boolean') {
         return value.value ? key : `${ key }={false}`;
     }
 
-    // A JSX attribute string has no escapes, so a value with a double quote stays an expression.
-    if (isStringLiteral(value) && !value.value.includes('"')) {
+    // A JSX attribute string has no escapes, decodes entities and folds line breaks, so a value it
+    // cannot hold as written stays an expression.
+    if (isStringLiteral(value) && !/["&\r\n]/.test(value.value)) {
         return `${ key }="${ value.value }"`;
     }
 
-    return `${ key }={${ placeableTextOf(value) }}`;
+    return `${ key }={${ print(value) }}`;
 }
 
 /** JSX children for a `children` arg, or `undefined` when there is none. */
-function toJsxChildren(node: Node | null | undefined): string | undefined {
+function toJsxChildren(node: Node | null | undefined, print: ValuePrinter): string | undefined {
     if (!node) {
         return undefined;
     }
@@ -123,10 +134,10 @@ function toJsxChildren(node: Node | null | undefined): string | undefined {
     }
 
     if (isJsx(node)) {
-        return textOf(node);
+        return print(node);
     }
 
-    return `{${ placeableTextOf(node) }}`;
+    return `{${ print(node) }}`;
 }
 
 /** Return `key` if expression is `args.key` (incl. optional chaining), else `null`. */
@@ -149,12 +160,12 @@ function getArgsMemberKey(expr: Node) {
 }
 
 /** Attributes for every arg not already set by name, with invalid names collected in one spread. */
-function injectedAttributes(merged: Args, existing: ReadonlySet<string>): string[] {
+function injectedAttributes(merged: Args, existing: ReadonlySet<string>, print: ValuePrinter): string[] {
     const entries = Object.entries(merged).filter(
         ([k, v]) => v != null && k !== 'children' && !existing.has(k)
     );
-    const attrs = entries.filter(([k]) => isValidJsxAttrName(k)).map(([k, v]) => toAttr(k, v));
-    const invalidSpread = buildInvalidSpread(entries.filter(([k]) => !isValidJsxAttrName(k)));
+    const attrs = entries.filter(([k]) => isValidJsxAttrName(k)).map(([k, v]) => toAttr(k, v, print));
+    const invalidSpread = buildInvalidSpread(entries.filter(([k]) => !isValidJsxAttrName(k)), print);
 
     return invalidSpread ? [...attrs, invalidSpread] : attrs;
 }
@@ -186,7 +197,7 @@ function rewriteJsx(
             const existing = new Set(
                 attrs.flatMap(a => (a.type === 'JSXAttribute' && a.name.type === 'JSXIdentifier' ? [a.name.name] : []))
             );
-            const pieces = injectedAttributes(merged, existing).join(' ');
+            const pieces = injectedAttributes(merged, existing, valuePrinter(code, lineIndent(code, attrs[firstSpread]!.start))).join(' ');
 
             // The args go where the first spread was; later spreads are dropped.
             attrs.forEach((a, index) => {
@@ -202,7 +213,9 @@ function rewriteJsx(
                 }
             });
 
-            const children = node.children.length === 0 ? toJsxChildren(merged['children']) : undefined;
+            const children = node.children.length === 0
+                ? toJsxChildren(merged['children'], valuePrinter(code, lineIndent(code, opening.start)))
+                : undefined;
 
             if (children !== undefined) {
                 if (opening.selfClosing) {
@@ -226,7 +239,7 @@ function rewriteJsx(
             const mergedValue = key !== null && Object.hasOwn(merged, key) ? merged[key] : undefined;
 
             if (mergedValue !== undefined) {
-                edits.push({ start: a.start, end: a.end, text: toAttr(a.name.name, mergedValue) });
+                edits.push({ start: a.start, end: a.end, text: toAttr(a.name.name, mergedValue, valuePrinter(code, lineIndent(code, a.start))) });
                 changed = true;
             }
         }
@@ -237,7 +250,7 @@ function rewriteJsx(
             changed = rewriteJsx(code, child, merged, edits) || changed;
         }
         else if (child.type === 'JSXExpressionContainer' && getArgsMemberKey(child.expression) === 'children') {
-            const children = toJsxChildren(merged['children']);
+            const children = toJsxChildren(merged['children'], valuePrinter(code, lineIndent(code, child.start)));
 
             if (children !== undefined) {
                 edits.push({ start: child.start, end: child.end, text: children });
@@ -467,8 +480,9 @@ export function getCodeSnippet(csf: CsfFile, storyName: string, componentName?: 
 
     invariant(componentName, 'Could not generate snippet without component name.');
 
-    const attrs = injectedAttributes(merged, new Set());
-    const children = toJsxChildren(merged['children']);
+    const print = valuePrinter(code, '');
+    const attrs = injectedAttributes(merged, new Set(), print);
+    const children = toJsxChildren(merged['children'], print);
     const opening = [componentName, ...attrs].join(' ');
     const element = children === undefined ? `<${ opening } />` : `<${ opening }>${ children }</${ componentName }>`;
 
