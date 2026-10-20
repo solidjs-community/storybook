@@ -5,6 +5,7 @@ import {
     createMemo,
     createStore,
     Errored,
+    flush,
     onSettled,
 } from 'solid-js-next';
 import { definePreviewAddon } from 'storybook/internal/csf';
@@ -51,7 +52,7 @@ const runtime: SolidRendererRuntime = {
 };
 
 const applyDecorators = createApplyDecorators({ storyStore });
-const mount = createMount(runtime);
+const mount = createMount({ storyStore, flush });
 const render = createDefaultRender(runtime.createComponent);
 const renderToCanvas = createRenderToCanvas({
     ...runtime,
