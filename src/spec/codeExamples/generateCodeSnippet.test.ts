@@ -322,3 +322,67 @@ it('indents multi-line args where they are placed', () => {
         ]}>Click me</Button>;"
     `);
 });
+
+it('reads args through local constants, spreads and the last args assignment', () => {
+    const input = withCSF3(dedent`
+        const label = 'Hi';
+        const base = { args: { size: 'lg' } };
+
+        export const Constants: Story = { ...base, args: { ...base.args, label } };
+
+        export const Assigned: StoryFn = (args) => <Button {...args} />;
+        Assigned.args = { label: 'first' };
+        Assigned.args = { label: 'last' };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Constants = () => <Button size="lg" label="Hi">Click me</Button>;
+        const Assigned = () => <Button label="last">Click me</Button>;"
+    `);
+});
+
+it('follows a story alias and reads a render method', () => {
+    const input = withCSF3(dedent`
+        const Impl: Story = {
+          render(args) {
+            return <Button {...args} />;
+          },
+        };
+
+        export const Alias = Impl;
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Alias = () => {
+          return <Button>Click me</Button>;
+        };"
+    `);
+});
+
+it('keeps the args parameter when the render still reads it', () => {
+    const input = withCSF3(dedent`
+        export const Upper: Story = {
+          render: (args) => {
+            const upper = String(args.children).toUpperCase();
+            return <Button {...args} title={upper} />;
+          },
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Upper = (args) => {
+          const upper = String(args.children).toUpperCase();
+          return <Button title={upper}>Click me</Button>;
+        };"
+    `);
+});
+
+it('keeps children JSX text cannot hold as an expression', () => {
+    const input = withCSF3(dedent`
+        export const Braces: Story = { args: { children: 'a {b} <c>' } };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Braces = () => <Button>{'a {b} <c>'}</Button>;"`
+    );
+});

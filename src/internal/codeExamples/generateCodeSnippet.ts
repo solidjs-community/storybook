@@ -1,11 +1,15 @@
 import {
+    collectImportBindings,
+    createStoryArgsResolver,
+    isCanonicalCsf2BindCall,
     isStringLiteral,
     lineIndent,
     metaObject,
+    normalizeStoryDeclaration,
+    parseModule,
     placeableTextOf,
     reindent,
-    resolveIdentifierInit,
-    staticKey,
+    resolveRenderFunction,
     storyShapeError,
     textOf,
     walk,
@@ -13,7 +17,15 @@ import {
 
 import { invariant } from './invariant';
 
-import type { CsfFile, ESTree as E, FunctionNode, ESTreeNode as Node } from 'storybook/internal/csf-tools';
+import type {
+    CsfFile,
+    ESTree as E,
+    FunctionNode,
+    ESTreeNode as Node,
+    RenderResolution,
+    SourceEditor,
+    StoryArgsResolver,
+} from 'storybook/internal/csf-tools';
 
 type Args = Record<string, Node>;
 
@@ -24,90 +36,184 @@ interface Edit {
     text: string;
 }
 
-/** A `key: value` property; methods and accessors are not args. */
-const isObjectProperty = (p: Node): p is E.ObjectProperty => p.type === 'Property' && !p.method && p.kind === 'init';
+/**
+ * Source of a `const` or `function` declaration, named after the story, that shows how to render
+ * it: the story's own function or `render`, with the args it reads inlined, or the component with
+ * the story's args as attributes.
+ */
+export function getCodeSnippet(
+    csf: CsfFile,
+    storyName: string,
+    componentName?: string,
+    resolver: StoryArgsResolver = createStoryArgsResolver(csf)
+): string {
+    const editor = csf._editor;
+    const declaration = csf._storyExports[storyName];
 
-const keyOf = (p: E.ObjectProperty): string | null => staticKey(p) ?? null;
+    if (!declaration) {
+        const message = 'Expected story to be a function or variable declaration';
+        const statement = csf._program.body.find(
+            node => node.type === 'ExportNamedDeclaration'
+                && node.specifiers.some(
+                    specifier => (specifier.exported.type === 'Identifier' ? specifier.exported.name : specifier.exported.value) === storyName
+                )
+        );
 
-const isValidJsxAttrName = (n: string) => /^[A-Z_][\w:-]*$/i.test(n);
+        throw statement ? storyShapeError(message, statement, editor) : message;
+    }
+
+    const { args } = resolver.resolve(storyName);
+
+    // `Template.bind({})` of an imported `Template`: the snippet calls the bound template with the args.
+    if (
+        declaration.type === 'VariableDeclarator'
+        && isCanonicalCsf2BindCall(declaration.init)
+        && collectImportBindings(csf._program).has(declaration.init.callee.object.name)
+    ) {
+        const print = valuePrinter(editor, '    ');
+        const members = Object.entries(args).map(([key, value]) => `    ${ JSON.stringify(key) }: ${ print(value) }`);
+        const argsObject = members.length > 0 ? `{\n${ members.join(',\n') }\n}` : '{}';
+
+        return `const ${ storyName } = () => ${ textOf(declaration.init) }(${ argsObject });`;
+    }
+
+    const story = normalizeStoryDeclaration(declaration, editor);
+    const metaRender = resolveRenderFunction(metaObject(csf), editor, resolver.ctx);
+    const storyRender = resolveRenderFunction(story.type === 'config' ? story.node : undefined, editor, resolver.ctx);
+    // A story whose `render` cannot be read does not fall back to the meta's, which it overrides.
+    const storyFn = story.type === 'fn'
+        ? story.node
+        : renderFunctionOf(storyRender) ?? (storyRender.kind === 'missing' ? renderFunctionOf(metaRender) : undefined);
+
+    if (storyFn) {
+        return functionSnippet(editor, storyName, storyFn, args);
+    }
+
+    invariant(componentName, 'Could not generate snippet without component name.');
+
+    const print = valuePrinter(editor, '');
+    const attrs = injectedAttributes(args, new Set(), print);
+    const children = toJsxChildren(args['children'], print);
+    const opening = [componentName, ...attrs].join(' ');
+    const element = children === undefined ? `<${ opening } />` : `<${ opening }>${ children }</${ componentName }>`;
+
+    return `const ${ storyName } = () => ${ element };`;
+}
+
+// A `render` that a later spread may replace is still the best guess at what the story renders.
+function renderFunctionOf(resolution: RenderResolution) {
+    if (resolution.kind === 'resolved') {
+        return resolution.node;
+    }
+
+    return resolution.kind === 'unresolved' ? resolution.shadowedRender : undefined;
+}
+
+/** The story function renamed to the story, with the args it reads inlined into its JSX. */
+function functionSnippet(editor: SourceEditor, storyName: string, fn: FunctionNode, merged: Args): string {
+    const { code } = editor;
+    const asyncPrefix = fn.async ? 'async ' : '';
+    const functionKeyword = `${ asyncPrefix }function${ fn.generator ? '*' : '' }`;
+    const params = fn.params.length > 0 ? code.slice(fn.params[0]!.start, fn.params.at(-1)!.end) : '';
+    const edits: Edit[] = [];
+
+    if (fn.type === 'ArrowFunctionExpression' && isJsx(fn.body)) {
+        if (rewriteJsx(editor, fn.body, merged, edits)) {
+            const body = printRange(code, fn.body, edits);
+            const kept = readsArgs(`${ asyncPrefix }() => (${ body });`) ? params : '';
+
+            return `const ${ storyName } = ${ asyncPrefix }(${ kept }) => ${ body };`;
+        }
+    }
+    else if (fn.body?.type === 'BlockStatement') {
+        let changed = false;
+
+        for (const statement of fn.body.body) {
+            if (statement.type === 'ReturnStatement' && isJsx(statement.argument)) {
+                changed = rewriteJsx(editor, statement.argument, merged, edits) || changed;
+            }
+        }
+
+        if (changed) {
+            const body = printRange(code, fn.body, edits);
+            const kept = readsArgs(`${ functionKeyword } f() ${ body }`) ? params : '';
+
+            return fn.type === 'FunctionDeclaration'
+                ? `${ functionKeyword } ${ storyName }(${ kept }) ${ body }`
+                : `const ${ storyName } = ${ asyncPrefix }(${ kept }) => ${ body };`;
+        }
+    }
+
+    if (fn.type === 'FunctionDeclaration' && fn.body) {
+        return `${ functionKeyword } ${ storyName }(${ params }) ${ printRange(code, fn.body, []) }`;
+    }
+
+    // A method's source starts at its parameters, so it is printed as an arrow function.
+    if (isMethod(editor.parentOf(fn)) && fn.body) {
+        return `const ${ storyName } = ${ asyncPrefix }(${ params }) => ${ printRange(code, fn.body, []) };`;
+    }
+
+    return `const ${ storyName } = ${ printRange(code, fn, []) };`;
+}
+
+const isMethod = (parent: Node | null) => parent?.type === 'Property' && (parent.method || parent.kind !== 'init');
 
 const isJsx = (node: Node | null | undefined): node is E.JSXElement | E.JSXFragment => (
     node?.type === 'JSXElement' || node?.type === 'JSXFragment'
 );
 
-const isFunctionNode = (node: Node | null | undefined): node is FunctionNode => (
-    node?.type === 'ArrowFunctionExpression'
-    || node?.type === 'FunctionExpression'
-    || node?.type === 'FunctionDeclaration'
-);
+/** The source of `range` with `edits` applied, dedented so it does not carry the story file's nesting. */
+function printRange(code: string, range: { start: number; end: number }, edits: Edit[]): string {
+    let text = '';
+    let cursor = range.start;
 
-/**
- * Prints an arg value for a snippet line indented by `indent`, moving the value's continuation lines
- * from where it was written to that line.
- */
-type ValuePrinter = (node: Node) => string;
-
-const valuePrinter = (code: string, indent: string): ValuePrinter => node => (
-    reindent(isJsx(node) ? textOf(node) : placeableTextOf(node), lineIndent(code, node.start), indent)
-);
-
-function buildInvalidSpread(entries: ReadonlyArray<[string, Node]>, print: ValuePrinter): string | null {
-    if (entries.length === 0) {
-        return null;
+    for (const edit of [...edits].sort((a, b) => a.start - b.start || a.end - b.end)) {
+        text += code.slice(cursor, edit.start) + edit.text;
+        cursor = edit.end;
     }
 
-    const members = entries.map(([k, v]) => `${ JSON.stringify(k) }: ${ print(v) }`);
+    text += code.slice(cursor, range.end);
 
-    return `{...{ ${ members.join(', ') } }}`;
+    return reindent(text, lineIndent(code, range.start), '');
 }
 
-function argsRecordFromObjectNode(obj?: E.ObjectExpression | null): Args {
-    return obj
-        ? Object.fromEntries(
-            obj.properties
-                .filter(isObjectProperty)
-                .map(p => [keyOf(p), p.value] as const)
-                .filter(e => Boolean(e[0]))
-        )
-        : {};
-}
+/** Whether `source` still reads the `args` parameter, so the snippet has to keep declaring it. */
+function readsArgs(source: string): boolean {
+    // A key or a member name spelled `args` names a property, not the parameter.
+    const named = new Set<Node>();
+    let reads = false;
 
-function storyArgsAssignment(program: E.Program, storyName: string): E.ObjectExpression | null {
-    let found: E.ObjectExpression | null = null;
-
-    walk(program, (node) => {
-        if (node.type !== 'AssignmentExpression' || node.left.type !== 'MemberExpression') {
-            return;
+    walk(parseModule(source).program, (node) => {
+        if (node.type === 'MemberExpression' && !node.computed) {
+            named.add(node.property);
         }
 
-        const { object: obj, property: prop, computed } = node.left;
-        const isStoryIdent = obj.type === 'Identifier' && obj.name === storyName;
-        const isArgsProp = (prop.type === 'Identifier' && prop.name === 'args' && !computed)
-            || (isStringLiteral(prop) && computed && prop.value === 'args');
+        if (node.type === 'Property' && !node.computed && !node.shorthand) {
+            named.add(node.key);
+        }
 
-        if (isStoryIdent && isArgsProp && node.right.type === 'ObjectExpression') {
-            found = node.right;
+        if (node.type === 'Identifier' && node.name === 'args' && !named.has(node)) {
+            reads = true;
         }
     });
 
-    return found;
+    return reads;
 }
 
-function metaArgsRecord(meta?: E.ObjectExpression | null): Args {
-    if (!meta) {
-        return {};
-    }
+type ValuePrinter = (node: Node) => string;
 
-    const argsProp = meta.properties.find(
-        (p): p is E.ObjectProperty => isObjectProperty(p) && keyOf(p) === 'args'
-    );
+/**
+ * Prints an arg value for a snippet line indented by `indent`, moving the value's continuation lines
+ * from where the story file has them to that line. A value the args resolver rebuilt is not part of
+ * the file, and is written without an indent.
+ */
+const valuePrinter = (editor: SourceEditor, indent: string): ValuePrinter => node => reindent(
+    placeableTextOf(node),
+    editor.parentOf(node) ? lineIndent(editor.code, node.start) : '',
+    indent
+);
 
-    if (argsProp?.value.type !== 'ObjectExpression') {
-        return {};
-    }
-
-    return argsRecordFromObjectNode(argsProp.value);
-}
+const isValidJsxAttrName = (n: string) => /^[A-Z_][\w:-]*$/i.test(n);
 
 function toAttr(key: string, value: Node, print: ValuePrinter): string {
     if (value.type === 'Literal' && typeof value.value === 'boolean') {
@@ -123,21 +229,35 @@ function toAttr(key: string, value: Node, print: ValuePrinter): string {
     return `${ key }={${ print(value) }}`;
 }
 
+/** Attributes for every arg not already set by name, with invalid names collected in one spread. */
+function injectedAttributes(merged: Args, existing: ReadonlySet<string>, print: ValuePrinter): string[] {
+    const entries = Object.entries(merged).filter(
+        ([k]) => k !== 'children' && !existing.has(k)
+    );
+    const attrs = entries.filter(([k]) => isValidJsxAttrName(k)).map(([k, v]) => toAttr(k, v, print));
+    const invalid = entries.filter(([k]) => !isValidJsxAttrName(k));
+
+    if (invalid.length > 0) {
+        const members = invalid.map(([k, v]) => `${ JSON.stringify(k) }: ${ print(v) }`);
+
+        attrs.push(`{...{ ${ members.join(', ') } }}`);
+    }
+
+    return attrs;
+}
+
 /** JSX children for a `children` arg, or `undefined` when there is none. */
-function toJsxChildren(node: Node | null | undefined, print: ValuePrinter): string | undefined {
+function toJsxChildren(node: Node | undefined, print: ValuePrinter): string | undefined {
     if (!node) {
         return undefined;
     }
 
-    if (isStringLiteral(node)) {
+    // JSX text cannot hold braces or tags, decodes entities and folds line breaks.
+    if (isStringLiteral(node) && !/[{}<>&\r\n]/.test(node.value)) {
         return node.value;
     }
 
-    if (isJsx(node)) {
-        return print(node);
-    }
-
-    return `{${ print(node) }}`;
+    return isJsx(node) ? print(node) : `{${ print(node) }}`;
 }
 
 /** Return `key` if expression is `args.key` (incl. optional chaining), else `null`. */
@@ -159,28 +279,19 @@ function getArgsMemberKey(expr: Node) {
     return null;
 }
 
-/** Attributes for every arg not already set by name, with invalid names collected in one spread. */
-function injectedAttributes(merged: Args, existing: ReadonlySet<string>, print: ValuePrinter): string[] {
-    const entries = Object.entries(merged).filter(
-        ([k, v]) => v != null && k !== 'children' && !existing.has(k)
-    );
-    const attrs = entries.filter(([k]) => isValidJsxAttrName(k)).map(([k, v]) => toAttr(k, v, print));
-    const invalidSpread = buildInvalidSpread(entries.filter(([k]) => !isValidJsxAttrName(k)), print);
-
-    return invalidSpread ? [...attrs, invalidSpread] : attrs;
-}
-
 /**
  * Records the edits that expand `{...args}` into the merged args and inline `args.foo` reads, and
  * returns whether there were any.
  */
 function rewriteJsx(
-    code: string,
+    editor: SourceEditor,
     node: E.JSXElement | E.JSXFragment,
     merged: Args,
     edits: Edit[]
 ): boolean {
+    const { code } = editor;
     let changed = false;
+    const printAt = (offset: number) => valuePrinter(editor, lineIndent(code, offset));
 
     if (node.type === 'JSXElement') {
         const opening = node.openingElement;
@@ -197,7 +308,7 @@ function rewriteJsx(
             const existing = new Set(
                 attrs.flatMap(a => (a.type === 'JSXAttribute' && a.name.type === 'JSXIdentifier' ? [a.name.name] : []))
             );
-            const pieces = injectedAttributes(merged, existing, valuePrinter(code, lineIndent(code, attrs[firstSpread]!.start))).join(' ');
+            const pieces = injectedAttributes(merged, existing, printAt(attrs[firstSpread]!.start)).join(' ');
 
             // The args go where the first spread was; later spreads are dropped.
             attrs.forEach((a, index) => {
@@ -214,7 +325,7 @@ function rewriteJsx(
             });
 
             const children = node.children.length === 0
-                ? toJsxChildren(merged['children'], valuePrinter(code, lineIndent(code, opening.start)))
+                ? toJsxChildren(merged['children'], printAt(opening.start))
                 : undefined;
 
             if (children !== undefined) {
@@ -236,10 +347,9 @@ function rewriteJsx(
             }
 
             const key = getArgsMemberKey(a.value.expression);
-            const mergedValue = key !== null && Object.hasOwn(merged, key) ? merged[key] : undefined;
 
-            if (mergedValue !== undefined) {
-                edits.push({ start: a.start, end: a.end, text: toAttr(a.name.name, mergedValue, valuePrinter(code, lineIndent(code, a.start))) });
+            if (key !== null && Object.hasOwn(merged, key)) {
+                edits.push({ start: a.start, end: a.end, text: toAttr(a.name.name, merged[key]!, printAt(a.start)) });
                 changed = true;
             }
         }
@@ -247,10 +357,10 @@ function rewriteJsx(
 
     for (const child of node.children) {
         if (isJsx(child)) {
-            changed = rewriteJsx(code, child, merged, edits) || changed;
+            changed = rewriteJsx(editor, child, merged, edits) || changed;
         }
         else if (child.type === 'JSXExpressionContainer' && getArgsMemberKey(child.expression) === 'children') {
-            const children = toJsxChildren(merged['children'], valuePrinter(code, lineIndent(code, child.start)));
+            const children = toJsxChildren(merged['children'], printAt(child.start));
 
             if (children !== undefined) {
                 edits.push({ start: child.start, end: child.end, text: children });
@@ -260,231 +370,4 @@ function rewriteJsx(
     }
 
     return changed;
-}
-
-/** The source of `range` with `edits` applied, dedented so it does not carry the story file's nesting. */
-function printRange(code: string, range: { start: number; end: number }, edits: Edit[]): string {
-    let text = '';
-    let cursor = range.start;
-
-    for (const edit of [...edits].sort((a, b) => a.start - b.start || a.end - b.end)) {
-        text += code.slice(cursor, edit.start) + edit.text;
-        cursor = edit.end;
-    }
-
-    text += code.slice(cursor, range.end);
-
-    return reindent(text, lineIndent(code, range.start), '');
-}
-
-function getFunctionBodyStatements(fn: FunctionNode) {
-    return fn.body?.type === 'BlockStatement' ? fn.body.body : undefined;
-}
-
-type RenderResolution
-    = | { kind: 'missing' }
-        | { kind: 'resolved'; node: FunctionNode }
-        | { kind: 'unresolved' };
-
-function resolveStoryFn(storyRender: RenderResolution, metaRender: RenderResolution) {
-    if (storyRender.kind === 'resolved') {
-        return storyRender.node;
-    }
-
-    if (storyRender.kind === 'missing' && metaRender.kind === 'resolved') {
-        return metaRender.node;
-    }
-
-    return undefined;
-}
-
-/**
- * Source of a `const` or `function` declaration, named after the story, that shows how to render
- * it: the story's own function or `render`, with the args it reads inlined, or the component with
- * the story's args as attributes.
- */
-export function getCodeSnippet(csf: CsfFile, storyName: string, componentName?: string): string {
-    const editor = csf._editor;
-    const { code } = editor;
-    const storyDeclaration = csf._storyExports[storyName];
-    const metaObj = metaObject(csf);
-
-    if (!storyDeclaration) {
-        const message = 'Expected story to be a function or variable declaration';
-        const statement = csf._program.body.find(
-            node => node.type === 'ExportNamedDeclaration'
-                && node.specifiers.some(
-                    specifier => (specifier.exported.type === 'Identifier' ? specifier.exported.name : specifier.exported.value) === storyName
-                )
-        );
-
-        throw statement ? storyShapeError(message, statement, editor) : message;
-    }
-
-    let storyNode: E.Function | E.Expression;
-
-    if (storyDeclaration.type === 'FunctionDeclaration') {
-        storyNode = storyDeclaration;
-    }
-    else if (storyDeclaration.type === 'VariableDeclarator') {
-        const { init } = storyDeclaration;
-
-        invariant(
-            init,
-            () => storyShapeError('Expected story initializer to be an expression', storyDeclaration, editor).message
-        );
-        storyNode = init;
-    }
-    else {
-        throw storyShapeError('Expected story to be a function or variable declaration', storyDeclaration, editor);
-    }
-
-    let normalized: E.Function | E.Expression = storyNode;
-
-    if (storyNode.type === 'CallExpression') {
-        const callee = storyNode.callee;
-
-        if (callee.type === 'MemberExpression') {
-            const { object: obj, property: prop } = callee;
-            const isBind = (prop.type === 'Identifier' && prop.name === 'bind')
-                || (isStringLiteral(prop) && prop.value === 'bind');
-
-            if (obj.type === 'Identifier' && isBind) {
-                const resolved = resolveIdentifierInit(csf._program, obj.name);
-
-                if (resolved) {
-                    normalized = resolved;
-                }
-            }
-        }
-
-        if (normalized === storyNode) {
-            const args = storyNode.arguments;
-
-            if (args.length !== 0) {
-                const call = storyNode;
-                const evaluationError = () => storyShapeError('Could not evaluate story expression', call, editor).message;
-
-                invariant(args.length === 1, evaluationError);
-
-                const storyArg = args[0];
-
-                invariant(storyArg && storyArg.type !== 'SpreadElement', evaluationError);
-                normalized = storyArg;
-            }
-        }
-    }
-
-    if (normalized.type === 'TSSatisfiesExpression' || normalized.type === 'TSAsExpression') {
-        normalized = normalized.expression;
-    }
-
-    let storyFn: FunctionNode | undefined;
-
-    if (isFunctionNode(normalized)) {
-        storyFn = normalized;
-    }
-    else if (normalized.type !== 'ObjectExpression') {
-        const isEmptyCsf4Story = normalized.type === 'CallExpression' && normalized.arguments.length === 0;
-
-        if (!isEmptyCsf4Story) {
-            throw storyShapeError(
-                'Expected story to be csf factory, function or an object expression',
-                normalized,
-                editor
-            );
-        }
-    }
-
-    const storyProps = normalized.type === 'ObjectExpression' ? normalized.properties.filter(isObjectProperty) : [];
-    const metaProps = metaObj ? metaObj.properties.filter(isObjectProperty) : [];
-
-    const getRender = (object: E.ObjectProperty[]): RenderResolution => {
-        const render = object.find(p => keyOf(p) === 'render')?.value;
-
-        if (!render) {
-            return { kind: 'missing' };
-        }
-
-        if (render.type === 'Identifier') {
-            const resolved = resolveIdentifierInit(csf._program, render.name);
-
-            return isFunctionNode(resolved) ? { kind: 'resolved', node: resolved } : { kind: 'unresolved' };
-        }
-
-        if (!(render.type === 'ArrowFunctionExpression' || render.type === 'FunctionExpression')) {
-            throw storyShapeError('Expected render to be an arrow function or function expression', render, editor);
-        }
-
-        return { kind: 'resolved', node: render };
-    };
-
-    const metaRender = getRender(metaProps);
-    const storyRender = getRender(storyProps);
-
-    if (!storyFn) {
-        storyFn = resolveStoryFn(storyRender, metaRender);
-    }
-
-    const metaArgs = metaArgsRecord(metaObj);
-    const storyArgsNode = storyProps
-        .filter(p => keyOf(p) === 'args')
-        .map(p => p.value)
-        .find((v): v is E.ObjectExpression => v.type === 'ObjectExpression');
-    const storyArgs = argsRecordFromObjectNode(storyArgsNode);
-    const storyAssignedArgs = argsRecordFromObjectNode(storyArgsAssignment(csf._program, storyName));
-    const merged: Args = { ...metaArgs, ...storyArgs, ...storyAssignedArgs };
-
-    if (storyFn) {
-        const fn = storyFn;
-        const asyncPrefix = fn.async ? 'async ' : '';
-        const functionKeyword = `${ asyncPrefix }function${ fn.generator ? '*' : '' }`;
-
-        if (fn.type === 'ArrowFunctionExpression' && isJsx(fn.body)) {
-            const edits: Edit[] = [];
-
-            if (rewriteJsx(code, fn.body, merged, edits)) {
-                return `const ${ storyName } = ${ asyncPrefix }() => ${ printRange(code, fn.body, edits) };`;
-            }
-        }
-
-        const stmts = getFunctionBodyStatements(fn);
-
-        if (stmts && fn.body) {
-            const edits: Edit[] = [];
-            let changed = false;
-
-            for (const stmt of stmts) {
-                if (stmt.type === 'ReturnStatement' && isJsx(stmt.argument)) {
-                    changed = rewriteJsx(code, stmt.argument, merged, edits) || changed;
-                }
-            }
-
-            if (changed) {
-                const body = printRange(code, fn.body, edits);
-
-                return fn.type === 'FunctionDeclaration'
-                    ? `${ functionKeyword } ${ storyName }() ${ body }`
-                    : `const ${ storyName } = ${ asyncPrefix }() => ${ body };`;
-            }
-        }
-
-        if (fn.type === 'FunctionDeclaration' && fn.body) {
-            const params = fn.params.length > 0 ? code.slice(fn.params[0]!.start, fn.params.at(-1)!.end) : '';
-
-            return `${ functionKeyword } ${ storyName }(${ params }) ${ printRange(code, fn.body, []) }`;
-        }
-
-        return `const ${ storyName } = ${ printRange(code, fn, []) };`;
-    }
-
-    invariant(componentName, 'Could not generate snippet without component name.');
-
-    const print = valuePrinter(code, '');
-    const attrs = injectedAttributes(merged, new Set(), print);
-    const children = toJsxChildren(merged['children'], print);
-    const opening = [componentName, ...attrs].join(' ');
-    const element = children === undefined ? `<${ opening } />` : `<${ opening }>${ children }</${ componentName }>`;
-
-    return `const ${ storyName } = () => ${ element };`;
 }
