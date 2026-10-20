@@ -67,7 +67,7 @@ async function extractDocgen(
 	const csf = loadCsf(storyFile, { makeTitle: () => title }).parse();
 	const declaredSubcomponents = extractDeclaredSubcomponents(csf);
 	const allComponents = await getComponents({
-		csf: csf as Parameters<typeof getComponents>[0]['csf'],
+		csf,
 		storyFilePath: storyPath,
 		additionalComponentNames: declaredSubcomponents.map(subcomponent => subcomponent.componentName),
 	});
