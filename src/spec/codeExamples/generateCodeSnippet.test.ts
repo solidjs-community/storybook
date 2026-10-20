@@ -225,3 +225,100 @@ it('top level args injection and spreading in different places', () => {
         </div>;"
     `);
 });
+
+it('expands every args spread once and keeps the other attributes', () => {
+    const input = withCSF3(dedent`
+        export const Spreads: Story = {
+          args: { label: 'Hi' },
+          render: (args) => <Button {...args} kind="own" {...args} />,
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Spreads = () => <Button label="Hi" kind="own">Click me</Button>;"`
+    );
+});
+
+it('gives a self-closing element its children after inlining an attribute', () => {
+    const input = withCSF3(dedent`
+        export const Inline: Story = {
+          args: { label: 'Hi' },
+          render: (args) => <Button label={args.label} {...args} />,
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Inline = () => <Button label="Hi">Click me</Button>;"`
+    );
+});
+
+it('inlines children, optional and computed args reads in a fragment', () => {
+    const input = withCSF3(dedent`
+        export const Fragment: Story = {
+          args: { label: 'Hi', size: 'lg' },
+          render: (args) => (
+            <>
+              <b title={args?.label} size={args['size']}>{args.children}</b>
+            </>
+          ),
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Fragment = () => <>
+          <b title="Hi" size="lg">Click me</b>
+        </>;"
+    `);
+});
+
+it('keeps strings JSX cannot hold as expressions and ignores computed keys', () => {
+    const input = withCSF3(dedent`
+        const key = 'label';
+
+        export const Strings: Story = {
+          args: { quote: 'say "hi"', lines: 'a\\nb', [key]: 'computed' },
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Strings = () => <Button quote={'say "hi"'} lines={'a\\nb'}>Click me</Button>;"`
+    );
+});
+
+it('indents multi-line args where they are placed', () => {
+    const input = withCSF3(dedent`
+        export const MultiLine: Story = {
+          args: {
+            style: {
+              color: 'red',
+            },
+          },
+          render: (args) => (
+            <div>
+              <Button {...args} />
+            </div>
+          ),
+        };
+
+        export const Synthesized: Story = {
+          args: {
+            items: [
+              'one',
+              'two',
+            ],
+          },
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const MultiLine = () => <div>
+          <Button style={{
+            color: 'red',
+          }}>Click me</Button>
+        </div>;
+        const Synthesized = () => <Button items={[
+          'one',
+          'two',
+        ]}>Click me</Button>;"
+    `);
+});
