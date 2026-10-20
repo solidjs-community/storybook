@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { recast } from 'storybook/internal/babel';
 import { getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
 import { storyNameFromExport } from 'storybook/internal/csf';
 import { extractDescription, loadCsf } from 'storybook/internal/csf-tools';
@@ -37,8 +36,8 @@ export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(nex
                     const name = story.name ?? storyNameFromExport(storyExport);
 
                     try {
-                        const description = extractDescription(csf._storyStatements[storyExport])?.trim();
-                        const snippet = recast.print(getCodeSnippet(csf, storyExport, componentName)).code;
+                        const description = extractDescription(csf._storyStatements[storyExport], csf._editor)?.trim();
+                        const snippet = getCodeSnippet(csf, storyExport, componentName);
 
                         return [
                             story.id,
