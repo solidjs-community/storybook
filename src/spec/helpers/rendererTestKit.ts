@@ -1,4 +1,4 @@
-import { reconcile, createStore as solidCreateStore } from 'solid-js/store';
+import { reconcile, createStore as solidCreateStore } from 'solid-js-legacy/store';
 
 import { createStoryState } from '../../renderer/shared/story-store';
 

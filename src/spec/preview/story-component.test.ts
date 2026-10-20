@@ -1,5 +1,4 @@
-import { createComponent, createRoot, createSignal } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createComponent, createRoot, createSignal, createStore } from 'solid-js';
 import { definePreviewAddon } from 'storybook/internal/csf';
 import { describe, expect, it } from 'vitest';
 
@@ -270,7 +269,9 @@ describe('Story.Component', () => {
             createComponent(stored.Component, {});
             expect(readLabel()).toBe('from store');
 
-            setStoreArgs({ label: 'updated' });
+            setStoreArgs((store) => {
+                store.label = 'updated';
+            });
 
             expect(readLabel()).toBe('from store');
             dispose();

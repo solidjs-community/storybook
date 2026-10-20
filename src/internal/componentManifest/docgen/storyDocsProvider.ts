@@ -1,44 +1,31 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { recast } from 'storybook/internal/babel';
+import { getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
 import { storyNameFromExport } from 'storybook/internal/csf';
 import { extractDescription, loadCsf } from 'storybook/internal/csf-tools';
 
 import { getCodeSnippet } from '../../codeExamples/generateCodeSnippet';
 
-const STORY_FILE_PATTERN = /\.(?:stories|story)\.(?:m?[jt]sx?)$/;
+import type { StoryDocsPayload, StoryDocsProviderInput, StoryDocsProviderPreset } from 'storybook/internal/types';
 
-function readEntry(input: { entry?: Record<string, unknown> } | Record<string, unknown>) {
-    const entry = 'entry' in input && input.entry && typeof input.entry === 'object'
-        ? input.entry as Record<string, unknown>
-        : input as Record<string, unknown>;
-
-    const importPathValue = entry['importPath'];
-    const storiesImports = entry['storiesImports'];
-    const importPath = typeof importPathValue === 'string'
-        ? importPathValue
-        : Array.isArray(storiesImports) && typeof storiesImports[0] === 'string'
-            ? storiesImports[0]
-            : undefined;
-    const titleValue = entry['title'];
-    const title = typeof titleValue === 'string' ? titleValue : 'Component';
-    const idValue = entry['id'];
-    const id = typeof idValue === 'string'
-        ? (idValue.split('--')[0] ?? idValue)
-        : title.replace(/\s+/g, '');
+function readEntry(entry: StoryDocsProviderInput['entry']) {
+    const importPath = getStoryImportPathFromEntry(entry);
+    const title = entry.title || 'Component';
+    const id = entry.id.split('--')[0] || entry.id || title.replace(/\s+/g, '');
 
     return { importPath, title, id };
 }
 
-export async function experimental_storyDocsProvider(next: any) {
-    return async(input: any) => {
-        const { importPath, title, id } = readEntry(input);
+export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(next) => {
+    return async(input) => {
+        const { importPath, title, id } = readEntry(input.entry);
 
-        if (!importPath || !STORY_FILE_PATTERN.test(importPath)) {
+        if (!importPath || !STORY_FILE_TEST_REGEXP.test(importPath)) {
             return next(input);
         }
 
-        let ours: Record<string, unknown> | undefined;
+        let ours: StoryDocsPayload | undefined;
 
         try {
             const storyPath = join(process.cwd(), importPath);
@@ -51,14 +38,15 @@ export async function experimental_storyDocsProvider(next: any) {
 
                     try {
                         const description = extractDescription(csf._storyStatements[storyExport])?.trim();
+                        const snippet = recast.print(getCodeSnippet(csf, storyExport, componentName)).code;
 
                         return [
                             story.id,
                             {
                                 id: story.id,
                                 name,
-                                snippet: recast.print(getCodeSnippet(csf, storyExport, componentName)).code,
-                                description,
+                                snippet,
+                                ...(description ? { description } : {}),
                             },
                         ];
                     }
@@ -92,6 +80,10 @@ export async function experimental_storyDocsProvider(next: any) {
 
         if (!ours) {
             return downstream;
+        }
+
+        if (!downstream) {
+            return ours;
         }
 
         return { ...downstream, ...ours };

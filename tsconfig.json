@@ -1,40 +1,40 @@
 {
-    "extends": "@tsconfig/strictest/tsconfig.json",
-    "compilerOptions": {
-        "composite": false,
-        "target": "ESNext",
-        "verbatimModuleSyntax": true,
-        "forceConsistentCasingInFileNames": true,
-        "paths": {
-            "storybook-solidjs-vite/renderer/solid-legacy": [
-                "./src/renderer/solid-legacy.ts"
-            ],
-            "storybook-solidjs-vite/renderer/solid-next": [
-                "./src/renderer/solid-next.ts"
-            ]
-        },
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
-
-
-        "lib": ["ESNext", "DOM"],
-        "moduleDetection": "force",
-        "rootDir": ".",
-        "module": "ESNext",
-
-        "moduleResolution": "bundler",
-        "allowImportingTsExtensions": true,
-        "allowJs": true,
-        "noEmit": true,
-        "sourceMap": true,
-        "isolatedModules": true
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "target": "ESNext",
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "solid-js-legacy": ["./node_modules/solid-js-legacy"],
+      "solid-js-legacy/*": ["./node_modules/solid-js-legacy/*"],
+      "storybook-solidjs-vite/renderer/solid1": ["./src/renderer/solid1.ts"],
+      "storybook-solidjs-vite/renderer/solid2": ["./src/renderer/solid2.ts"],
+      "storybook-solidjs-vite/renderer/preview-addon": [
+        "./src/renderer/preview-addon.ts"
+      ]
     },
-    "include": [
-        "src/**/*.ts",
-        "src/**/*.tsx",
-        "src/**/*.d.ts",
-        "tsdown.config.ts",
-        "vitest.config.ts"
-    ],
-    "exclude": ["dist", "node_modules", "src/spec/packageExports/consumer.ts"]
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+
+    "lib": ["ESNext", "DOM"],
+    "moduleDetection": "force",
+    "rootDir": ".",
+    "module": "ESNext",
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "noEmit": true,
+    "sourceMap": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
+    "tsdown.config.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": ["dist", "node_modules", "src/spec/packageExports/consumer.ts"]
 }

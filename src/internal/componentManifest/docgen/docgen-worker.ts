@@ -1,43 +1,22 @@
 import ts from '@typescript/typescript6';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { createLazyDocgenMiddleware, getStoryImportPathFromEntry } from 'storybook/internal/common';
 import { loadCsf } from 'storybook/internal/csf-tools';
 
+import { collectCsfArgNames } from '../collectCsfArgNames';
 import { findExactComponentMatch, findMatchingComponent, getComponents } from '../getComponents';
 import { SolidComponentMetaManager } from '../solidComponentMeta/SolidComponentMetaManager';
 import { extractDeclaredSubcomponents } from '../subcomponents';
 import { solidComponentDocToArgTypesData } from '../toDocgenInfo';
 
+import type { DocgenPayload, DocgenProviderInput, DocgenSubcomponent } from 'storybook/internal/types';
 import type { ComponentRef, SolidComponentDoc } from '../types';
 
-const STORY_FILE_PATTERN = /\.(?:stories|story)\.(?:m?[jt]sx?)$/;
-
-let manager: SolidComponentMetaManager | undefined;
-
-function getManager() {
-	manager ??= new SolidComponentMetaManager(ts);
-
-	return manager;
-}
-
-function readEntry(input: { entry?: Record<string, unknown> } | Record<string, unknown>) {
-	const entry = 'entry' in input && input.entry && typeof input.entry === 'object'
-		? input.entry as Record<string, unknown>
-		: input as Record<string, unknown>;
-
-	const importPathValue = entry['importPath'];
-	const storiesImports = entry['storiesImports'];
-	const importPath = typeof importPathValue === 'string'
-		? importPathValue
-		: Array.isArray(storiesImports) && typeof storiesImports[0] === 'string'
-			? storiesImports[0]
-			: undefined;
-	const titleValue = entry['title'];
-	const title = typeof titleValue === 'string' ? titleValue : 'Component';
-	const idValue = entry['id'];
-	const id = typeof idValue === 'string'
-		? (idValue.split('--')[0] ?? idValue)
-		: title.replace(/\s+/g, '');
+function readEntry(entry: DocgenProviderInput['entry']) {
+	const importPath = getStoryImportPathFromEntry(entry);
+	const title = entry.title || 'Component';
+	const id = entry.id.split('--')[0] || entry.id || title.replace(/\s+/g, '');
 
 	return { importPath, title, id };
 }
@@ -48,26 +27,38 @@ function componentImport(component: ComponentRef | undefined) {
 		: '';
 }
 
-function docPayload(doc: SolidComponentDoc | undefined, component: ComponentRef | undefined) {
-	if (!doc && !component) {
+function docPayload(
+	doc: SolidComponentDoc | undefined,
+	component: ComponentRef | undefined
+): DocgenSubcomponent | undefined {
+	const name = component?.componentName ?? doc?.exportName;
+	const path = component?.path ?? doc?.filePath;
+
+	if (!name || !path) {
 		return undefined;
 	}
 
+	const argTypes = doc ? solidComponentDocToArgTypesData(doc) : undefined;
+	const sourceImport = componentImport(component);
+
 	return {
-		name: component?.componentName ?? doc?.exportName,
-		path: component?.path ?? doc?.filePath,
-		import: componentImport(component),
-		description: doc?.description,
-		argTypes: doc ? solidComponentDocToArgTypesData(doc) : undefined,
+		name,
+		path,
 		jsDocTags: component?.componentJsDocTags ?? {},
-		reactComponentMeta: doc,
+		...(sourceImport ? { import: sourceImport } : {}),
+		...(doc?.description ? { description: doc.description } : {}),
+		...(argTypes ? { argTypes } : {}),
+		...(doc ? { reactComponentMeta: doc } : {}),
 	};
 }
 
-async function extractDocgen(input: any) {
-	const { importPath, title, id } = readEntry(input);
+async function extractDocgen(
+	manager: SolidComponentMetaManager,
+	input: DocgenProviderInput
+): Promise<DocgenPayload | undefined> {
+	const { importPath, title, id } = readEntry(input.entry);
 
-	if (!importPath || !STORY_FILE_PATTERN.test(importPath)) {
+	if (!importPath) {
 		return undefined;
 	}
 
@@ -81,12 +72,13 @@ async function extractDocgen(input: any) {
 		additionalComponentNames: declaredSubcomponents.map(subcomponent => subcomponent.componentName),
 	});
 	const component = findMatchingComponent(allComponents, csf._meta?.component, title);
-	const metaManager = getManager();
+	const referencedArgNames = collectCsfArgNames(csf);
 
 	if (component?.path && component.importName) {
-		const extracted = metaManager.extractFromComponentFile(
+		const extracted = manager.extractFromComponentFile(
 			component.path,
-			component.member ?? component.importName
+			component.member ?? component.importName,
+			referencedArgNames
 		);
 
 		if (extracted) {
@@ -102,7 +94,7 @@ async function extractDocgen(input: any) {
 				return [];
 			}
 
-			const extracted = metaManager.extractFromComponentFile(
+			const extracted = manager.extractFromComponentFile(
 				resolved.path,
 				resolved.member ?? resolved.importName
 			);
@@ -131,22 +123,15 @@ async function extractDocgen(input: any) {
 }
 
 export function createDocgenProvider() {
-	return (next: any) => async(input: any) => {
-		let ours: Record<string, unknown> | undefined;
-
-		try {
-			ours = await extractDocgen(input);
-		}
-		catch {
-			ours = undefined;
-		}
-
-		const downstream = await next(input);
-
-		if (!ours) {
-			return downstream;
-		}
-
-		return { ...downstream, ...ours };
-	};
+	return createLazyDocgenMiddleware({
+		createManager: async() => new SolidComponentMetaManager(ts),
+		extract: async(manager, input) => {
+			try {
+				return await extractDocgen(manager, input);
+			}
+			catch {
+				return undefined;
+			}
+		},
+	});
 }

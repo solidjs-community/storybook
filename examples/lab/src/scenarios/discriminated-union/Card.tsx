@@ -9,8 +9,8 @@ export function Card(props: CardProps) {
             {props.variant === 'solid'
                 ? (
                     <div
+                        class="min-w-48 rounded-xl border border-zinc-200 bg-zinc-100 font-sans text-sm text-zinc-800"
                         data-variant="solid"
-                        class="rounded-lg bg-zinc-900 text-sm text-white"
                         style={{ padding: `${ props.padding }px` }}
                     >
                         solid card
@@ -18,11 +18,13 @@ export function Card(props: CardProps) {
                 )
                 : (
                     <div
+                        class={
+                            props.transparent
+                                ? 'min-w-48 rounded-xl border border-dashed border-zinc-400 bg-transparent font-sans text-sm text-zinc-500'
+                                : 'min-w-48 rounded-xl border border-dashed border-zinc-300 bg-transparent font-sans text-sm text-zinc-800'
+                        }
                         data-variant="ghost"
                         data-transparent={String(props.transparent)}
-                        class={`rounded-lg border border-dashed border-zinc-300 px-4 py-3 text-sm text-zinc-600 ${
-                            props.transparent ? 'bg-transparent' : 'bg-zinc-50'
-                        }`}
                     >
                         ghost card
                     </div>
