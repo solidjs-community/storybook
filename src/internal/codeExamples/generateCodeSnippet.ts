@@ -1,13 +1,13 @@
 import {
     collectImportBindings,
     createStoryArgsResolver,
+    detachedTextOf,
     isCanonicalCsf2BindCall,
     isStringLiteral,
     lineIndent,
     metaObject,
     normalizeStoryDeclaration,
     parseModule,
-    placeableTextOf,
     reindent,
     resolveRenderFunction,
     storyShapeError,
@@ -70,7 +70,7 @@ export function getCodeSnippet(
         && isCanonicalCsf2BindCall(declaration.init)
         && collectImportBindings(csf._program).has(declaration.init.callee.object.name)
     ) {
-        const print = valuePrinter(editor, '    ');
+        const print = valuePrinter('    ');
         const members = Object.entries(args).map(([key, value]) => `    ${ JSON.stringify(key) }: ${ print(value) }`);
         const argsObject = members.length > 0 ? `{\n${ members.join(',\n') }\n}` : '{}';
 
@@ -91,7 +91,7 @@ export function getCodeSnippet(
 
     invariant(componentName, 'Could not generate snippet without component name.');
 
-    const print = valuePrinter(editor, '');
+    const print = valuePrinter('');
     const attrs = injectedAttributes(args, new Set(), print);
     const children = toJsxChildren(args['children'], print);
     const opening = [componentName, ...attrs].join(' ');
@@ -118,7 +118,7 @@ function functionSnippet(editor: SourceEditor, storyName: string, fn: FunctionNo
     const edits: Edit[] = [];
 
     if (fn.type === 'ArrowFunctionExpression' && isJsx(fn.body)) {
-        if (rewriteJsx(editor, fn.body, merged, edits)) {
+        if (rewriteJsx(code, fn.body, merged, edits)) {
             const body = printRange(code, fn.body, edits);
             const kept = readsArgs(`${ asyncPrefix }() => (${ body });`) ? params : '';
 
@@ -130,7 +130,7 @@ function functionSnippet(editor: SourceEditor, storyName: string, fn: FunctionNo
 
         for (const statement of fn.body.body) {
             if (statement.type === 'ReturnStatement' && isJsx(statement.argument)) {
-                changed = rewriteJsx(editor, statement.argument, merged, edits) || changed;
+                changed = rewriteJsx(code, statement.argument, merged, edits) || changed;
             }
         }
 
@@ -202,16 +202,8 @@ function readsArgs(source: string): boolean {
 
 type ValuePrinter = (node: Node) => string;
 
-/**
- * Prints an arg value for a snippet line indented by `indent`, moving the value's continuation lines
- * from where the story file has them to that line. A value the args resolver rebuilt is not part of
- * the file, and is written without an indent.
- */
-const valuePrinter = (editor: SourceEditor, indent: string): ValuePrinter => node => reindent(
-    placeableTextOf(node),
-    editor.parentOf(node) ? lineIndent(editor.code, node.start) : '',
-    indent
-);
+/** Prints an arg value for a snippet line indented by `indent`. */
+const valuePrinter = (indent: string): ValuePrinter => node => reindent(detachedTextOf(node), '', indent);
 
 const isValidJsxAttrName = (n: string) => /^[A-Z_][\w:-]*$/i.test(n);
 
@@ -284,14 +276,13 @@ function getArgsMemberKey(expr: Node) {
  * returns whether there were any.
  */
 function rewriteJsx(
-    editor: SourceEditor,
+    code: string,
     node: E.JSXElement | E.JSXFragment,
     merged: Args,
     edits: Edit[]
 ): boolean {
-    const { code } = editor;
     let changed = false;
-    const printAt = (offset: number) => valuePrinter(editor, lineIndent(code, offset));
+    const printAt = (offset: number) => valuePrinter(lineIndent(code, offset));
 
     if (node.type === 'JSXElement') {
         const opening = node.openingElement;
@@ -357,7 +348,7 @@ function rewriteJsx(
 
     for (const child of node.children) {
         if (isJsx(child)) {
-            changed = rewriteJsx(editor, child, merged, edits) || changed;
+            changed = rewriteJsx(code, child, merged, edits) || changed;
         }
         else if (child.type === 'JSXExpressionContainer' && getArgsMemberKey(child.expression) === 'children') {
             const children = toJsxChildren(merged['children'], printAt(child.start));
