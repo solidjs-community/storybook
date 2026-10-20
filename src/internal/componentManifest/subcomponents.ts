@@ -1,4 +1,4 @@
-import { isStringLiteral, unwrapExpression } from 'storybook/internal/csf-tools';
+import { resolveIdentifierInit, staticKey, unwrapExpression } from 'storybook/internal/csf-tools';
 
 import type { CsfFile, ESTree, ESTreeNode } from 'storybook/internal/csf-tools';
 
@@ -8,10 +8,7 @@ export type DeclaredSubcomponent = {
 };
 
 export function extractDeclaredSubcomponents(csf: CsfFile): DeclaredSubcomponent[] {
-	const rawSubcomponents = unwrapSubcomponentNode(
-		csf._metaAnnotations['subcomponents'],
-		csf._program
-	);
+	const rawSubcomponents = resolveLocalValue(csf._metaAnnotations['subcomponents'], csf._program);
 
 	if (rawSubcomponents?.type !== 'ObjectExpression') {
 		return [];
@@ -22,77 +19,32 @@ export function extractDeclaredSubcomponents(csf: CsfFile): DeclaredSubcomponent
 			return [];
 		}
 
-		const name = getObjectKeyName(property.key);
-		const directComponentName = getComponentExpressionName(property.value);
-		const componentExpression = unwrapSubcomponentNode(property.value, csf._program);
-		const componentName = getComponentExpressionName(componentExpression) ?? directComponentName;
+		const name = staticKey(property);
+		const componentName = getComponentExpressionName(resolveLocalValue(property.value, csf._program))
+			?? getComponentExpressionName(property.value);
 
 		return name && componentName ? [{ name, componentName }] : [];
 	});
 }
 
-function findVariableInitialization(identifier: string, program: ESTree.Program) {
-	for (const node of program.body) {
-		const declaration = node.type === 'ExportNamedDeclaration' ? node.declaration : node;
+/**
+ * The expression a chain of local declarations and TS wrappers leads to, or `undefined` when the
+ * chain leaves the file or loops.
+ */
+function resolveLocalValue(node: ESTreeNode | undefined, program: ESTree.Program): ESTreeNode | undefined {
+	const visited = new Set<string>();
+	let current = unwrapExpression(node);
 
-		if (declaration?.type !== 'VariableDeclaration') {
-			continue;
+	while (current?.type === 'Identifier') {
+		if (visited.has(current.name)) {
+			return undefined;
 		}
 
-		const declarator = declaration.declarations.find(
-			decl => decl.id.type === 'Identifier' && decl.id.name === identifier
-		);
-
-		if (declarator?.init) {
-			return declarator.init;
-		}
+		visited.add(current.name);
+		current = unwrapExpression(resolveIdentifierInit(program, current.name) ?? undefined);
 	}
 
-	return undefined;
-}
-
-function unwrapSubcomponentNode(
-	node: ESTreeNode | undefined,
-	program: ESTree.Program,
-	visitedIdentifiers = new Set<string>()
-): ESTreeNode | undefined {
-	let current = node;
-
-	while (current) {
-		if (current.type === 'Identifier') {
-			if (visitedIdentifiers.has(current.name)) {
-				return undefined;
-			}
-
-			visitedIdentifiers.add(current.name);
-			current = findVariableInitialization(current.name, program);
-			continue;
-		}
-
-		// The parser drops parentheses, so only the TS wrappers are left to peel.
-		const unwrapped = unwrapExpression(current);
-
-		if (unwrapped !== current) {
-			current = unwrapped;
-			continue;
-		}
-
-		return current;
-	}
-
-	return undefined;
-}
-
-function getObjectKeyName(key: ESTreeNode) {
-	if (key.type === 'Identifier') {
-		return key.name;
-	}
-
-	if (isStringLiteral(key)) {
-		return key.value;
-	}
-
-	return undefined;
+	return current;
 }
 
 function getComponentExpressionName(node: ESTreeNode | undefined): string | undefined {
