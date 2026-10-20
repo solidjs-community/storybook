@@ -1,4 +1,3 @@
-import { recast, types as t } from 'storybook/internal/babel';
 import { loadCsf } from 'storybook/internal/csf-tools';
 import { dedent } from 'ts-dedent';
 import { expect, it } from 'vitest';
@@ -9,10 +8,9 @@ function generateExample(code: string) {
     const csf = loadCsf(code, { makeTitle: userTitle => userTitle ?? 'title' }).parse();
 
     const snippets = Object.keys(csf._storyExports)
-        .map(name => getCodeSnippet(csf, name, csf._meta?.component ?? 'ComponentTitle'))
-        .filter(Boolean);
+        .map(name => getCodeSnippet(csf, name, csf._meta?.component ?? 'ComponentTitle'));
 
-    return recast.print(t.program(snippets)).code;
+    return snippets.join('\n');
 }
 
 function withCSF3(body: string) {
@@ -178,15 +176,9 @@ it('objectInvalidAttr only', () => {
     };`
     );
 
-    expect(generateExample(input)).toMatchInlineSnapshot(`
-        "const ObjectInvalidAttr = () => <Button
-            {...{
-                "1x": 'a',
-                "bad key": 'b',
-                "@foo": 'c',
-                "-dash": 'd'
-            }}>Click me</Button>;"
-    `);
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const ObjectInvalidAttr = () => <Button {...{ "1x": 'a', "bad key": 'b', "@foo": 'c', "-dash": 'd' }}>Click me</Button>;"`
+    );
 });
 
 it('cSF Next preview.meta story with args', () => {
@@ -228,8 +220,8 @@ it('top level args injection and spreading in different places', () => {
 
     expect(generateExample(input)).toMatchInlineSnapshot(`
         "const MultipleSpreads = () => <div count={0}>
-            <Button disabled={false} count={0} empty="">Click me</Button>
-            <Button disabled={false} count={0} empty="">Click me</Button>
+          <Button disabled={false} count={0} empty="">Click me</Button>
+          <Button disabled={false} count={0} empty="">Click me</Button>
         </div>;"
     `);
 });
