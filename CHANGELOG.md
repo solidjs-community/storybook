@@ -1,5 +1,11 @@
 # storybook-solidjs-vite
 
+## 10.7.4
+
+### Patch Changes
+
+- c222daa: Fix Solid 2 first render so story args and globals are committed before a new reactive reader mounts.
+
 ## 10.7.3
 
 ### Patch Changes
