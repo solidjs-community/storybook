@@ -69,7 +69,7 @@ export async function getComponents({
     storyFilePath,
     additionalComponentNames = [],
 }: {
-    csf: Pick<CsfFile, '_meta' | '_program' | '_editor'>;
+    csf: CsfFile;
     storyFilePath: string;
     additionalComponentNames?: string[];
 }): Promise<ComponentRef[]> {
