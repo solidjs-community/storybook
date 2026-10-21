@@ -11,12 +11,17 @@
         "storybook-solidjs-vite": "file:../.."
     },
     "devDependencies": {
-        "@storybook/addon-docs": "next",
+        "@storybook/addon-docs": "https://pkg.pr.new/@storybook/addon-docs@b26f35e1aff",
         "@tailwindcss/vite": "^4.3.3",
-        "storybook": "next",
+        "storybook": "https://pkg.pr.new/storybook@b26f35e1aff",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
         "vite-plugin-solid": "^2.11.14"
+    },
+    "overrides": {
+        "storybook": "https://pkg.pr.new/storybook@b26f35e1aff",
+        "@storybook/builder-vite": "https://pkg.pr.new/@storybook/builder-vite@b26f35e1aff",
+        "@storybook/addon-docs": "https://pkg.pr.new/@storybook/addon-docs@b26f35e1aff"
     }
 }
