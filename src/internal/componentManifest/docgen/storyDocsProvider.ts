@@ -37,7 +37,7 @@ export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(nex
                     const name = story.name ?? storyNameFromExport(storyExport);
 
                     try {
-                        const description = extractDescription(csf._storyStatements[storyExport], csf._editor)?.trim();
+                        const description = extractDescription(csf._storyStatements[storyExport], csf.editor)?.trim();
                         const snippet = getCodeSnippet(csf, storyExport, componentName, resolver);
 
                         return [

@@ -47,12 +47,12 @@ export function getCodeSnippet(
     componentName?: string,
     resolver: StoryArgsResolver = createStoryArgsResolver(csf)
 ): string {
-    const editor = csf._editor;
+    const editor = csf.editor;
     const declaration = csf._storyExports[storyName];
 
     if (!declaration) {
         const message = 'Expected story to be a function or variable declaration';
-        const statement = csf._program.body.find(
+        const statement = csf.program.body.find(
             node => node.type === 'ExportNamedDeclaration'
                 && node.specifiers.some(
                     specifier => (specifier.exported.type === 'Identifier' ? specifier.exported.name : specifier.exported.value) === storyName
@@ -68,7 +68,7 @@ export function getCodeSnippet(
     if (
         declaration.type === 'VariableDeclarator'
         && isCanonicalCsf2BindCall(declaration.init)
-        && collectImportBindings(csf._program).has(declaration.init.callee.object.name)
+        && collectImportBindings(csf.program).has(declaration.init.callee.object.name)
     ) {
         const print = valuePrinter('    ');
         const members = Object.entries(args).map(([key, value]) => `    ${ JSON.stringify(key) }: ${ print(value) }`);

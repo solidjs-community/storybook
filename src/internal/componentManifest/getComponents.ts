@@ -75,11 +75,11 @@ export async function getComponents({
 }): Promise<ComponentRef[]> {
     const componentSet = new Set<string>();
     const componentDepth = new Map<string, number>();
-    const localToImport = collectImportBindings(csf._program);
+    const localToImport = collectImportBindings(csf.program);
     // Number of JSX elements enclosing each node, counting the node itself when it is one.
     const jsxDepth = new Map<ESTreeNode, number>();
 
-    walk(csf._program, (node, parent) => {
+    walk(csf.program, (node, parent) => {
         const depth = (parent ? (jsxDepth.get(parent) ?? 0) : 0) + (node.type === 'JSXElement' ? 1 : 0);
 
         jsxDepth.set(node, depth);
@@ -133,7 +133,7 @@ export async function getComponents({
     const components = Array.from(componentSet).sort((a, b) => a.localeCompare(b));
 
     const isLocallyDefinedWithoutImport = (base: string) => {
-        const binding = csf._editor.scopes.program.bindings.get(base);
+        const binding = csf.editor.scopes.program.bindings.get(base);
 
         return binding ? binding.kind !== 'import' : false;
     };
