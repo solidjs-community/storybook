@@ -1,4 +1,3 @@
-import { recast, types as t } from 'storybook/internal/babel';
 import { loadCsf } from 'storybook/internal/csf-tools';
 import { dedent } from 'ts-dedent';
 import { expect, it } from 'vitest';
@@ -9,10 +8,9 @@ function generateExample(code: string) {
     const csf = loadCsf(code, { makeTitle: userTitle => userTitle ?? 'title' }).parse();
 
     const snippets = Object.keys(csf._storyExports)
-        .map(name => getCodeSnippet(csf, name, csf._meta?.component ?? 'ComponentTitle'))
-        .filter(Boolean);
+        .map(name => getCodeSnippet(csf, name, csf._meta?.component ?? 'ComponentTitle'));
 
-    return recast.print(t.program(snippets)).code;
+    return snippets.join('\n');
 }
 
 function withCSF3(body: string) {
@@ -178,15 +176,9 @@ it('objectInvalidAttr only', () => {
     };`
     );
 
-    expect(generateExample(input)).toMatchInlineSnapshot(`
-        "const ObjectInvalidAttr = () => <Button
-            {...{
-                "1x": 'a',
-                "bad key": 'b',
-                "@foo": 'c',
-                "-dash": 'd'
-            }}>Click me</Button>;"
-    `);
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const ObjectInvalidAttr = () => <Button {...{ "1x": 'a', "bad key": 'b', "@foo": 'c', "-dash": 'd' }}>Click me</Button>;"`
+    );
 });
 
 it('cSF Next preview.meta story with args', () => {
@@ -228,8 +220,169 @@ it('top level args injection and spreading in different places', () => {
 
     expect(generateExample(input)).toMatchInlineSnapshot(`
         "const MultipleSpreads = () => <div count={0}>
-            <Button disabled={false} count={0} empty="">Click me</Button>
-            <Button disabled={false} count={0} empty="">Click me</Button>
+          <Button disabled={false} count={0} empty="">Click me</Button>
+          <Button disabled={false} count={0} empty="">Click me</Button>
         </div>;"
     `);
+});
+
+it('expands every args spread once and keeps the other attributes', () => {
+    const input = withCSF3(dedent`
+        export const Spreads: Story = {
+          args: { label: 'Hi' },
+          render: (args) => <Button {...args} kind="own" {...args} />,
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Spreads = () => <Button label="Hi" kind="own">Click me</Button>;"`
+    );
+});
+
+it('gives a self-closing element its children after inlining an attribute', () => {
+    const input = withCSF3(dedent`
+        export const Inline: Story = {
+          args: { label: 'Hi' },
+          render: (args) => <Button label={args.label} {...args} />,
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Inline = () => <Button label="Hi">Click me</Button>;"`
+    );
+});
+
+it('inlines children, optional and computed args reads in a fragment', () => {
+    const input = withCSF3(dedent`
+        export const Fragment: Story = {
+          args: { label: 'Hi', size: 'lg' },
+          render: (args) => (
+            <>
+              <b title={args?.label} size={args['size']}>{args.children}</b>
+            </>
+          ),
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Fragment = () => <>
+          <b title="Hi" size="lg">Click me</b>
+        </>;"
+    `);
+});
+
+it('keeps strings JSX cannot hold as expressions and ignores computed keys', () => {
+    const input = withCSF3(dedent`
+        const key = 'label';
+
+        export const Strings: Story = {
+          args: { quote: 'say "hi"', lines: 'a\\nb', [key]: 'computed' },
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Strings = () => <Button quote={'say "hi"'} lines={'a\\nb'}>Click me</Button>;"`
+    );
+});
+
+it('indents multi-line args where they are placed', () => {
+    const input = withCSF3(dedent`
+        export const MultiLine: Story = {
+          args: {
+            style: {
+              color: 'red',
+            },
+          },
+          render: (args) => (
+            <div>
+              <Button {...args} />
+            </div>
+          ),
+        };
+
+        export const Synthesized: Story = {
+          args: {
+            items: [
+              'one',
+              'two',
+            ],
+          },
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const MultiLine = () => <div>
+          <Button style={{
+            color: 'red',
+          }}>Click me</Button>
+        </div>;
+        const Synthesized = () => <Button items={[
+          'one',
+          'two',
+        ]}>Click me</Button>;"
+    `);
+});
+
+it('reads args through local constants, spreads and the last args assignment', () => {
+    const input = withCSF3(dedent`
+        const label = 'Hi';
+        const base = { args: { size: 'lg' } };
+
+        export const Constants: Story = { ...base, args: { ...base.args, label } };
+
+        export const Assigned: StoryFn = (args) => <Button {...args} />;
+        Assigned.args = { label: 'first' };
+        Assigned.args = { label: 'last' };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Constants = () => <Button size="lg" label="Hi">Click me</Button>;
+        const Assigned = () => <Button label="last">Click me</Button>;"
+    `);
+});
+
+it('follows a story alias and reads a render method', () => {
+    const input = withCSF3(dedent`
+        const Impl: Story = {
+          render(args) {
+            return <Button {...args} />;
+          },
+        };
+
+        export const Alias = Impl;
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Alias = () => {
+          return <Button>Click me</Button>;
+        };"
+    `);
+});
+
+it('keeps the args parameter when the render still reads it', () => {
+    const input = withCSF3(dedent`
+        export const Upper: Story = {
+          render: (args) => {
+            const upper = String(args.children).toUpperCase();
+            return <Button {...args} title={upper} />;
+          },
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Upper = (args) => {
+          const upper = String(args.children).toUpperCase();
+          return <Button title={upper}>Click me</Button>;
+        };"
+    `);
+});
+
+it('keeps children JSX text cannot hold as an expression', () => {
+    const input = withCSF3(dedent`
+        export const Braces: Story = { args: { children: 'a {b} <c>' } };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const Braces = () => <Button>{'a {b} <c>'}</Button>;"`
+    );
 });

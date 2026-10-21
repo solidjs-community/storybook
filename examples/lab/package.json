@@ -19,8 +19,8 @@
     },
     "devDependencies": {
         "@solidjs/vite-plugin": "^3.0.0-0",
-        "@storybook/addon-docs": "next",
-        "@storybook/addon-vitest": "next",
+        "@storybook/addon-docs": "https://pkg.pr.new/@storybook/addon-docs@b26f35e1aff",
+        "@storybook/addon-vitest": "https://pkg.pr.new/@storybook/addon-vitest@b26f35e1aff",
         "@tailwindcss/vite": "^4.3.3",
         "@tsconfig/strictest": "^2.0.8",
         "@vitest/browser-playwright": "^4.1.11",
@@ -28,10 +28,16 @@
         "eslint": "^10.9.0",
         "jsdom": "30.0.1",
         "playwright": "^1.55.0",
-        "storybook": "next",
+        "storybook": "https://pkg.pr.new/storybook@b26f35e1aff",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
         "vitest": "^4.1.11"
+    },
+    "overrides": {
+        "storybook": "https://pkg.pr.new/storybook@b26f35e1aff",
+        "@storybook/builder-vite": "https://pkg.pr.new/@storybook/builder-vite@b26f35e1aff",
+        "@storybook/addon-docs": "https://pkg.pr.new/@storybook/addon-docs@b26f35e1aff",
+        "@storybook/addon-vitest": "https://pkg.pr.new/@storybook/addon-vitest@b26f35e1aff"
     }
 }

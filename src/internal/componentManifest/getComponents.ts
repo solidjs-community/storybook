@@ -1,26 +1,9 @@
 import { accessSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { types as t } from 'storybook/internal/babel';
+import { collectImportBindings, walk } from 'storybook/internal/csf-tools';
 
 import type { ComponentRef } from './types';
-
-interface CsfProgram {
-    traverse: (visitors: Record<string, unknown>) => void;
-    get: (key: string) => Array<{ isImportDeclaration: () => boolean; node: t.ImportDeclaration }>;
-    scope: { getBinding: (name: string) => { path: { isImportSpecifier?: () => boolean; isImportDefaultSpecifier?: () => boolean; isImportNamespaceSpecifier?: () => boolean } } | undefined };
-}
-
-function importedName(specifier: t.ImportSpecifier) {
-    if (t.isIdentifier(specifier.imported)) {
-        return specifier.imported.name;
-    }
-
-    return specifier.imported.value;
-}
-
-function isTypeSpecifier(specifier: t.Node) {
-    return t.isImportSpecifier(specifier) && specifier.importKind === 'type';
-}
+import type { CsfFile, ESTree, ESTreeNode } from 'storybook/internal/csf-tools';
 
 function baseIdentifier(component: string) {
     return component.split('.')[0] ?? component;
@@ -86,56 +69,55 @@ export async function getComponents({
     storyFilePath,
     additionalComponentNames = [],
 }: {
-    csf: { _meta?: { component?: string }; _file: { path: CsfProgram } };
+    csf: CsfFile;
     storyFilePath: string;
     additionalComponentNames?: string[];
 }): Promise<ComponentRef[]> {
-    const program = csf._file.path;
     const componentSet = new Set<string>();
     const componentDepth = new Map<string, number>();
-    const localToImport = new Map<string, { importId: string; importName: string }>();
-    let jsxDepth = 0;
+    const localToImport = collectImportBindings(csf.program);
+    // Number of JSX elements enclosing each node, counting the node itself when it is one.
+    const jsxDepth = new Map<ESTreeNode, number>();
 
-    program.traverse({
-        JSXElement: {
-            enter() {
-                jsxDepth++;
-            },
-            exit() {
-                jsxDepth--;
-            },
-        },
-        JSXOpeningElement(path: { node: t.JSXOpeningElement }) {
-            const n = path.node.name;
-            let name: string | undefined;
+    walk(csf.program, (node, parent) => {
+        const depth = (parent ? (jsxDepth.get(parent) ?? 0) : 0) + (node.type === 'JSXElement' ? 1 : 0);
 
-            if (t.isJSXIdentifier(n)) {
-                name = n.name;
+        jsxDepth.set(node, depth);
 
-                if (name && /[A-Z]/.test(name.charAt(0))) {
-                    componentSet.add(name);
-                }
-            }
-            else if (t.isJSXMemberExpression(n)) {
-                const jsxNameToString = (nm: t.JSXMemberExpression | t.JSXIdentifier): string => (
-                    t.isJSXIdentifier(nm)
-                        ? nm.name
-                        : `${ jsxNameToString(nm.object) }.${ jsxNameToString(nm.property) }`
-                );
+        if (node.type !== 'JSXOpeningElement') {
+            return;
+        }
 
-                name = jsxNameToString(n);
+        const n = node.name;
+        let name: string | undefined;
+
+        if (n.type === 'JSXIdentifier') {
+            name = n.name;
+
+            if (name && /[A-Z]/.test(name.charAt(0))) {
                 componentSet.add(name);
             }
+        }
+        else if (n.type === 'JSXMemberExpression') {
+            const jsxNameToString = (nm: ESTree.JSXMemberExpression | ESTree.JSXIdentifier): string => (
+                nm.type === 'JSXIdentifier'
+                    ? nm.name
+                    : `${ jsxNameToString(nm.object) }.${ jsxNameToString(nm.property) }`
+            );
 
-            if (name) {
-                const depth = jsxDepth - 1;
-                const existing = componentDepth.get(name);
+            name = jsxNameToString(n);
+            componentSet.add(name);
+        }
 
-                if (existing === undefined || depth < existing) {
-                    componentDepth.set(name, depth);
-                }
+        if (name) {
+            // The opening element shares its JSXElement's depth, which counts that element itself.
+            const wrappingDepth = depth - 1;
+            const existing = componentDepth.get(name);
+
+            if (existing === undefined || wrappingDepth < existing) {
+                componentDepth.set(name, wrappingDepth);
             }
-        },
+        }
     });
 
     const metaComp = csf._meta?.component;
@@ -149,49 +131,11 @@ export async function getComponents({
     }
 
     const components = Array.from(componentSet).sort((a, b) => a.localeCompare(b));
-    const body = program.get('body');
-
-    for (const stmt of body) {
-        if (!stmt.isImportDeclaration()) {
-            continue;
-        }
-
-        const decl = stmt.node;
-
-        if (decl.importKind === 'type') {
-            continue;
-        }
-
-        for (const specifier of decl.specifiers ?? []) {
-            if (!('local' in specifier) || !specifier.local || isTypeSpecifier(specifier)) {
-                continue;
-            }
-
-            const importId = decl.source.value;
-
-            if (t.isImportDefaultSpecifier(specifier)) {
-                localToImport.set(specifier.local.name, { importId, importName: 'default' });
-            }
-            else if (t.isImportNamespaceSpecifier(specifier)) {
-                localToImport.set(specifier.local.name, { importId, importName: '*' });
-            }
-            else if (t.isImportSpecifier(specifier)) {
-                localToImport.set(specifier.local.name, {
-                    importId,
-                    importName: importedName(specifier),
-                });
-            }
-        }
-    }
 
     const isLocallyDefinedWithoutImport = (base: string) => {
-        const binding = program.scope.getBinding(base);
+        const binding = csf.editor.scopes.program.bindings.get(base);
 
-        return binding
-            ? !(binding.path.isImportSpecifier?.()
-                || binding.path.isImportDefaultSpecifier?.()
-                || binding.path.isImportNamespaceSpecifier?.())
-            : false;
+        return binding ? binding.kind !== 'import' : false;
     };
 
     const filteredComponents = components.filter(c => !isLocallyDefinedWithoutImport(baseIdentifier(c)));

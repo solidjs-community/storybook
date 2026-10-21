@@ -1,9 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { recast } from 'storybook/internal/babel';
 import { getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
 import { storyNameFromExport } from 'storybook/internal/csf';
-import { extractDescription, loadCsf } from 'storybook/internal/csf-tools';
+import { createStoryArgsResolver, extractDescription, loadCsf } from 'storybook/internal/csf-tools';
 
 import { getCodeSnippet } from '../../codeExamples/generateCodeSnippet';
 
@@ -32,13 +31,14 @@ export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(nex
             const storyFile = readFileSync(storyPath, 'utf8');
             const csf = loadCsf(storyFile, { makeTitle: () => title }).parse();
             const componentName = csf._meta?.component;
+            const resolver = createStoryArgsResolver(csf);
             const stories = Object.fromEntries(
                 Object.entries(csf._stories).map(([storyExport, story]) => {
                     const name = story.name ?? storyNameFromExport(storyExport);
 
                     try {
-                        const description = extractDescription(csf._storyStatements[storyExport])?.trim();
-                        const snippet = recast.print(getCodeSnippet(csf, storyExport, componentName)).code;
+                        const description = extractDescription(csf._storyStatements[storyExport], csf.editor)?.trim();
+                        const snippet = getCodeSnippet(csf, storyExport, componentName, resolver);
 
                         return [
                             story.id,

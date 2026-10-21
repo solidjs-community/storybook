@@ -75,7 +75,7 @@ export async function extractViaStoryPipeline(options: {
     const title = options.title ?? 'Example/Button';
     const csf = loadCsf(storyContents, { makeTitle: () => title }).parse();
     const allComponents = await getComponents({
-        csf: csf as Parameters<typeof getComponents>[0]['csf'],
+        csf,
         storyFilePath: storyPath,
     });
     const componentRef = findMatchingComponent(

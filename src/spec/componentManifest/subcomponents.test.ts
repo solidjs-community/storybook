@@ -57,7 +57,7 @@ describe('extractDeclaredSubcomponents', () => {
         ]);
 
         const allComponents = await getComponents({
-            csf: csf as Parameters<typeof getComponents>[0]['csf'],
+            csf,
             storyFilePath: storyPath,
             additionalComponentNames: declared.map(item => item.componentName),
         });
