@@ -25,8 +25,8 @@ interface ComposableStory {
 type MergeArgs = (base: object, props: object) => object;
 
 const mergeArgs: MergeArgs = 'mergeProps' in solid
-    ? solid.mergeProps
-    : (solid as { merge: MergeArgs }).merge;
+    ? solid.mergeProps as MergeArgs
+    :(solid as { merge: MergeArgs }).merge;
 
 function toArray(decorators: unknown): any[] {
     if (decorators == null) {
