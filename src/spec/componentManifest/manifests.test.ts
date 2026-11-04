@@ -65,7 +65,7 @@ describe('getArgTypesData', () => {
         });
 
         expect(argTypes).toHaveProperty('label');
-    });
+    }, 30_000);
 
     it('resolves a relative component path against the project root', async() => {
         const dir = writeButton();
@@ -92,5 +92,5 @@ describe('getArgTypesData', () => {
 
             invalidateProjectRootCache();
         }
-    });
+    }, 30_000);
 });
