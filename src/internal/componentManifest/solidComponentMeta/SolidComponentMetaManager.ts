@@ -57,7 +57,11 @@ function createSolidProjectFactory(
     };
 }
 
-/** The base's project cache, which Solid's tsconfig lookup fills instead of the base's own lookup. */
+/**
+ * The base's project cache, which Solid's tsconfig lookup fills instead of the base's own lookup.
+ * Core keeps it private and has no hook for tsconfig selection. Optional so that, if core renames
+ * it, docgen degrades to core's lookup instead of crashing; a spec pins that it still exists.
+ */
 interface ConfiguredProjectCache {
     getOrCreateConfiguredProject?(tsconfig: string): SolidComponentMetaProject | null;
 }
@@ -69,12 +73,12 @@ interface ConfiguredProjectCache {
  * lookup falls back to an inferred project instead, which drops the user's `paths` and JSX options.
  */
 export class SolidComponentMetaManager extends ComponentMetaManager<SolidComponentMetaProject, ts.ParsedCommandLine> {
+    private readonly ts: typeof ts;
+
     /**
      * @param recycleHeapPressureRatio Fraction of the V8 heap limit at which programs are recycled.
      *   Pass `Infinity` in tests to disable; pass `0` to recycle after every extract.
      */
-    private readonly ts: typeof ts;
-
     constructor(typescript: typeof ts, recycleHeapPressureRatio?: number) {
         super(typescript, createSolidProjectFactory(typescript), recycleHeapPressureRatio);
         this.ts = typescript;
