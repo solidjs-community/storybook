@@ -110,11 +110,11 @@ Fix all six to match React's generator. When values are unresolved, report core'
 
 React also resolves stories imported from another file (`createStoryReferenceResolver` + `filePath`, #36746). Its `import` strings name a component by its package name when the component lives in a publishable package (`getImportablePackageName`, #36676). It honors `experimentalCodeExamples: false`. Bring all of this to Solid with React's code as the reference: `code/renderers/react/src/componentManifest/{resolveComponents,generateCodeSnippet}.ts` and `docgen/story-docs-preset.ts`.
 
-- [ ] Complete
-  - [ ] Story docs payload has `import` (component refs + arg-value refs), `summary`, and `warning`.
-  - [ ] Snippets for stories that reference another file's story (or a local alias) resolve through `createStoryReferenceResolver`.
-  - [ ] `import` uses the publishable package name when the component's package is publishable. Otherwise it uses the story's own import.
-  - [ ] `features.experimentalCodeExamples: false` produces no snippets. README describes this correctly.
+- [x] Complete
+  - [x] Story docs payload has `import` (component refs + arg-value refs), `summary`, and `warning`.
+  - [x] Snippets for stories that reference another file's story (or a local alias) resolve through `createStoryReferenceResolver`.
+  - [x] `import` uses the publishable package name when the component's package is publishable. Otherwise it uses the story's own import.
+  - [x] `features.experimentalCodeExamples: false` produces no snippets. README describes this correctly.
 
 **Files**
 
@@ -124,6 +124,8 @@ React also resolves stories imported from another file (`createStoryReferenceRes
 - `src/framework/preset.ts`: pass the flag through, if the provider cannot read it from options
 - `README.md`: code-snippet section
 - `src/spec/codeExamples/*`, `src/spec/componentManifest/*`: tests
+
+**Scope change:** `src/framework/preset.ts` untouched (provider reads `features` from options). With the flag off, descriptions and summary are still served. React itself ignores the flag under `docgenServer`.
 
 **Done when:** a story file with an imported story, a JSDoc summary and a package-published component returns `snippet`, `import`, `summary` and `warning` the same way React's provider would for the equivalent React file.
 **Verify:** `bun run typecheck && bun run test`
@@ -138,17 +140,19 @@ React also resolves stories imported from another file (`createStoryReferenceRes
 
 Separately, `internal_getArgTypesData` joins `process.cwd()` with paths that addon-vitest already passes as absolute. That nulls component-test argTypes. React uses `isAbsolute` and `getProjectRoot()`.
 
-- [ ] Complete
-  - [ ] Docgen payload `description` merges meta and component JSDoc, and adds `summary`, matching React's `buildDocgen.ts`.
-  - [ ] Missing component / missing import returns React's `error` payload shape.
-  - [ ] Component id comes from `getComponentIdFromEntry`.
-  - [ ] `getArgTypesData` accepts absolute paths and resolves relative ones against `getProjectRoot()`.
+- [x] Complete
+  - [x] Docgen payload `description` merges meta and component JSDoc, and adds `summary`, matching React's `buildDocgen.ts`.
+  - [x] Missing component / missing import returns React's `error` payload shape.
+  - [x] Component id comes from `getComponentIdFromEntry`.
+  - [x] `getArgTypesData` accepts absolute paths and resolves relative ones against `getProjectRoot()`.
 
 **Files**
 
 - `src/internal/componentManifest/docgen/docgen-worker.ts`: `docPayload`, error payloads, id
 - `src/internal/componentManifest/manifests.ts`: `getArgTypesData` path resolution
 - `src/spec/componentManifest/manifests.test.ts`, `src/spec/componentManifest/solidComponentMeta/storyResolution.test.ts`: tests
+
+**Scope change:** payload `path` is the story import path (core type + React); `check-docgen` passes absolute component paths because `getProjectRoot()` is the git root.
 
 **Done when:** the docgen worker returns a description with meta JSDoc, `summary`, and an `error` for a meta with no component, and `getArgTypesData('/abs/path/Button.tsx')` returns argTypes.
 **Verify:** `bun run typecheck && bun run test`
@@ -157,17 +161,17 @@ Separately, `internal_getArgTypesData` joins `process.cwd()` with paths that add
 
 **This stage:** SB 11 CSF Next tracks meta arg keys, so users need no `as const`, every meta key must be an arg, and `mocked()` works. React's `ReactPreview`/`ReactMeta` build on core's `MetaInput`, `MetaTypes`, `StoryArgs` and `TypedMetaArgKeys`, with `meta.type<>()` and a required `addons` of `PreviewAddonEntry[]`. Ours still has the 10.x shape and a `@ts-expect-error` on `SolidMeta extends Meta`. Rebase on core's types and keep Solid's `story.Component`, then document the type change.
 
-- [ ] Complete
-  - [ ] `SolidPreview`, `SolidMeta` and `SolidStory` follow React's `preview.tsx` type structure. There is no `@ts-expect-error` on the extends.
-  - [ ] `meta.type<S>()` returns a `SolidMeta`, keeping `.story` overloads and `story.Component`.
-  - [ ] Type tests cover:
+- [x] Complete
+  - [x] `SolidPreview`, `SolidMeta` and `SolidStory` follow React's `preview.tsx` type structure. There is no `@ts-expect-error` on the extends.
+  - [x] `meta.type<S>()` returns a `SolidMeta`, keeping `.story` overloads and `story.Component`.
+  - [x] Type tests cover:
     - meta args without `as const`;
     - a non-arg key rejected;
     - required args left to stories;
     - `meta.type<>()`;
     - custom tags autocompletion;
     - namespace addons.
-  - [ ] Changeset plus a `MIGRATION.md` entry for the user-facing type changes.
+  - [x] Changeset plus a `MIGRATION.md` entry for the user-facing type changes.
 
 **Files**
 
