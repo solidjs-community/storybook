@@ -1,5 +1,6 @@
 import { createSignal } from 'solid-js';
 
+import { Header } from './Header';
 import './page.css';
 
 export const Page = () => {

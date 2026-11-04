@@ -8,7 +8,7 @@ See also: [modules index](./modules.md), [preview and CSF](./preview-and-csf.md)
 
 Orchestration lives in `src/renderer/shared/`. Version files (`solid2.ts`, `solid1.ts`) only supply Solid APIs and the story shell (error boundary / settled hooks).
 
-Each version registers a preview addon with: `renderToCanvas`, default `render`, `applyDecorators`, play `mount`, `beforeAll`, and `parameters.renderer`. Both set `window.STORYBOOK_ENV` to that renderer id when `window` exists.
+Each version registers a preview addon with: `renderToCanvas`, default `render`, `applyDecorators`, `decorators`, play `mount`, `beforeAll`, and `parameters.renderer`. Both set `window.STORYBOOK_ENV` to that renderer id when `window` exists.
 
 ## Mount once
 
@@ -49,6 +49,8 @@ JSX decorators that close over non-reactive values will go stale; they must read
 `definePreview` imports `preview-addon`; the preset aliases that (and the inactive major) onto the active renderer. Preview annotations also pick the entry from `resolveSolidRendererEntry`.
 
 ## Interaction tests and docs defaults
+
+`decorators` (`shared/test-syntax-guard.ts`) holds React's `test-fn` guard: a `.test()` story throws when `FEATURES.experimentalTestSyntax` is off. This preset turns the flag on by default, so only users who set it to `false` hit it.
 
 `beforeAll` wraps `storybook/test` async play steps with a macrotask so Solid can flush. Missing `storybook/test` is a no-op.
 

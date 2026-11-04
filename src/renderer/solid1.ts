@@ -15,6 +15,7 @@ import { createDefaultRender } from './shared/default-render';
 import { createMount } from './shared/mount';
 import { createRenderToCanvas } from './shared/render-to-canvas';
 import { createStoryState } from './shared/story-store';
+import { decorators } from './shared/test-syntax-guard';
 
 import type { ProjectAnnotations, Renderer } from 'storybook/internal/types';
 import type { SolidComponent } from '../preview/public-api';
@@ -81,6 +82,7 @@ const renderToCanvas = createRenderToCanvas({
 const previewAddon = definePreviewAddon({
     applyDecorators,
     beforeAll,
+    decorators,
     mount,
     parameters,
     render,
@@ -90,6 +92,7 @@ const previewAddon = definePreviewAddon({
 export {
     applyDecorators,
     beforeAll,
+    decorators,
     mount,
     parameters,
     previewAddon,

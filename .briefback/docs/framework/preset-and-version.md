@@ -48,6 +48,16 @@ Aliases:
 
 `resolve.dedupe` always includes `solid-js`, `@solidjs/web`, `@solidjs/signals`, `@solidjs/router`, `@solidjs/meta`.
 
+### No `optimizeViteDeps`
+
+React lists `react`, `react-dom/client`, `react-dom/test-utils` and `react/jsx-runtime` in `optimizeViteDeps` (#36682, #36824). Those fix two failures: the browser loading React's CJS `index.js` raw when the scan missed `react`, and a mid-run re-optimize when plugins emit `react/jsx-runtime` imports. Neither applies to Solid, so this preset does not export `optimizeViteDeps`:
+
+- `solid-js`, `@solidjs/web` and `@solidjs/signals` (2.x) and `solid-js` 1.x are `"type": "module"`, and their `browser` → `import` exports are ESM (`dist/solid.js`, `dist/web.js`, `dist/dev.js`). A raw, unoptimized load still links.
+- The user's Solid plugin already pre-bundles the runtime in `serve` (dev and Vitest). `@solidjs/vite-plugin` 3.0.0-next adds `solid-js`, `@solidjs/web` and `solid-js/refresh`. `vite-plugin-solid` 2.11 adds `solid-js`, `solid-js/web`, `solid-js/store`, `solid-js/html` and `solid-js/h`. Both add Solid packages found by `vitefu`. Compiled JSX imports `@solidjs/web` / `solid-js/web`, which is in that list.
+- builder-vite's optimize-deps plugin adds every preview annotation, including our renderer entry, to `optimizeDeps.entries`. The scanner crawls it even though `storybook-solidjs-vite` itself is excluded.
+
+Pending: a cold-cache (`node_modules/.vite` removed) lab Vitest browser run has not been done yet to confirm there is no dependency-optimization reload.
+
 This package never injects the Solid Vite plugin (`@solidjs/vite-plugin` / `vite-plugin-solid`); the user’s Vite config owns that. There is no Vite `__docgenInfo` plugin on this branch.
 
 ## Public `main` types
