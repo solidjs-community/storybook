@@ -1,4 +1,5 @@
 import { join, relative } from 'node:path';
+import { getComponentIdFromEntry } from 'storybook/internal/common';
 import { dedent } from 'ts-dedent';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -202,5 +203,39 @@ describe('experimental_storyDocsProvider', () => {
                 description: 'The default button.',
             },
         });
+    });
+
+    it('matches the component by title when meta has no component, like React', async() => {
+        const payload = await storyDocs({
+            // The component lives in its own publishable package; the story file's app package is private.
+            'ui/package.json': JSON.stringify({ name: '@acme/ui' }),
+            'ui/Button.tsx': BUTTON,
+            'Button.stories.tsx': dedent`
+                import { Button } from './ui/Button';
+
+                export default { title: 'Example/Button' };
+
+                export const Primary = { render: () => <Button label="Go" /> };
+            `,
+        });
+
+        // The package name comes from the matched component's file.
+        expect(payload?.import).toBe(`import { Button } from '@acme/ui';`);
+    });
+
+    it('takes the component id and name from the entry the way React does', async() => {
+        const dir = createSpecTempDir(tempDirs);
+
+        writeSpecFiles(dir, {
+            'package.json': JSON.stringify({ name: 'my-app', private: true }),
+            'Button.stories.tsx': `export default { title: 'Example/Fancy Button' };\nexport const Primary = {};`,
+        });
+
+        const options = { presets: { apply: async() => ({}) } } as unknown as Options;
+        const provider = await experimental_storyDocsProvider(async() => undefined, options);
+        const entry = { ...storyEntry(join(dir, 'Button.stories.tsx'), 'Example/Fancy Button'), id: '--primary' };
+        const payload = await provider({ entry });
+
+        expect(payload).toMatchObject({ id: getComponentIdFromEntry(entry), name: 'FancyButton' });
     });
 });

@@ -9,3 +9,4 @@ Story docs match `@storybook/react`'s payload:
 - Story JSDoc `@summary` is served as `summary`.
 - Args read from other files, such as `...Base.args` of an imported story, resolve in snippets instead of being reported as unresolved.
 - `features.experimentalCodeExamples: false` now turns snippets off; story descriptions are still served.
+- Without `meta.component`, the component is matched by the story title and the payload `name` is the last title segment, like React. The component id comes from Storybook's `getComponentIdFromEntry`.

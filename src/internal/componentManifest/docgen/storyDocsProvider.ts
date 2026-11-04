@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
+import { getComponentIdFromEntry, getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
 import { storyNameFromExport } from 'storybook/internal/csf';
 import {
     buildImportStatements,
@@ -12,7 +12,7 @@ import {
 } from 'storybook/internal/csf-tools';
 
 import { getCodeSnippet } from '../../codeExamples/generateCodeSnippet';
-import { findMatchingComponent, getComponents, getImportablePackageName } from '../getComponents';
+import { findMatchingComponent, getComponents, getFallbackImport, getImportablePackageName } from '../getComponents';
 import { extractDeclaredSubcomponents } from '../subcomponents';
 
 import type { CsfFile, ImportRef } from 'storybook/internal/csf-tools';
@@ -24,19 +24,9 @@ const openStoryReferences = createStoryReferenceResolver();
 function readEntry(entry: StoryDocsProviderInput['entry']) {
     const importPath = getStoryImportPathFromEntry(entry);
     const title = entry.title || 'Component';
-    const id = entry.id.split('--')[0] || entry.id || title.replace(/\s+/g, '');
+    const id = getComponentIdFromEntry(entry);
 
     return { importPath, title, id };
-}
-
-function getFallbackImport(packageName: string | undefined, componentName: string | undefined) {
-    const exportName = componentName?.split('.').at(-1);
-
-    return packageName && exportName
-        ? buildImportStatements({
-            refs: [{ importId: packageName, importName: exportName, localImportName: exportName }],
-        }).join('\n')
-        : '';
 }
 
 /**
@@ -83,7 +73,8 @@ async function buildStoryDocs(
     const storyFile = readFileSync(storyPath, 'utf8');
     const csf = loadCsf(storyFile, { makeTitle: () => title, fileName: storyPath }).parse();
     const componentName = csf._meta?.component;
-    const base = { id, name: componentName ?? title, path: importPath };
+    // Like React: without `meta.component` the name is the last title segment, spaces removed.
+    const base = { id, name: componentName ?? title.split('/').at(-1)!.replace(/\s+/g, ''), path: importPath };
 
     if (!codeExamples) {
         return { ...base, stories: readStories(csf) };

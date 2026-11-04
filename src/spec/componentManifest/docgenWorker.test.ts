@@ -173,4 +173,62 @@ describe('docgen worker payload', () => {
             },
         });
     });
+
+    it('matches the component by title when meta has no component, like React', async() => {
+        const { payload } = await runDocgen({
+            'Button.tsx': buttonComponent,
+            'Button.stories.tsx': `
+                import { Button } from './Button';
+
+                export default { title: 'Example/Button' };
+
+                export const Primary = { render: () => <Button label="Click" /> };
+            `,
+        });
+
+        expect(payload).toMatchObject({
+            id: 'example-button',
+            name: 'Button',
+            description: 'A clickable button.',
+        });
+        expect(payload?.error).toBeUndefined();
+    });
+
+    describe('imports, like React', () => {
+        const iconComponent = `
+            /** An icon. */
+            export function Icon(props: { name: string }) {
+                return null;
+            }
+        `;
+        const files = (pkg: Record<string, unknown>) => ({
+            'package.json': JSON.stringify(pkg),
+            'Button.tsx': buttonComponent,
+            'Icon.tsx': iconComponent,
+            'Button.stories.tsx': `
+                import { Button } from './Button';
+                import { Icon } from './Icon';
+
+                export default { title: 'Example/Button', component: Button, subcomponents: { Icon } };
+
+                export const Primary = { args: { label: 'Click' } };
+            `,
+        });
+
+        it('imports subcomponents by the package name, and leaves the component import to story docs', async() => {
+            const { payload } = await runDocgen(files({ name: '@acme/ui' }));
+
+            expect(payload).not.toHaveProperty('import');
+            expect(payload?.subcomponents?.['Icon']).toMatchObject({
+                name: 'Icon',
+                import: `import { Icon } from '@acme/ui';`,
+            });
+        });
+
+        it('keeps the story import of a subcomponent for a private app package', async() => {
+            const { payload } = await runDocgen(files({ name: 'my-app', private: true }));
+
+            expect(payload?.subcomponents?.['Icon']?.['import']).toBe(`import { Icon } from './Icon';`);
+        });
+    });
 });

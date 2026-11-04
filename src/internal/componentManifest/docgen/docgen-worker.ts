@@ -7,6 +7,7 @@ import {
 	getStoryImportPathFromEntry,
 } from 'storybook/internal/common';
 import {
+	buildImportStatements,
 	extractComponentDescription,
 	extractDescription,
 	loadCsf,
@@ -14,7 +15,13 @@ import {
 } from 'storybook/internal/csf-tools';
 
 import { collectCsfArgNames } from '../collectCsfArgNames';
-import { findExactComponentMatch, findMatchingComponent, getComponents } from '../getComponents';
+import {
+	findExactComponentMatch,
+	findMatchingComponent,
+	getComponents,
+	getFallbackImport,
+	getImportablePackageName,
+} from '../getComponents';
 import { SolidComponentMetaManager } from '../solidComponentMeta/SolidComponentMetaManager';
 import { extractDeclaredSubcomponents } from '../subcomponents';
 import { solidComponentDocToArgTypesData } from '../toDocgenInfo';
@@ -36,17 +43,22 @@ function readEntry(entry: DocgenProviderInput['entry']) {
 	return { importPath, title, id };
 }
 
-function componentImport(component: ComponentRef | undefined) {
-	return component?.importId
-		? `import { ${ component.importName } } from "${ component.importId }";`
-		: '';
+/**
+ * A subcomponent's import, as React builds it: by the package name of the documented component
+ * when that package is importable, else as the story imports it.
+ */
+function subcomponentImport(component: ComponentRef, packageName: string | undefined) {
+	return buildImportStatements({ refs: [component], ...(packageName ? { packageName } : {}) })
+		.join('\n')
+		.trim() || getFallbackImport(packageName, component.componentName);
 }
 
 function docPayload(
 	doc: SolidComponentDoc | undefined,
 	component: ComponentRef | undefined,
-	metaJsDoc?: string
+	options: { metaJsDoc?: string | undefined; sourceImport?: string } = {}
 ): DocgenSubcomponent | undefined {
+	const { metaJsDoc, sourceImport } = options;
 	const name = component?.componentName ?? doc?.exportName;
 	const path = component?.path ?? doc?.filePath;
 
@@ -55,7 +67,6 @@ function docPayload(
 	}
 
 	const argTypes = doc ? solidComponentDocToArgTypesData(doc) : undefined;
-	const sourceImport = componentImport(component);
 	// Same precedence as React: the meta docblock wins over the component's own JSDoc.
 	const { description, summary, jsDocTags } = extractComponentDescription(
 		metaJsDoc,
@@ -158,12 +169,16 @@ export async function extractDocgen(
 
 	const doc = component?.reactComponentMeta;
 	const metaJsDoc = extractDescription(csf._metaStatement, csf.editor) || undefined;
-	const ours = doc ? docPayload(doc, component, metaJsDoc) : undefined;
+	// Like React, the component itself carries no `import`: story docs serve the file's import block.
+	const ours = doc ? docPayload(doc, component, { metaJsDoc }) : undefined;
 
 	if (!ours) {
 		return missingComponentPayload({ id, title, storyFilePath: importPath, storyFile, csf });
 	}
 
+	const packageName = declaredSubcomponents.length > 0
+		? getImportablePackageName(component?.path, storyPath)
+		: undefined;
 	const subcomponents = Object.fromEntries(
 		declaredSubcomponents.flatMap((declared) => {
 			const resolved = findExactComponentMatch(allComponents, declared.componentName);
@@ -185,7 +200,9 @@ export async function extractDocgen(
 				resolved.reactComponentMeta = extracted;
 			}
 
-			const payload = docPayload(resolved.reactComponentMeta, resolved);
+			const payload = docPayload(resolved.reactComponentMeta, resolved, {
+				sourceImport: subcomponentImport(resolved, packageName),
+			});
 
 			return payload ? [[declared.name, payload]] : [];
 		})

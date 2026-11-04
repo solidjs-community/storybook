@@ -1,6 +1,6 @@
 import { accessSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { collectImportBindings, walk } from 'storybook/internal/csf-tools';
+import { buildImportStatements, collectImportBindings, walk } from 'storybook/internal/csf-tools';
 
 import type { ComponentRef } from './types';
 import type { CsfFile, ESTree, ESTreeNode, ImportBinding } from 'storybook/internal/csf-tools';
@@ -136,6 +136,17 @@ export function getImportablePackageName(componentPath: string | undefined, stor
     catch {
         return undefined;
     }
+}
+
+/** `import { X } from '<packageName>'` for a component whose refs produced no import statement. */
+export function getFallbackImport(packageName: string | undefined, componentName: string | undefined) {
+    const exportName = componentName?.split('.').at(-1);
+
+    return packageName && exportName
+        ? buildImportStatements({
+            refs: [{ importId: packageName, importName: exportName, localImportName: exportName }],
+        }).join('\n')
+        : '';
 }
 
 /**
@@ -321,20 +332,16 @@ export async function getComponents({
     );
 }
 
+/**
+ * The component a story file documents: the one `meta.component` names, else, like React, the one
+ * the title names, preferring the outermost in the story JSX.
+ */
 export function findMatchingComponent(
     components: ComponentRef[],
     componentName: string | undefined,
     title: string
 ) {
-    if (!componentName) {
-        return undefined;
-    }
-
-    const exact = components.find(
-        c => c.componentName === componentName
-            || c.localImportName === componentName
-            || c.importName === componentName
-    );
+    const exact = componentName ? findExactComponentMatch(components, componentName) : undefined;
 
     if (exact) {
         return exact;
