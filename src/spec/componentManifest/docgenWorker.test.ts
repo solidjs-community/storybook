@@ -231,4 +231,21 @@ describe('docgen worker payload', () => {
             expect(payload?.subcomponents?.['Icon']?.['import']).toBe(`import { Icon } from './Icon';`);
         });
     });
+
+    it('names a subcomponent by its declared key, like React', async() => {
+        const { payload } = await runDocgen({
+            'Button.tsx': buttonComponent,
+            'Icon.tsx': `export function Icon(props: { name: string }) { return null; }`,
+            'Button.stories.tsx': `
+                import { Button } from './Button';
+                import { Icon } from './Icon';
+
+                export default { title: 'Example/Button', component: Button, subcomponents: { Glyph: Icon } };
+
+                export const Primary = { args: { label: 'Click' } };
+            `,
+        });
+
+        expect(payload?.subcomponents?.['Glyph']).toMatchObject({ name: 'Glyph' });
+    });
 });

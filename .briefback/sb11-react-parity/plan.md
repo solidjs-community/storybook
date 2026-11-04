@@ -217,10 +217,10 @@ Separately, `internal_getArgTypesData` joins `process.cwd()` with paths that add
 
 Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` in `storybook/internal/common`. Our `SolidComponentMetaManager`/`SolidComponentMetaProject` and `subcomponents.ts` are standalone copies. Move onto the core base classes. Keep the Solid-specific parts: Solid prop resolution, DOM props, serialization, the bundled `@typescript/typescript6`. Delete the duplicated infrastructure. Behavior must not change.
 
-- [ ] Complete
-  - [ ] `SolidComponentMetaManager` / `SolidComponentMetaProject` extend core's `ComponentMetaManager` / `ProgramBackedProject`. The duplicated watcher, heap-recycle and tsconfig code is removed where core covers it.
-  - [ ] Declared subcomponents come from core's `extractDeclaredSubcomponents`.
-  - [ ] Every existing docgen test, including `heapRecycle` and `tsconfigProjectReferences`, passes unchanged.
+- [x] Complete
+  - [x] `SolidComponentMetaManager` / `SolidComponentMetaProject` extend core's `ComponentMetaManager` / `ProgramBackedProject`. The duplicated watcher, heap-recycle and tsconfig code is removed where core covers it.
+  - [x] Declared subcomponents come from core's `extractDeclaredSubcomponents`.
+  - [x] Every existing docgen test, including `heapRecycle` and `tsconfigProjectReferences`, passes unchanged.
 
 **Files**
 
@@ -230,6 +230,8 @@ Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` i
 - `src/internal/componentManifest/subcomponents.ts`
 - `src/internal/componentManifest/docgen/docgen-worker.ts`: wiring
 - `src/spec/componentManifest/**`
+
+**Scope change:** our tsconfig lookup is kept (core falls back to an inferred project and drops `paths`/JSX options). It reaches core's private `getOrCreateConfiguredProject`, pinned by a spec. `subcomponents.ts` is deleted in favor of core's `extractDeclaredSubcomponents`. Heap-pressure warning text is core's.
 
 **Done when:** the solidComponentMeta and subcomponent specs pass unchanged, with the shared infrastructure coming from core.
 **Verify:** `bun run typecheck && bun run test && bun run check-docgen`
@@ -244,10 +246,10 @@ Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` i
 - making the lab build fail loudly when Storybook prints "Failed to load preset", since it exits 0.
 
 - [ ] Complete
-  - [ ] `template/cli/{js,ts}` Button/Header/Page components carry prop JSDoc (`@param` in JS, doc comments in TS) like React's templates. Stories unchanged (CSF Next).
-  - [ ] A `test-fn` story with `experimentalTestSyntax` off throws React's error.
+  - [x] `template/cli/{js,ts}` Button/Header/Page components carry prop JSDoc (`@param` in JS, doc comments in TS) like React's templates. Stories unchanged (CSF Next).
+  - [x] A `test-fn` story with `experimentalTestSyntax` off throws React's error.
   - [ ] `optimizeViteDeps` added for Solid runtime entries if a cold Vitest browser run reloads. Otherwise the reason is recorded in `.briefback/docs/framework/preset-and-version.md`.
-  - [ ] Lab `build-storybook` fails on "Failed to load preset".
+  - [x] Lab `build-storybook` fails on "Failed to load preset".
 
 **Files**
 
@@ -256,6 +258,8 @@ Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` i
 - `src/framework/preset.ts` or `src/renderer/index.ts`: `optimizeViteDeps`
 - `examples/lab/package.json`, `examples/lab/scripts/*`: preset-load check
 - `src/spec/renderer/*.test.ts`: guard test
+
+**Scope change:** the preset-load wrapper lives in root `scripts/build-storybook.ts` and is shared by `examples/lab` and `examples/solid1`. The guard uses `createDecorator`. `optimizeViteDeps` is not added (Solid ships ESM, Solid Vite plugins prebundle the runtime); the cold-cache lab Vitest run is pending for stage 9.
 
 **Done when:** the template components document every prop, the guard has a test, the optimizeViteDeps decision is recorded, and a broken preset fails the lab build.
 **Verify:** `bun run typecheck && bun run test && bun run lab:build-check` (or the script added for it)

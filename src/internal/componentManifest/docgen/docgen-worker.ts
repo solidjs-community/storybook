@@ -56,10 +56,10 @@ function subcomponentImport(component: ComponentRef, packageName: string | undef
 function docPayload(
 	doc: SolidComponentDoc | undefined,
 	component: ComponentRef | undefined,
-	options: { metaJsDoc?: string | undefined; sourceImport?: string } = {}
+	options: { metaJsDoc?: string | undefined; name?: string; sourceImport?: string } = {}
 ): DocgenSubcomponent | undefined {
 	const { metaJsDoc, sourceImport } = options;
-	const name = component?.componentName ?? doc?.exportName;
+	const name = options.name ?? component?.componentName ?? doc?.exportName;
 	const path = component?.path ?? doc?.filePath;
 
 	if (!name || !path) {
@@ -200,7 +200,9 @@ export async function extractDocgen(
 				resolved.reactComponentMeta = extracted;
 			}
 
+			// Named by the declared key, like React: `{ Header: Card.Header }` documents `Header`.
 			const payload = docPayload(resolved.reactComponentMeta, resolved, {
+				name: declared.name,
 				sourceImport: subcomponentImport(resolved, packageName),
 			});
 
