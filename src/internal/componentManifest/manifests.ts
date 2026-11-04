@@ -1,5 +1,6 @@
 import ts from '@typescript/typescript6';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
+import { getProjectRoot } from 'storybook/internal/common';
 
 import { MANIFEST_DOCGEN_ENGINE, SolidComponentMetaManager } from './solidComponentMeta/SolidComponentMetaManager';
 
@@ -52,7 +53,10 @@ export async function getArgTypesData(
 
     try {
         const manager = new SolidComponentMetaManager(ts);
-        const resolvedPath = join(process.cwd(), componentFilePath);
+        // addon-vitest passes Vite's absolute module id; other callers pass project-relative paths.
+        const resolvedPath = isAbsolute(componentFilePath)
+            ? componentFilePath
+            : join(getProjectRoot(), componentFilePath);
         const doc = manager.extractFromComponentFile(
             resolvedPath,
             componentExportName ?? 'default'

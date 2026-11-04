@@ -1,8 +1,17 @@
 import ts from '@typescript/typescript6';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createLazyDocgenMiddleware, getStoryImportPathFromEntry } from 'storybook/internal/common';
-import { loadCsf } from 'storybook/internal/csf-tools';
+import {
+	createLazyDocgenMiddleware,
+	getComponentIdFromEntry,
+	getStoryImportPathFromEntry,
+} from 'storybook/internal/common';
+import {
+	extractComponentDescription,
+	extractDescription,
+	loadCsf,
+	storyShapeError,
+} from 'storybook/internal/csf-tools';
 
 import { collectCsfArgNames } from '../collectCsfArgNames';
 import { findExactComponentMatch, findMatchingComponent, getComponents } from '../getComponents';
@@ -10,13 +19,19 @@ import { SolidComponentMetaManager } from '../solidComponentMeta/SolidComponentM
 import { extractDeclaredSubcomponents } from '../subcomponents';
 import { solidComponentDocToArgTypesData } from '../toDocgenInfo';
 
-import type { DocgenPayload, DocgenProviderInput, DocgenSubcomponent } from 'storybook/internal/types';
+import type { CsfFile } from 'storybook/internal/csf-tools';
+import type {
+	DocgenError,
+	DocgenPayload,
+	DocgenProviderInput,
+	DocgenSubcomponent,
+} from 'storybook/internal/types';
 import type { ComponentRef, SolidComponentDoc } from '../types';
 
 function readEntry(entry: DocgenProviderInput['entry']) {
 	const importPath = getStoryImportPathFromEntry(entry);
 	const title = entry.title || 'Component';
-	const id = entry.id.split('--')[0] || entry.id || title.replace(/\s+/g, '');
+	const id = getComponentIdFromEntry(entry);
 
 	return { importPath, title, id };
 }
@@ -29,7 +44,8 @@ function componentImport(component: ComponentRef | undefined) {
 
 function docPayload(
 	doc: SolidComponentDoc | undefined,
-	component: ComponentRef | undefined
+	component: ComponentRef | undefined,
+	metaJsDoc?: string
 ): DocgenSubcomponent | undefined {
 	const name = component?.componentName ?? doc?.exportName;
 	const path = component?.path ?? doc?.filePath;
@@ -40,19 +56,73 @@ function docPayload(
 
 	const argTypes = doc ? solidComponentDocToArgTypesData(doc) : undefined;
 	const sourceImport = componentImport(component);
+	// Same precedence as React: the meta docblock wins over the component's own JSDoc.
+	const { description, summary, jsDocTags } = extractComponentDescription(
+		metaJsDoc,
+		doc?.description,
+		component?.componentJsDocTags ?? doc?.jsDocTags
+	);
 
 	return {
 		name,
 		path,
-		jsDocTags: component?.componentJsDocTags ?? {},
+		jsDocTags,
 		...(sourceImport ? { import: sourceImport } : {}),
-		...(doc?.description ? { description: doc.description } : {}),
+		...(description ? { description } : {}),
+		...(summary ? { summary } : {}),
 		...(argTypes ? { argTypes } : {}),
 		...(doc ? { reactComponentMeta: doc } : {}),
 	};
 }
 
-async function extractDocgen(
+/** React's `error` payload for a story file whose component cannot be documented. */
+function missingComponentPayload(options: {
+	id: string;
+	title: string;
+	storyFilePath: string;
+	storyFile: string;
+	csf: CsfFile;
+}): DocgenPayload {
+	const { id, title, storyFilePath, storyFile, csf } = options;
+	const componentName = csf._meta?.component;
+	const error: DocgenError = componentName
+		? {
+			name: 'No component import found',
+			message: `No component file found for the "${ componentName }" component.`,
+		}
+		: {
+			name: 'No component found',
+			message: 'We could not detect the component from your story file. Specify meta.component.',
+		};
+	const message = csf._metaStatement
+		? storyShapeError(error.message, csf._metaStatement, csf.editor).message
+		: error.message;
+
+	return {
+		id,
+		name: componentName ?? title.split('/').at(-1)!.replace(/\s+/g, ''),
+		path: storyFilePath,
+		jsDocTags: {},
+		error: {
+			name: error.name,
+			message: `${ message }\n\n${ storyFilePath }:\n${ storyFile }`,
+		},
+	};
+}
+
+function missingSubcomponentPayload(declaredName: string, storyFilePath: string): DocgenSubcomponent {
+	return {
+		name: declaredName,
+		path: storyFilePath,
+		jsDocTags: {},
+		error: {
+			name: 'No component import found',
+			message: `No component file found for the "${ declaredName }" subcomponent.`,
+		},
+	};
+}
+
+export async function extractDocgen(
 	manager: SolidComponentMetaManager,
 	input: DocgenProviderInput
 ): Promise<DocgenPayload | undefined> {
@@ -64,7 +134,7 @@ async function extractDocgen(
 
 	const storyPath = join(process.cwd(), importPath);
 	const storyFile = readFileSync(storyPath, 'utf8');
-	const csf = loadCsf(storyFile, { makeTitle: () => title }).parse();
+	const csf = loadCsf(storyFile, { makeTitle: () => title, fileName: storyPath }).parse();
 	const declaredSubcomponents = extractDeclaredSubcomponents(csf);
 	const allComponents = await getComponents({
 		csf,
@@ -86,11 +156,23 @@ async function extractDocgen(
 		}
 	}
 
+	const doc = component?.reactComponentMeta;
+	const metaJsDoc = extractDescription(csf._metaStatement, csf.editor) || undefined;
+	const ours = doc ? docPayload(doc, component, metaJsDoc) : undefined;
+
+	if (!ours) {
+		return missingComponentPayload({ id, title, storyFilePath: importPath, storyFile, csf });
+	}
+
 	const subcomponents = Object.fromEntries(
 		declaredSubcomponents.flatMap((declared) => {
 			const resolved = findExactComponentMatch(allComponents, declared.componentName);
 
-			if (!resolved?.path || !resolved.importName) {
+			if (!resolved) {
+				return [[declared.name, missingSubcomponentPayload(declared.name, importPath)]];
+			}
+
+			if (!resolved.path || !resolved.importName) {
 				return [];
 			}
 
@@ -108,12 +190,6 @@ async function extractDocgen(
 			return payload ? [[declared.name, payload]] : [];
 		})
 	);
-
-	const ours = docPayload(component?.reactComponentMeta, component);
-
-	if (!ours) {
-		return undefined;
-	}
 
 	return {
 		id,
