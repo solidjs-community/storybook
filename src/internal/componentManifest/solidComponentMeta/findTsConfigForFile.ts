@@ -39,7 +39,7 @@ function commandLineIncludesFile(commandLine: ts.ParsedCommandLine, filePath: st
 	return commandLine.fileNames.some(name => normalizePath(name) === normalized);
 }
 
-function parseTsConfig(typescript: typeof ts, tsconfigPath: string) {
+export function parseTsConfig(typescript: typeof ts, tsconfigPath: string) {
 	const config = typescript.readConfigFile(tsconfigPath, typescript.sys.readFile);
 
 	if (config.error) {

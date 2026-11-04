@@ -12,7 +12,7 @@ afterEach(() => {
     cleanupSpecTempDirs(tempDirs);
 });
 
-describe('findTsConfigForFile — project references', () => {
+describe('findTsConfigForFile — tsconfig lookup', () => {
     it('uses the referenced package tsconfig, not the solution-style root', () => {
         const dir = createSpecTempDir(tempDirs);
 
@@ -59,5 +59,69 @@ describe('findTsConfigForFile — project references', () => {
             required: true,
             type: { name: 'string' },
         });
+    });
+
+    it('uses an ancestor tsconfig that includes the file when the closest one does not', () => {
+        const dir = createSpecTempDir(tempDirs);
+
+        writeSpecFiles(dir, {
+            'tsconfig.json': JSON.stringify({
+                compilerOptions: { strict: true, jsx: 'preserve', skipLibCheck: true },
+                include: ['packages/*/stories'],
+            }),
+            'packages/ui/tsconfig.json': JSON.stringify({
+                compilerOptions: { strict: true, jsx: 'preserve', skipLibCheck: true },
+                include: ['src'],
+            }),
+            'packages/ui/stories/Button.tsx': `
+                export function Button(props: { label: string }) {
+                    return null;
+                }
+            `,
+        });
+
+        const manager = new SolidComponentMetaManager(ts);
+        const project = manager.getProjectForFile(join(dir, 'packages/ui/stories/Button.tsx'));
+
+        manager.dispose();
+
+        expect(project.configFileName).toBe(join(dir, 'tsconfig.json').replace(/\\/g, '/'));
+    });
+
+    it('falls back to the closest tsconfig, not an inferred project, when none includes the file', () => {
+        const dir = createSpecTempDir(tempDirs);
+
+        writeSpecFiles(dir, {
+            'tsconfig.json': JSON.stringify({
+                compilerOptions: {
+                    strict: true,
+                    jsx: 'preserve',
+                    skipLibCheck: true,
+                    module: 'ESNext',
+                    moduleResolution: 'bundler',
+                    baseUrl: '.',
+                    paths: { '@ui/*': ['./src/*'] },
+                },
+                include: ['src'],
+            }),
+            'src/Label.ts': 'export type Label = { label: string };',
+            'stories/Button.tsx': `
+                import type { Label } from '@ui/Label';
+
+                export function Button(props: Label) {
+                    return null;
+                }
+            `,
+        });
+
+        const buttonPath = join(dir, 'stories/Button.tsx');
+        const manager = new SolidComponentMetaManager(ts);
+        const project = manager.getProjectForFile(buttonPath);
+        const doc = manager.extractFromComponentFile(buttonPath, 'Button');
+
+        manager.dispose();
+
+        expect(project.configFileName).toBe(join(dir, 'tsconfig.json').replace(/\\/g, '/'));
+        expect(doc?.props['label']).toMatchObject({ name: 'label', required: true, type: { name: 'string' } });
     });
 });
