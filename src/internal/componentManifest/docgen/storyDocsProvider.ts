@@ -15,7 +15,7 @@ import { getCodeSnippet } from '../../codeExamples/generateCodeSnippet';
 import { findMatchingComponent, getComponents, getImportablePackageName } from '../getComponents';
 import { extractDeclaredSubcomponents } from '../subcomponents';
 
-import type { ImportRef } from 'storybook/internal/csf-tools';
+import type { CsfFile, ImportRef } from 'storybook/internal/csf-tools';
 import type { StoryDoc, StoryDocsPayload, StoryDocsProviderInput, StoryDocsProviderPreset } from 'storybook/internal/types';
 
 // One instance per process, so the module-resolution cache is shared; each build opens its own.
@@ -40,6 +40,35 @@ function getFallbackImport(packageName: string | undefined, componentName: strin
 }
 
 /**
+ * Each story's description and summary, plus the fields `snippetOf` adds. A story whose docs throw
+ * carries the error instead.
+ */
+function readStories(csf: CsfFile, snippetOf?: (storyExport: string) => Partial<StoryDoc>) {
+    return Object.fromEntries(
+        Object.entries(csf._stories).map(([storyExport, story]): [string, StoryDoc] => {
+            const name = story.name ?? storyNameFromExport(storyExport);
+
+            try {
+                const { description, summary } = extractStoryJSDocInfo(csf._storyStatements[storyExport], csf.editor);
+
+                return [story.id, {
+                    id: story.id,
+                    name,
+                    ...(description ? { description } : {}),
+                    ...(summary ? { summary } : {}),
+                    ...snippetOf?.(storyExport),
+                }];
+            }
+            catch(error) {
+                const err = error instanceof Error ? error : new Error(String(error));
+
+                return [story.id, { id: story.id, name, error: { name: err.name, message: err.message } }];
+            }
+        })
+    );
+}
+
+/**
  * Story docs for one CSF file: each story's snippet, description and summary, and the import block
  * core prepends to every snippet. Without `codeExamples` the stories carry no snippets and the
  * payload no imports.
@@ -54,6 +83,12 @@ async function buildStoryDocs(
     const storyFile = readFileSync(storyPath, 'utf8');
     const csf = loadCsf(storyFile, { makeTitle: () => title, fileName: storyPath }).parse();
     const componentName = csf._meta?.component;
+    const base = { id, name: componentName ?? title, path: importPath };
+
+    if (!codeExamples) {
+        return { ...base, stories: readStories(csf) };
+    }
+
     const allComponents = await getComponents({
         csf,
         storyFilePath: storyPath,
@@ -62,53 +97,23 @@ async function buildStoryDocs(
     const component = findMatchingComponent(allComponents, componentName, title);
     const resolver = createStoryArgsResolver(csf, { filePath: storyPath, ...openStoryReferences() });
     const argImports: ImportRef[] = [];
-    const stories = Object.fromEntries(
-        Object.entries(csf._stories).map(([storyExport, story]): [string, StoryDoc] => {
-            const name = story.name ?? storyNameFromExport(storyExport);
+    const stories = readStories(csf, storyExport => {
+        const snippet = getCodeSnippet(csf, storyExport, component?.componentName ?? componentName, resolver);
+        const warning = unresolvedWarning(snippet.unresolved);
 
-            try {
-                const { description, summary } = extractStoryJSDocInfo(csf._storyStatements[storyExport], csf.editor);
-                const doc: StoryDoc = {
-                    id: story.id,
-                    name,
-                    ...(description ? { description } : {}),
-                    ...(summary ? { summary } : {}),
-                };
+        argImports.push(...snippet.imports);
 
-                if (!codeExamples) {
-                    return [story.id, doc];
-                }
-
-                const snippet = getCodeSnippet(csf, storyExport, component?.componentName ?? componentName, resolver);
-                const warning = unresolvedWarning(snippet.unresolved);
-
-                argImports.push(...snippet.imports);
-
-                return [story.id, { ...doc, snippet: snippet.code, ...(warning ? { warning } : {}) }];
-            }
-            catch(error) {
-                const err = error instanceof Error ? error : new Error(String(error));
-
-                return [story.id, { id: story.id, name, error: { name: err.name, message: err.message } }];
-            }
-        })
-    );
+        return { snippet: snippet.code, ...(warning ? { warning } : {}) };
+    });
     const packageName = getImportablePackageName(component?.path, storyPath);
     // An arg value that kept the name another module gave it only compiles once the import block
     // names that module too. `packageName` rewriting is for the component, so those refs opt out of it.
     const argRefs = argImports.map(ref => ({ ...ref, isPackage: true }));
-    const imports = codeExamples
-        ? buildImportStatements({ refs: [...allComponents, ...argRefs], ...(packageName ? { packageName } : {}) }).join('\n').trim()
-            || getFallbackImport(packageName, componentName)
-        : '';
+    const imports = buildImportStatements({ refs: [...allComponents, ...argRefs], ...(packageName ? { packageName } : {}) })
+        .join('\n')
+        .trim() || getFallbackImport(packageName, componentName);
 
-    return {
-        id,
-        name: componentName ?? title,
-        path: importPath,
-        ...(imports ? { import: imports } : {}),
-        stories,
-    };
+    return { ...base, ...(imports ? { import: imports } : {}), stories };
 }
 
 export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(next, options) => {
