@@ -1,7 +1,6 @@
 import ts from '@typescript/typescript6';
 import { join, relative } from 'node:path';
-import { getComponentIdFromEntry } from 'storybook/internal/common';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { extractDocgen } from '../../internal/componentManifest/docgen/docgen-worker';
 import { SolidComponentMetaManager } from '../../internal/componentManifest/solidComponentMeta/SolidComponentMetaManager';
@@ -9,17 +8,10 @@ import { cleanupSpecTempDirs, createSpecTempDir, writeSpecFiles } from '../helpe
 
 import type { DocgenProviderInput } from 'storybook/internal/types';
 
-vi.mock('storybook/internal/common', async(importOriginal) => {
-    const actual = await importOriginal<typeof import('storybook/internal/common')>();
-
-    return { ...actual, getComponentIdFromEntry: vi.fn(actual.getComponentIdFromEntry) };
-});
-
 const tempDirs: string[] = [];
 
 afterEach(() => {
     cleanupSpecTempDirs(tempDirs);
-    vi.mocked(getComponentIdFromEntry).mockClear();
 });
 
 const tsconfig = JSON.stringify({
@@ -68,7 +60,7 @@ async function runDocgen(files: Record<string, string>) {
     const manager = new SolidComponentMetaManager(ts);
 
     try {
-        return { entry, importPath, payload: await extractDocgen(manager, { entry }) };
+        return { importPath, payload: await extractDocgen(manager, { entry }) };
     }
     finally {
         manager.dispose();
@@ -77,7 +69,7 @@ async function runDocgen(files: Record<string, string>) {
 
 describe('docgen worker payload', () => {
     it('takes the description from the component JSDoc and adds its summary', async() => {
-        const { payload } = await runDocgen({
+        const { importPath, payload } = await runDocgen({
             'Button.tsx': buttonComponent,
             'Button.stories.tsx': `
                 import { Button } from './Button';
@@ -89,7 +81,9 @@ describe('docgen worker payload', () => {
         });
 
         expect(payload).toMatchObject({
+            id: 'example-button',
             name: 'Button',
+            path: importPath,
             description: 'A clickable button.',
             summary: 'The primary action button.',
         });
@@ -178,21 +172,5 @@ describe('docgen worker payload', () => {
                 message: 'No component file found for the "Icon" subcomponent.',
             },
         });
-    });
-
-    it('takes the component id from core getComponentIdFromEntry', async() => {
-        const { entry, payload } = await runDocgen({
-            'Button.tsx': buttonComponent,
-            'Button.stories.tsx': `
-                import { Button } from './Button';
-
-                export default { title: 'Example/Button', component: Button };
-
-                export const Primary = { args: { label: 'Click' } };
-            `,
-        });
-
-        expect(getComponentIdFromEntry).toHaveBeenCalledWith(entry);
-        expect(payload?.id).toBe('example-button');
     });
 });

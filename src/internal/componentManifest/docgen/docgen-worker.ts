@@ -194,6 +194,8 @@ export async function extractDocgen(
 	return {
 		id,
 		...ours,
+		// Core's contract: the payload `path` is the story file, not the component file.
+		path: importPath,
 		...(Object.keys(subcomponents).length > 0 ? { subcomponents } : {}),
 	};
 }

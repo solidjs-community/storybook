@@ -241,7 +241,8 @@ async function checkDocgenProvider(scenario: Scenario) {
 
 async function checkArgTypesScenario(scenario: Scenario) {
     const argTypes = await internal_getArgTypesData(null, {
-        componentFilePath: scenario.componentFilePath,
+        // addon-vitest passes absolute paths; relative ones resolve against the repo root, not the lab.
+        componentFilePath: path.join(root, scenario.componentFilePath),
         componentExportName: scenario.componentExportName,
     });
 
@@ -296,7 +297,7 @@ function checkBuiltSnapshots() {
         const componentId = scenario.storyId.split('--')[0] ?? '';
         const entry = payloads.find(payload =>
             payload.id === componentId
-            || payload.path?.includes(scenario.componentFilePath)
+            || payload.path?.includes(scenario.storyImportPath)
         );
 
         if (!entry) {
