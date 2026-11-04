@@ -4,12 +4,24 @@ How the Node preset wires Storybook’s Vite builder, default features, and Soli
 
 See also: [modules index](./modules.md), [package surface](./package-surface.md), [docgen](./docgen.md).
 
+## Storybook version
+
+Peer: `storybook: ^11.0.0-beta.0 || ^11.0.0`. `@storybook/builder-vite` is a dependency at `^11.0.0-beta.0`.
+
+`11.0.0-beta.0` is the floor because it is the first release with storybookjs/storybook#36613: `storybook/internal/babel` is gone and `CsfFile` exposes ESTree, with the `csf-tools` helpers our snippet, manifest and docgen readers import (`createStoryArgsResolver`, `createStoryReferenceResolver`, `unresolvedWarning`, …). On earlier 11 prereleases those named imports do not exist, so the preset fails to load.
+
+### Preset-load build check
+
+Storybook logs "Failed to load preset" and still exits 0, so a broken preset ships a static build without our renderer. `scripts/build-storybook.ts` runs `storybook build`, forwards its output, and exits 1 when that message appears. `examples/lab` and `examples/solid1` use it as `build-storybook`.
+
 ## Builder and renderer
 
 `src/framework/preset.ts` sets:
 
 - `core.builder` → `@storybook/builder-vite`
 - `core.renderer` → `storybook-solidjs-vite/renderer`
+
+The renderer preset (`src/renderer/index.ts`) exports `previewAnnotations` (the active renderer entry plus `renderer/docs`), `experimental_manifests`, `experimental_docgenProvider`, `experimental_storyDocsProvider` and `internal_getArgTypesData`. See [docgen](./docgen.md) and [manifests and snippets](./manifests-and-snippets.md).
 
 ## Default features
 
@@ -20,7 +32,9 @@ On by default:
 - `docgenServer`
 - `experimentalTestSyntax`
 
-`framework.options.docgen: false` forces `docgenServer` off from this preset (Storybook then skips the docgen worker). The same opt-out is `isDocgenProviderEnabled`, which core reads when it defaults the flag.
+`framework.options.docgen: false` forces `docgenServer` off from this preset (Storybook then skips the docgen worker and story docs). The same opt-out is `isDocgenProviderEnabled`, which core reads when it defaults the flag.
+
+`experimentalTestSyntax` is on so `.test()` stories work. A user who sets it to `false` gets React's `test-fn` error from the renderer (see [canvas renderer](./canvas-renderer.md#interaction-tests-and-docs-defaults)). `experimentalCodeExamples: false` turns snippets off ([manifests and snippets](./manifests-and-snippets.md#experimentalcodeexamples)).
 
 ## Solid major detection
 
@@ -62,7 +76,7 @@ This package never injects the Solid Vite plugin (`@solidjs/vite-plugin` / `vite
 
 ## Public `main` types
 
-`StorybookConfig` and `defineMain` live in `src/framework/public-api.ts`. `FrameworkOptions` allows Vite builder options and `docgen?: false`.
+`StorybookConfig` and `defineMain` live in `src/framework/public-api.ts`, exported from the package root and from `./node` (see [package surface](./package-surface.md)). `FrameworkOptions` allows Vite builder options and `docgen?: false`. `features.experimentalTestSyntax` is added to core's `features` type.
 
 ## Key modules and tests
 
@@ -70,5 +84,7 @@ This package never injects the Solid Vite plugin (`@solidjs/vite-plugin` / `vite
 - `src/framework/docgenOption.ts`
 - `src/framework/public-api.ts`
 - `src/internal/solidVersion.ts`
+- `src/renderer/index.ts`
+- `scripts/build-storybook.ts`
 - `src/spec/framework/*`
 - `src/spec/internal/solidVersion.test.ts`

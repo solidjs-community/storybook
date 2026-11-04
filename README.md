@@ -22,6 +22,7 @@
 - [Storybook MCP](https://storybook.js.org/docs/ai/mcp/overview) support ([setup](#storybook-mcp))
 - [CSF Next](https://storybook.js.org/docs/api/csf/csf-next) support ([setup](#csf-next))
 - [Integrated testing](https://storybook.js.org/docs/writing-tests) (Vitest, Playwright)
+- [Portable stories](#portable-stories) for plain Vitest or Jest (`composeStories`)
 - [Compatible with Storybook addons](https://storybook.js.org/docs/addons)
 
 ## 🚀 Getting Started
@@ -34,6 +35,8 @@ npm run storybook
 ```
 
 Open the URL shown in the terminal.
+
+Requires Storybook 11 (`11.0.0-beta.0` or later). On Storybook 10, stay on `storybook-solidjs-vite@10`; see the [Migration Guide](./MIGRATION.md).
 
 ## ⚙️ Configuration
 
@@ -93,9 +96,9 @@ export default {
 ```
 
 ```ts
+// src/Button.stories.ts
 import { Button } from "./Button";
 
-// src/Button.stories.ts
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 
 const meta = {

@@ -11,7 +11,7 @@ Upgrade paths for `storybook-solidjs-vite`:
 
 ## Version 10 → 11
 
-`storybook-solidjs-vite` **11.x** requires **Storybook 11**. Stay on **10.x** until you upgrade Storybook.
+`storybook-solidjs-vite` **11.x** requires **Storybook 11**, `11.0.0-beta.0` or later (peer `^11.0.0-beta.0 || ^11.0.0`). Earlier 11 prereleases still ship `storybook/internal/babel`, and the preset fails to load on them. Stay on **10.x** until you upgrade Storybook.
 
 1. Upgrade `storybook` and `storybook-solidjs-vite` together.
 2. Follow the [Storybook 11 migration guide](https://storybook.js.org/docs/releases/migration-guide) for core Storybook changes.
@@ -45,10 +45,9 @@ export default {
 
 ### Stories
 
-[CSF Next](./README.md#csf-next) is the default in Storybook 11.
-New `create-storybook --type=solid` apps use CSF Next as well.
+New `create-storybook --type=solid` apps use [CSF Next](./README.md#csf-next) stories. Existing projects can still use CSF 3.
 
-Existing projects can still use CSF 3.
+`storybook automigrate csf-factories` writes `import { defineMain } from 'storybook-solidjs-vite/node'` in `.storybook/main.ts`. That subpath is new in 11.x; importing `defineMain` from the package root still works.
 
 ### CSF Next types
 
@@ -94,13 +93,17 @@ Existing projects can still use CSF 3.
 
 ### Controls and Docs
 
-No action. They still work by default.
+No action. They still work by default, now from the Storybook server instead of a Vite `__docgenInfo` inject.
 
-To turn them off: `framework.options.docgen: false`.
+To turn them off: `framework.options.docgen: false`. That also turns off **Show code** snippets.
+
+`features.experimentalCodeExamples: false` still turns snippets off; story descriptions stay.
+
+`.test()` stories throw when `features.experimentalTestSyntax` is `false`, as in `@storybook/react`. The flag is on by default, so this only matters if you turned it off.
 
 ### If you used `experimental-playwright`
 
-That export is gone. Use `[@storybook/addon-vitest](https://storybook.js.org/docs/writing-tests/integrations/vitest-addon)`.
+That export is gone. Use [`@storybook/addon-vitest`](https://storybook.js.org/docs/writing-tests/integrations/vitest-addon), or [portable stories](./README.md#portable-stories) (`composeStories`) in plain Vitest.
 
 ---
 

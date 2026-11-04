@@ -1,5 +1,7 @@
 # Handoff: sb11-estree-csf-tools
 
+> **Resolved.** PR #76 was cherry-picked into `next` with Kasper Peulen as author (commits `01e3238..7edfce5`; the pkg.pr.new canary pin was not taken). Both defects and all four follow-ups below were fixed in `a72d570` (defect 1 the way React does it at beta.0: the snippet is kept and story docs carry core's `unresolvedWarning`), and later stages of `.briefback/sb11-react-parity/plan.md` built on them. The gate is met: `storybook@11.0.0-beta.0` contains #36613, and `4180c94` moved to it and raised the peer floor to `^11.0.0-beta.0 || ^11.0.0`. Current behavior is described in `.briefback/docs/framework/`. The rest of this file is history.
+
 > Next chat: read this file. Do not re-port the PR and do not merge it until the gate below is open. Re-review Kasper's update against the findings here.
 > Do not resurrect discarded approaches from a chat summary.
 

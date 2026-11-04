@@ -8,7 +8,7 @@ See also: [modules index](./modules.md), [preview and CSF](./preview-and-csf.md)
 
 Orchestration lives in `src/renderer/shared/`. Version files (`solid2.ts`, `solid1.ts`) only supply Solid APIs and the story shell (error boundary / settled hooks).
 
-Each version registers a preview addon with: `renderToCanvas`, default `render`, `applyDecorators`, `decorators`, play `mount`, `beforeAll`, and `parameters.renderer`. Both set `window.STORYBOOK_ENV` to that renderer id when `window` exists.
+Each version registers a preview addon with: `renderToCanvas`, default `render`, `applyDecorators`, `decorators`, play `mount`, `beforeAll`, and `parameters.renderer`. Both set `window.STORYBOOK_ENV` to that renderer id when `window` exists. The same addon backs [portable stories](./preview-and-csf.md#portable-stories) outside Storybook, through `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS`.
 
 ## Mount once
 
