@@ -207,6 +207,28 @@ test("renders the primary button", async () => {
 
 CSF Next stories also work without composing: `await Primary.run()` straight from the stories file.
 
+On Solid 1, also point the package at the Solid 1 renderer. In Storybook the preset does this; plain Vitest needs it in its config, or stories load the Solid 2 renderer and fail on the missing `@solidjs/web`:
+
+```ts
+// vitest.config.ts
+import solid from "vite-plugin-solid";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  plugins: [solid()],
+  resolve: {
+    alias: {
+      "storybook-solidjs-vite/renderer/preview-addon": "storybook-solidjs-vite/renderer/solid1",
+    },
+  },
+  test: {
+    environment: "happy-dom",
+    // The alias only applies to modules Vite transforms.
+    server: { deps: { inline: ["storybook-solidjs-vite"] } },
+  },
+});
+```
+
 ## 🎨 Decorators
 
 On args or globals changes, Storybook re-runs decorators and stories functions follows React reactivity model. Solid updates via fine-grained signals and usually doesn't need that. JSX decorators re-run can leave duplicate DOM nodes. To avoid this, use `createJSXDecorator` function to define decorators that return JSX.

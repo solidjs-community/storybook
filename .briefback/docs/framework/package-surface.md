@@ -19,7 +19,7 @@ See also: [modules index](./modules.md), [preset and version](./preset-and-versi
 | Docs/Controls preview annotations                                              | `./renderer/docs`                                          |
 | Docgen worker (experimental server path)                                       | `./internal/docgen-worker`                                 |
 
-`defineMain` and `StorybookConfig` come from the package root — same import as in the README and lab. The `"node"` field is a runtime condition: Node loads `dist/node.js`. TypeScript matches `"types"` first and opens `dist/index.d.ts`, which re-exports both the framework and preview public APIs.
+`defineMain` and `StorybookConfig` come from the package root — same import as in the README and lab. The `"node"` field is a runtime condition: Node loads `dist/node.js`. `"browser"` comes first so Vitest with a DOM environment loads `dist/index.js` (and portable stories): Vitest always sets `node`, and the Solid Vite plugin adds `browser` in test mode. TypeScript matches `"types"` first and opens `dist/index.d.ts`, which re-exports both the framework and preview public APIs.
 
 ## Published JS and types
 

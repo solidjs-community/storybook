@@ -33,7 +33,7 @@ Root `definePreview` is bound to `preview-addon`, which the [preset](./preset-an
 
 ## Portable stories
 
-`src/preview/portable-stories.ts` mirrors `@storybook/react`'s `portable-stories.tsx`. `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` composes `preview-addon` and `renderer/docs`, the same pair `definePreview` adds. `composeStory` falls back to it when `setProjectAnnotations` has not run. Unlike React, `composeStories` types accept a module with no `default` (CSF Next) and map its `meta.story()` exports. Runtime test: `src/spec/preview/portable-stories.test.ts` (happy-dom).
+`src/preview/portable-stories.ts` mirrors `@storybook/react`'s `portable-stories.tsx`. `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` composes `preview-addon` and `renderer/docs`, the same pair `definePreview` adds. `composeStory` falls back to it when `setProjectAnnotations` has not run. Unlike React, `composeStories` types accept a module with no `default` (CSF Next) and map its `meta.story()` exports. Outside Storybook nothing aliases `preview-addon`, so Solid 1 projects add that alias (plus `server.deps.inline`) to their Vitest config; the README shows it. Runtime test: `src/spec/preview/portable-stories.test.ts` (happy-dom).
 
 ## Key modules
 

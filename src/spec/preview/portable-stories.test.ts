@@ -11,6 +11,14 @@ import { played } from './fixtures/Button';
 import * as csfNextStories from './fixtures/Button.csf-next.stories';
 import * as csf3Stories from './fixtures/Button.stories';
 
+// `definePreview` in the CSF Next fixture sets `globalProjectAnnotations` on import, like a real
+// CSF Next project. CSF 3 tests clear it to run on the Solid defaults alone.
+function resetProjectAnnotations() {
+    Reflect.deleteProperty(globalThis, 'globalProjectAnnotations');
+    Reflect.deleteProperty(globalThis, 'defaultProjectAnnotations');
+    Reflect.deleteProperty(globalThis, '__STORYBOOK_SET_PROJECT_ANNOTATIONS_CALLED__');
+}
+
 afterEach(() => {
     played.length = 0;
     document.body.replaceChildren();
@@ -25,10 +33,14 @@ describe('portable stories', () => {
     });
 
     it.each([
-        ['CSF 3', composeStories(csf3Stories), 'CSF 3 primary'],
-        ['CSF Next', composeStories(csfNextStories), 'CSF Next primary'],
-    ] as const)('composeStories renders a %s story and runs play', async(_name, stories, label) => {
-        const { Primary, Secondary } = stories;
+        ['CSF 3', () => {
+            resetProjectAnnotations();
+
+            return composeStories(csf3Stories);
+        }, 'CSF 3 primary'],
+        ['CSF Next', () => composeStories(csfNextStories), 'CSF Next primary'],
+    ] as const)('composeStories renders a %s story and runs play', async(_name, compose, label) => {
+        const { Primary, Secondary } = compose();
         const canvasElement = document.createElement('div');
 
         document.body.append(canvasElement);
@@ -47,8 +59,12 @@ describe('portable stories', () => {
         expect(canvasElement.querySelector('button')?.textContent).toBe('From meta');
     });
 
-    it('composeStory composes one CSF 3 story with its meta', async() => {
+    it('composeStory composes one CSF 3 story with its meta on the Solid defaults', async() => {
+        resetProjectAnnotations();
+
         const Primary = composeStory(csf3Stories.Primary, csf3Stories.default);
+
+        expect(Primary.parameters['renderer']).toBe('solid2');
 
         await Primary.run();
 
@@ -57,6 +73,8 @@ describe('portable stories', () => {
     });
 
     it('setProjectAnnotations layers project annotations over the Solid defaults', async() => {
+        resetProjectAnnotations();
+
         try {
             setProjectAnnotations([{ parameters: { fromProject: true } }]);
 
@@ -69,9 +87,7 @@ describe('portable stories', () => {
             expect(document.body.querySelector('button')?.textContent).toBe('CSF 3 primary');
         }
         finally {
-            Reflect.deleteProperty(globalThis, 'globalProjectAnnotations');
-            Reflect.deleteProperty(globalThis, 'defaultProjectAnnotations');
-            Reflect.deleteProperty(globalThis, '__STORYBOOK_SET_PROJECT_ANNOTATIONS_CALLED__');
+            resetProjectAnnotations();
         }
     });
 });
