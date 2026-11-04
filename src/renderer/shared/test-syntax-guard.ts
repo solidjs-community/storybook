@@ -1,13 +1,13 @@
 import { global } from '@storybook/global';
 import { Tag } from 'storybook/preview-api';
 
-import type { Decorator } from '../../preview/public-api';
+import { createDecorator, type Decorator } from '../../preview/public-api';
 
 /**
  * Throws on `.test()` stories (`test-fn` tag) when `features.experimentalTestSyntax` is off.
  * Same check and message as React's `entry-preview.tsx` decorator.
  */
-export const testSyntaxGuard: Decorator = (story, context) => {
+export const testSyntaxGuard = createDecorator((story, context) => {
     // `experimentalTestSyntax` is a framework-level flag, not part of core's `features` type.
     const features = global.FEATURES as { experimentalTestSyntax?: boolean } | undefined;
 
@@ -18,7 +18,7 @@ export const testSyntaxGuard: Decorator = (story, context) => {
     }
 
     return story();
-};
+});
 
 /** Renderer-level decorators shared by the Solid 1 and Solid 2 entries. */
 export const decorators: Decorator[] = [testSyntaxGuard];

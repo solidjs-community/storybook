@@ -9,4 +9,4 @@ bun install
 bun run storybook      # port 6007
 ```
 
-CI smoke: `bun run build-storybook`.
+CI smoke: `bun run build-storybook` (fails when Storybook prints "Failed to load preset").

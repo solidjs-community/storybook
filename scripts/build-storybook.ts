@@ -4,8 +4,8 @@
  * Storybook logs "Failed to load preset" and still exits 0, so a broken
  * `storybook-solidjs-vite` preset would ship a static build without our renderer.
  *
- * Run from repo root: bun run check-docgen
- * Or here: bun run build-storybook
+ * Runs `storybook build` from the current directory's `node_modules/.bin`.
+ * Used by `build-storybook` in `examples/lab` and `examples/solid1`.
  */
 import { spawn } from 'node:child_process';
 import path from 'node:path';

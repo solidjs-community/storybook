@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { decorators as solid1Decorators } from '../../renderer/solid1';
-import { decorators as solid2Decorators } from '../../renderer/solid2';
+import * as solid1 from '../../renderer/solid1';
+import * as solid2 from '../../renderer/solid2';
 import { testSyntaxGuard } from '../../renderer/shared/test-syntax-guard';
 
 // Only the decorator lists are read. `solid-js-legacy/web` imports a bare `solid-js`,
@@ -44,8 +44,10 @@ describe('testSyntaxGuard', () => {
         expect(runGuard(['dev', 'test'])).toBe('story');
     });
 
-    it('is registered by both renderer entries', () => {
-        expect(solid2Decorators).toContain(testSyntaxGuard);
-        expect(solid1Decorators).toContain(testSyntaxGuard);
+    it('is registered by both renderer entries and their CSF Next preview addons', () => {
+        for (const entry of [solid1, solid2]) {
+            expect(entry.decorators).toContain(testSyntaxGuard);
+            expect(entry.previewAddon.decorators).toContain(testSyntaxGuard);
+        }
     });
 });

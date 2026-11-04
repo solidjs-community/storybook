@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "bun scripts/build-storybook.ts",
+        "build-storybook": "bun ../../scripts/build-storybook.ts",
         "test": "vitest run",
         "test:watch": "vitest",
         "typecheck": "tsc --noEmit",
