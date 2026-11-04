@@ -1,4 +1,4 @@
-import { isStringLiteral, loadCsf, unwrapExpression } from 'storybook/internal/csf-tools';
+import { loadCsf, staticKey, unwrapExpression } from 'storybook/internal/csf-tools';
 
 import type { CsfFile, ESTreeNode } from 'storybook/internal/csf-tools';
 
@@ -10,15 +10,14 @@ function addObjectKeys(node: ESTreeNode | undefined, names: Set<string>) {
     }
 
     for (const property of objectExpression.properties) {
-        if (property.type !== 'Property' || property.method || property.kind !== 'init' || property.computed) {
+        if (property.type !== 'Property' || property.method || property.kind !== 'init') {
             continue;
         }
 
-        if (property.key.type === 'Identifier') {
-            names.add(property.key.name);
-        }
-        else if (isStringLiteral(property.key)) {
-            names.add(property.key.value);
+        const name = staticKey(property);
+
+        if (name !== undefined) {
+            names.add(name);
         }
     }
 }

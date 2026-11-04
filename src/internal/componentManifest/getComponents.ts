@@ -3,7 +3,7 @@ import { dirname, join, resolve } from 'node:path';
 import { collectImportBindings, walk } from 'storybook/internal/csf-tools';
 
 import type { ComponentRef } from './types';
-import type { CsfFile, ESTree, ESTreeNode } from 'storybook/internal/csf-tools';
+import type { CsfFile, ESTree, ESTreeNode, ImportBinding } from 'storybook/internal/csf-tools';
 
 function baseIdentifier(component: string) {
     return component.split('.')[0] ?? component;
@@ -64,6 +64,34 @@ export function resolvePackageComponentPath(storyFilePath: string, importId: str
     return undefined;
 }
 
+/**
+ * Adds the `import X = require('…')` and `import X = NS.Y` bindings of a file to `bindings`. A
+ * `require` binds the whole module, like a namespace import. `NS.Y` resolves when `NS` is a
+ * namespace binding; otherwise it names something local and is left out.
+ */
+function addImportEqualsBindings(program: ESTree.Program, bindings: Map<string, ImportBinding>) {
+    for (const statement of program.body) {
+        const declaration = statement.type === 'ExportNamedDeclaration' ? statement.declaration : statement;
+
+        if (declaration?.type !== 'TSImportEqualsDeclaration' || declaration.importKind === 'type') {
+            continue;
+        }
+
+        const reference = declaration.moduleReference;
+
+        if (reference.type === 'TSExternalModuleReference') {
+            bindings.set(declaration.id.name, { importId: reference.expression.value, importName: '*' });
+        }
+        else if (reference.type === 'TSQualifiedName' && reference.left.type === 'Identifier') {
+            const namespace = bindings.get(reference.left.name);
+
+            if (namespace?.importName === '*') {
+                bindings.set(declaration.id.name, { importId: namespace.importId, importName: reference.right.name });
+            }
+        }
+    }
+}
+
 export async function getComponents({
     csf,
     storyFilePath,
@@ -76,6 +104,8 @@ export async function getComponents({
     const componentSet = new Set<string>();
     const componentDepth = new Map<string, number>();
     const localToImport = collectImportBindings(csf.program);
+
+    addImportEqualsBindings(csf.program, localToImport);
     // Number of JSX elements enclosing each node, counting the node itself when it is one.
     const jsxDepth = new Map<ESTreeNode, number>();
 
@@ -135,7 +165,13 @@ export async function getComponents({
     const isLocallyDefinedWithoutImport = (base: string) => {
         const binding = csf.editor.scopes.program.bindings.get(base);
 
-        return binding ? binding.kind !== 'import' : false;
+        if (!binding) {
+            return false;
+        }
+
+        // `import X = NS.Y` that leads to no module names something the file declares.
+        return binding.kind !== 'import'
+            || (binding.node.type === 'TSImportEqualsDeclaration' && !localToImport.has(base));
     };
 
     const filteredComponents = components.filter(c => !isLocallyDefinedWithoutImport(baseIdentifier(c)));

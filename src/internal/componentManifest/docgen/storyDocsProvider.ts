@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
 import { storyNameFromExport } from 'storybook/internal/csf';
-import { createStoryArgsResolver, extractDescription, loadCsf } from 'storybook/internal/csf-tools';
+import { createStoryArgsResolver, extractDescription, loadCsf, unresolvedWarning } from 'storybook/internal/csf-tools';
 
 import { getCodeSnippet } from '../../codeExamples/generateCodeSnippet';
 
@@ -39,14 +39,16 @@ export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(nex
                     try {
                         const description = extractDescription(csf._storyStatements[storyExport], csf.editor)?.trim();
                         const snippet = getCodeSnippet(csf, storyExport, componentName, resolver);
+                        const warning = unresolvedWarning(snippet.unresolved);
 
                         return [
                             story.id,
                             {
                                 id: story.id,
                                 name,
-                                snippet,
+                                snippet: snippet.code,
                                 ...(description ? { description } : {}),
+                                ...(warning ? { warning } : {}),
                             },
                         ];
                     }

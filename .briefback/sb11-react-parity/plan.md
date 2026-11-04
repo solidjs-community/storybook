@@ -81,13 +81,13 @@ PR #76 already ports those readers to Storybook's ESTree `csf-tools`. Bring its 
 
 Fix all six to match React's generator. When values are unresolved, report core's `unresolvedWarning`/`noSnippetWarning` instead of shipping a broken snippet.
 
-- [ ] Complete
-  - [ ] A snippet whose resolved args still reference unresolved names keeps the snippet and carries core's `unresolvedWarning` in story docs, like React at beta.0 (scope change: React does not drop it).
-  - [ ] `import X = require('./Button')` (and `NS.Y`) resolves to an importable component with a module path.
-  - [ ] `collectCsfArgNames` records every key `staticKey` accepts: computed string, template and numeric keys.
-  - [ ] Rewritten render functions keep every parameter the body still reads (`(args, context) => …`).
-  - [ ] Injected multi-line children are indented relative to the line they land on.
-  - [ ] Test: `export const A = { args: { size: 'lg' } }; A.args = { label: 'last' }` yields `label` only.
+- [x] Complete
+  - [x] A snippet whose resolved args still reference unresolved names keeps the snippet and carries core's `unresolvedWarning` in story docs, like React at beta.0 (scope change: React does not drop it).
+  - [x] `import X = require('./Button')` (and `NS.Y`) resolves to an importable component with a module path.
+  - [x] `collectCsfArgNames` records every key `staticKey` accepts: computed string, template and numeric keys.
+  - [x] Rewritten render functions keep every parameter the body still reads (`(args, context) => …`).
+  - [x] Injected multi-line children are indented relative to the line they land on.
+  - [x] Test: `export const A = { args: { size: 'lg' } }; A.args = { label: 'last' }` yields `label` only.
 
 **Files**
 

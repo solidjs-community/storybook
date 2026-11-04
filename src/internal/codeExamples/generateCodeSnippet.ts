@@ -7,9 +7,9 @@ import {
     lineIndent,
     metaObject,
     normalizeStoryDeclaration,
-    parseModule,
     reindent,
     resolveRenderFunction,
+    SourceEditor,
     storyShapeError,
     textOf,
     walk,
@@ -21,9 +21,9 @@ import type {
     CsfFile,
     ESTree as E,
     FunctionNode,
+    ImportRef,
     ESTreeNode as Node,
     RenderResolution,
-    SourceEditor,
     StoryArgsResolver,
 } from 'storybook/internal/csf-tools';
 
@@ -36,16 +36,72 @@ interface Edit {
     text: string;
 }
 
+/** A story's snippet, and what showing it as a complete example still depends on. */
+export interface CodeSnippet {
+    /** Source of a `const` or `function` declaration named after the story. */
+    code: string;
+    /** Imports the snippet needs beyond the component, from arg values that kept a name. */
+    imports: ImportRef[];
+    /** What a static pass could not read, in the source text it was written as. */
+    unresolved: string[];
+}
+
 /**
  * Source of a `const` or `function` declaration, named after the story, that shows how to render
  * it: the story's own function or `render`, with the args it reads inlined, or the component with
- * the story's args as attributes.
+ * the story's args as attributes. Arg values that still name something the snippet does not hold
+ * are listed in `imports` or `unresolved`.
  */
 export function getCodeSnippet(
     csf: CsfFile,
     storyName: string,
     componentName?: string,
     resolver: StoryArgsResolver = createStoryArgsResolver(csf)
+): CodeSnippet {
+    const { args, imports, unresolved } = resolver.resolve(storyName);
+    const importedBind = importedBoundStory(csf, storyName, args);
+
+    if (importedBind) {
+        return { code: importedBind.code, imports: [...imports, importedBind.importRef], unresolved };
+    }
+
+    return { code: buildSnippet(csf, storyName, componentName, args, resolver), imports, unresolved };
+}
+
+/** `Template.bind({})` of an imported `Template`: the snippet calls the bound template with the args. */
+function importedBoundStory(csf: CsfFile, storyName: string, args: Args) {
+    const declaration = csf._storyExports[storyName];
+
+    if (declaration?.type !== 'VariableDeclarator' || !isCanonicalCsf2BindCall(declaration.init)) {
+        return undefined;
+    }
+
+    const local = declaration.init.callee.object.name;
+    const binding = collectImportBindings(csf.program).get(local);
+
+    if (!binding) {
+        return undefined;
+    }
+
+    const print = valuePrinter('    ');
+    const members = Object.entries(args).map(([key, value]) => `    ${ JSON.stringify(key) }: ${ print(value) }`);
+    const argsObject = members.length > 0 ? `{\n${ members.join(',\n') }\n}` : '{}';
+    const importRef: ImportRef = {
+        localImportName: local,
+        importId: binding.importId,
+        importName: binding.importName,
+        ...(binding.importName === '*' ? { namespace: local } : {}),
+    };
+
+    return { code: `const ${ storyName } = () => ${ textOf(declaration.init) }(${ argsObject });`, importRef };
+}
+
+function buildSnippet(
+    csf: CsfFile,
+    storyName: string,
+    componentName: string | undefined,
+    args: Args,
+    resolver: StoryArgsResolver
 ): string {
     const editor = csf.editor;
     const declaration = csf._storyExports[storyName];
@@ -60,21 +116,6 @@ export function getCodeSnippet(
         );
 
         throw statement ? storyShapeError(message, statement, editor) : message;
-    }
-
-    const { args } = resolver.resolve(storyName);
-
-    // `Template.bind({})` of an imported `Template`: the snippet calls the bound template with the args.
-    if (
-        declaration.type === 'VariableDeclarator'
-        && isCanonicalCsf2BindCall(declaration.init)
-        && collectImportBindings(csf.program).has(declaration.init.callee.object.name)
-    ) {
-        const print = valuePrinter('    ');
-        const members = Object.entries(args).map(([key, value]) => `    ${ JSON.stringify(key) }: ${ print(value) }`);
-        const argsObject = members.length > 0 ? `{\n${ members.join(',\n') }\n}` : '{}';
-
-        return `const ${ storyName } = () => ${ textOf(declaration.init) }(${ argsObject });`;
     }
 
     const story = normalizeStoryDeclaration(declaration, editor);
@@ -120,7 +161,7 @@ function functionSnippet(editor: SourceEditor, storyName: string, fn: FunctionNo
     if (fn.type === 'ArrowFunctionExpression' && isJsx(fn.body)) {
         if (rewriteJsx(code, fn.body, merged, edits)) {
             const body = printRange(code, fn.body, edits);
-            const kept = readsArgs(`${ asyncPrefix }() => (${ body });`) ? params : '';
+            const kept = readParams(code, fn, `${ asyncPrefix }(${ params }) => (${ body });`);
 
             return `const ${ storyName } = ${ asyncPrefix }(${ kept }) => ${ body };`;
         }
@@ -136,7 +177,7 @@ function functionSnippet(editor: SourceEditor, storyName: string, fn: FunctionNo
 
         if (changed) {
             const body = printRange(code, fn.body, edits);
-            const kept = readsArgs(`${ functionKeyword } f() ${ body }`) ? params : '';
+            const kept = readParams(code, fn, `${ functionKeyword } f(${ params }) ${ body }`);
 
             return fn.type === 'FunctionDeclaration'
                 ? `${ functionKeyword } ${ storyName }(${ kept }) ${ body }`
@@ -177,27 +218,27 @@ function printRange(code: string, range: { start: number; end: number }, edits: 
     return reindent(text, lineIndent(code, range.start), '');
 }
 
-/** Whether `source` still reads the `args` parameter, so the snippet has to keep declaring it. */
-function readsArgs(source: string): boolean {
-    // A key or a member name spelled `args` names a property, not the parameter.
-    const named = new Set<Node>();
-    let reads = false;
+/**
+ * The parameters of `fn` that `source`, the rewritten function, still reads. A parameter keeps its
+ * position, so every parameter before the last one read stays as written.
+ */
+function readParams(code: string, fn: FunctionNode, source: string): string {
+    const editor = new SourceEditor(source);
+    const statement = editor.program.body[0];
+    const rewritten = (statement?.type === 'ExpressionStatement' ? statement.expression : statement) as FunctionNode;
+    const read = rewritten.params.findLastIndex((param) => {
+        let reads = false;
 
-    walk(parseModule(source).program, (node) => {
-        if (node.type === 'MemberExpression' && !node.computed) {
-            named.add(node.property);
-        }
+        walk(param, (node) => {
+            if (node.type === 'Identifier' && (editor.scopes.bindingOf(node)?.references.length ?? 0) > 0) {
+                reads = true;
+            }
+        });
 
-        if (node.type === 'Property' && !node.computed && !node.shorthand) {
-            named.add(node.key);
-        }
-
-        if (node.type === 'Identifier' && node.name === 'args' && !named.has(node)) {
-            reads = true;
-        }
+        return reads;
     });
 
-    return reads;
+    return read === -1 ? '' : code.slice(fn.params[0]!.start, fn.params[read]!.end);
 }
 
 type ValuePrinter = (node: Node) => string;
@@ -272,6 +313,24 @@ function getArgsMemberKey(expr: Node) {
 }
 
 /**
+ * An offset on the line that text inserted at `offset` lands on once `edits` apply: an edit that
+ * removes a line break before it on its line pulls it up to the line the edit starts on.
+ */
+function landingOffset(code: string, offset: number, edits: Edit[]): number {
+    let anchor = offset;
+    let joined: Edit | undefined;
+
+    do {
+        const lineStart = code.lastIndexOf('\n', anchor - 1) + 1;
+
+        joined = edits.find(edit => !edit.text.includes('\n') && edit.start < lineStart && edit.end >= lineStart && edit.end <= anchor);
+        anchor = joined?.start ?? anchor;
+    } while (joined);
+
+    return anchor;
+}
+
+/**
  * Records the edits that expand `{...args}` into the merged args and inline `args.foo` reads, and
  * returns whether there were any.
  */
@@ -315,16 +374,17 @@ function rewriteJsx(
                 }
             });
 
+            // Children go after the last attribute of a self-closing tag, or after the `>`.
+            const insertAt = opening.selfClosing ? attrs.at(-1)?.end ?? tagEnd : opening.end;
             const children = node.children.length === 0
-                ? toJsxChildren(merged['children'], printAt(opening.start))
+                ? toJsxChildren(merged['children'], printAt(landingOffset(code, insertAt, edits)))
                 : undefined;
 
             if (children !== undefined) {
                 if (opening.selfClosing) {
                     const name = code.slice(opening.name.start, opening.name.end);
-                    const lastEnd = attrs.at(-1)?.end ?? tagEnd;
 
-                    edits.push({ start: lastEnd, end: opening.end, text: `>${ children }</${ name }>` });
+                    edits.push({ start: insertAt, end: opening.end, text: `>${ children }</${ name }>` });
                 }
                 else {
                     edits.push({ start: opening.end, end: opening.end, text: children });

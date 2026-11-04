@@ -126,6 +126,23 @@ export function resolvePropsFromStoryFile(
     let importSymbol: ts.Symbol | undefined;
 
     for (const stmt of storySourceFile.statements) {
+        // `import X = require('…')` binds the whole module, read as `X` or through `X.Member`.
+        if (typescript.isImportEqualsDeclaration(stmt)) {
+            const reference = stmt.moduleReference;
+
+            if (
+                (importName === '*' || memberAccess)
+                && typescript.isExternalModuleReference(reference)
+                && typescript.isStringLiteral(reference.expression)
+                && reference.expression.text === importSpecifier
+            ) {
+                importSymbol = checker.getSymbolAtLocation(stmt.name);
+                break;
+            }
+
+            continue;
+        }
+
         if (!typescript.isImportDeclaration(stmt)) {
             continue;
         }

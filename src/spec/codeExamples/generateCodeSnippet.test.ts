@@ -8,7 +8,7 @@ function generateExample(code: string) {
     const csf = loadCsf(code, { makeTitle: userTitle => userTitle ?? 'title' }).parse();
 
     const snippets = Object.keys(csf._storyExports)
-        .map(name => getCodeSnippet(csf, name, csf._meta?.component ?? 'ComponentTitle'));
+        .map(name => getCodeSnippet(csf, name, csf._meta?.component ?? 'ComponentTitle').code);
 
     return snippets.join('\n');
 }
@@ -341,6 +341,49 @@ it('reads args through local constants, spreads and the last args assignment', (
     `);
 });
 
+it('replaces inline story args with a later args assignment', () => {
+    const input = withCSF3(dedent`
+        export const A: Story = { args: { size: 'lg' } };
+        A.args = { label: 'last' };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(
+        `"const A = () => <Button label="last">Click me</Button>;"`
+    );
+});
+
+it('reports the names arg values read that the snippet does not hold', () => {
+    const csf = loadCsf(dedent`
+        import { Button } from '@design-system/button';
+        import { importedLabel } from './labels';
+
+        export default { component: Button };
+
+        const prefix = 'Hi';
+        const label = prefix + '!';
+
+        export const Local = { args: { label } };
+        export const Imported = { args: { label: importedLabel } };
+        export const SelfContained = { args: { label: 'Hi' } };
+    `, { makeTitle: () => 'title' }).parse();
+
+    expect(getCodeSnippet(csf, 'Local', 'Button')).toEqual({
+        code: `const Local = () => <Button label={prefix + '!'} />;`,
+        imports: [],
+        unresolved: ['prefix'],
+    });
+    expect(getCodeSnippet(csf, 'Imported', 'Button')).toEqual({
+        code: 'const Imported = () => <Button label={importedLabel} />;',
+        imports: [{ localImportName: 'importedLabel', importId: './labels', importName: 'importedLabel' }],
+        unresolved: [],
+    });
+    expect(getCodeSnippet(csf, 'SelfContained', 'Button')).toEqual({
+        code: 'const SelfContained = () => <Button label="Hi" />;',
+        imports: [],
+        unresolved: [],
+    });
+});
+
 it('follows a story alias and reads a render method', () => {
     const input = withCSF3(dedent`
         const Impl: Story = {
@@ -385,4 +428,86 @@ it('keeps children JSX text cannot hold as an expression', () => {
     expect(generateExample(input)).toMatchInlineSnapshot(
         `"const Braces = () => <Button>{'a {b} <c>'}</Button>;"`
     );
+});
+
+it('keeps every render parameter the rewritten body still reads, in its position', () => {
+    const input = withCSF3(dedent`
+        export const Context: Story = {
+          render: (args, context) => <Button {...args} theme={context.globals.theme} />,
+        };
+
+        export const Typed: Story = {
+          render: (args: Args, { globals }: StoryContext) => <Button {...args} theme={globals.theme} />,
+        };
+
+        export const Unread: Story = {
+          render: (args, context) => <Button {...args} />,
+        };
+
+        export function Declared(args, context) {
+          return <Button {...args} theme={context.globals.theme} />;
+        }
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Context = (args, context) => <Button theme={context.globals.theme}>Click me</Button>;
+        const Typed = (args: Args, { globals }: StoryContext) => <Button theme={globals.theme}>Click me</Button>;
+        const Unread = () => <Button>Click me</Button>;
+        function Declared(args, context) {
+          return <Button theme={context.globals.theme}>Click me</Button>;
+        }"
+    `);
+});
+
+it('indents injected multi-line children from the line they land on', () => {
+    const input = withCSF3(dedent`
+        export const Attributes: Story = {
+          args: {
+            label: 'Hi',
+            children: [
+              'one',
+              'two',
+            ],
+          },
+          render: (args) => (
+            <div>
+              <Button
+                {...args}
+              />
+            </div>
+          ),
+        };
+
+        export const OnlyChildren: Story = {
+          args: {
+            children: [
+              'one',
+              'two',
+            ],
+          },
+          render: (args) => (
+            <div>
+              <Button
+                {...args}
+              />
+            </div>
+          ),
+        };
+    `);
+
+    expect(generateExample(input)).toMatchInlineSnapshot(`
+        "const Attributes = () => <div>
+          <Button
+            label="Hi">{[
+              'one',
+              'two',
+            ]}</Button>
+        </div>;
+        const OnlyChildren = () => <div>
+          <Button>{[
+            'one',
+            'two',
+          ]}</Button>
+        </div>;"
+    `);
 });
