@@ -1,6 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getComponentIdFromEntry, getStoryImportPathFromEntry, STORY_FILE_TEST_REGEXP } from 'storybook/internal/common';
+import {
+    extractDeclaredSubcomponents,
+    getComponentIdFromEntry,
+    getStoryImportPathFromEntry,
+    STORY_FILE_TEST_REGEXP,
+} from 'storybook/internal/common';
 import { storyNameFromExport } from 'storybook/internal/csf';
 import {
     buildImportStatements,
@@ -13,7 +18,6 @@ import {
 
 import { getCodeSnippet } from '../../codeExamples/generateCodeSnippet';
 import { findMatchingComponent, getComponents, getFallbackImport, getImportablePackageName } from '../getComponents';
-import { extractDeclaredSubcomponents } from '../subcomponents';
 
 import type { CsfFile, ImportRef } from 'storybook/internal/csf-tools';
 import type { StoryDoc, StoryDocsPayload, StoryDocsProviderInput, StoryDocsProviderPreset } from 'storybook/internal/types';

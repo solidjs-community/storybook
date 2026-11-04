@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { extractDeclaredSubcomponents } from 'storybook/internal/common';
 import { loadCsf } from 'storybook/internal/csf-tools';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { findExactComponentMatch, getComponents } from '../../internal/componentManifest/getComponents';
-import { extractDeclaredSubcomponents } from '../../internal/componentManifest/subcomponents';
 import { cleanupSpecTempDirs, createSpecTempDir, writeSpecFiles } from '../helpers/tempProject';
 
 const tempDirs: string[] = [];
@@ -13,6 +13,7 @@ afterEach(() => {
     cleanupSpecTempDirs(tempDirs);
 });
 
+// Core's reader, pinned against the Solid component lookup that resolves its names.
 describe('extractDeclaredSubcomponents', () => {
     it('resolves Header from meta.subcomponents without JSX in the story', async() => {
         const dir = createSpecTempDir(tempDirs);
@@ -51,7 +52,7 @@ describe('extractDeclaredSubcomponents', () => {
         const csf = loadCsf(readFileSync(storyPath, 'utf8'), { makeTitle: () => 'Example/Card' }).parse();
         const declared = extractDeclaredSubcomponents(csf);
 
-        expect(declared).toEqual([
+        expect(declared).toMatchObject([
             { name: 'Header', componentName: 'Card.Header' },
             { name: 'Footer', componentName: 'Card.Footer' },
         ]);
@@ -85,7 +86,7 @@ describe('extractDeclaredSubcomponents', () => {
             { makeTitle: () => 'Example/Card' }
         ).parse();
 
-        expect(extractDeclaredSubcomponents(csf)).toEqual([
+        expect(extractDeclaredSubcomponents(csf)).toMatchObject([
             { name: 'Header', componentName: 'Header' },
         ]);
     });

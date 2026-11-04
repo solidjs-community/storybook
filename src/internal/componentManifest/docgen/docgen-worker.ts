@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
 	createLazyDocgenMiddleware,
+	extractDeclaredSubcomponents,
 	getComponentIdFromEntry,
 	getStoryImportPathFromEntry,
 } from 'storybook/internal/common';
@@ -23,7 +24,6 @@ import {
 	getImportablePackageName,
 } from '../getComponents';
 import { SolidComponentMetaManager } from '../solidComponentMeta/SolidComponentMetaManager';
-import { extractDeclaredSubcomponents } from '../subcomponents';
 import { solidComponentDocToArgTypesData } from '../toDocgenInfo';
 
 import type { CsfFile } from 'storybook/internal/csf-tools';
