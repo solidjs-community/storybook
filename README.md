@@ -131,9 +131,11 @@ export default config;
 
 ### Autodocs code snippets
 
-**Show code** blocks are static snippets generated from story source at index time (`experimentalCodeExamples`). Enabled by default.
+**Show code** blocks and the Code panel show static JSX snippets that the Storybook server builds from story source (`experimentalCodeExamples`, enabled by default). Each snippet inlines the story's args, including args spread from stories in other files. It comes with an import block for the components and imported values it uses. A component in a publishable package is imported by its package name; otherwise the snippet keeps the story's own import. A snippet that names a value no static pass can read carries a warning. Story JSDoc supplies the description and `@summary`.
 
-To disable:
+Snippets come from the [docgen](#docgen) server, so `framework.options.docgen: false` turns them off too.
+
+To disable snippets (Docs and the Code panel then show the story source as written; story descriptions stay):
 
 ```ts
 import type { StorybookConfig } from "storybook-solidjs-vite";

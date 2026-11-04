@@ -1,4 +1,4 @@
-import { accessSync } from 'node:fs';
+import { accessSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { collectImportBindings, walk } from 'storybook/internal/csf-tools';
 
@@ -62,6 +62,80 @@ export function resolvePackageComponentPath(storyFilePath: string, importId: str
     }
 
     return undefined;
+}
+
+function findPackageJson(fromDir: string) {
+    let dir = resolve(fromDir);
+
+    while (true) {
+        const candidate = join(dir, 'package.json');
+
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+
+        const parent = dirname(dir);
+
+        if (parent === dir) {
+            return undefined;
+        }
+
+        dir = parent;
+    }
+}
+
+const ROOT_ENTRY_FIELDS = ['main', 'module', 'types', 'typings', 'browser'];
+
+// Whether the bare package name resolves: `exports` decides when present, the main fields otherwise.
+function hasRootEntry(pkg: Record<string, unknown>) {
+    const { exports } = pkg;
+
+    if (exports === undefined) {
+        return ROOT_ENTRY_FIELDS.some(field => field in pkg);
+    }
+
+    // A string, or an array of fallbacks, is the root entry itself.
+    if (typeof exports !== 'object' || Array.isArray(exports)) {
+        return true;
+    }
+
+    if (exports === null) {
+        return false;
+    }
+
+    // An object lists either subpaths (`"."`, `"./button"`) or conditions (`"import"`, `"default"`).
+    // Conditions describe the root.
+    const subpaths = Object.keys(exports).filter(key => key.startsWith('.'));
+
+    return subpaths.length === 0 || subpaths.includes('.');
+}
+
+/**
+ * Name of the package that owns the component, when stories can import the component by it. An
+ * app's own package (private, with no root entry) cannot be imported by name, so its components
+ * keep the import the story wrote. Without a component path the story file's package decides.
+ */
+export function getImportablePackageName(componentPath: string | undefined, storyFilePath: string) {
+    const nearestPkg = findPackageJson(dirname(componentPath ?? storyFilePath));
+
+    try {
+        if (!nearestPkg) {
+            return undefined;
+        }
+
+        const pkg = JSON.parse(readFileSync(nearestPkg, 'utf8')) as Record<string, unknown> | null;
+
+        if (typeof pkg !== 'object' || !pkg || typeof pkg['name'] !== 'string') {
+            return undefined;
+        }
+
+        const importable = pkg['private'] !== true || hasRootEntry(pkg);
+
+        return importable ? pkg['name'] : undefined;
+    }
+    catch {
+        return undefined;
+    }
 }
 
 /**
