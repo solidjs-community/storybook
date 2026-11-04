@@ -38,6 +38,11 @@
             "code": "./src/index.ts",
             "default": "./dist/index.js"
         },
+        "./node": {
+            "types": "./dist/node.d.ts",
+            "code": "./src/node.ts",
+            "default": "./dist/node.js"
+        },
         "./preset": {
             "types": "./dist/framework/preset.d.ts",
             "code": "./src/framework/preset.ts",
@@ -158,6 +163,7 @@
         "eslint": "^10.9.0",
         "eslint-plugin-format": "^2.0.1",
         "eslint-plugin-perfectionist": "^5.10.1",
+        "happy-dom": "^21.0.4",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
         "solid-js": "^2.0.0-rc.1",

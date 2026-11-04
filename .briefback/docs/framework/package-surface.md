@@ -9,7 +9,9 @@ See also: [modules index](./modules.md), [preset and version](./preset-and-versi
 | Capability                                                                     | Export / entry                                             |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------- |
 | CSF types, `definePreview`, decorator helpers, `StorybookConfig`, `defineMain` | `.` → `src/index.ts` (`types` → `dist/index.d.ts`)         |
+| Portable stories (`composeStories`, `composeStory`, `setProjectAnnotations`)   | `.` → `src/preview/portable-stories.ts` via `src/index.ts` |
 | Node runtime for `main.ts` (no Solid / `definePreview`)                        | `"node"` condition on `.` → `dist/node.js` (`src/node.ts`) |
+| Same Node entry as a subpath (what the `csf-factories` codemod writes)        | `./node` → `dist/node.js` (`types` → `dist/node.d.ts`)     |
 | Preset (`core`, `features`, `viteFinal`)                                       | `./preset`, `./next/preset`                                |
 | Renderer hooks Storybook core loads                                            | `./renderer`                                               |
 | Solid 2 / Solid 1 canvas addon                                                 | `./renderer/solid2`, `./renderer/solid1`                   |
@@ -38,6 +40,7 @@ See also: [modules index](./modules.md), [preset and version](./preset-and-versi
 - `package.json` — `exports`
 - `tsdown.config.ts` — JS + declaration emit
 - `src/index.ts` — root preview entry
-- `src/node.ts` — Node / `main.ts` runtime entry
+- `src/node.ts` — Node / `main.ts` runtime entry (root `node` condition and `./node`)
+- `src/preview/portable-stories.ts` — portable stories on the Solid renderer defaults
 - `src/renderer/preview-addon.ts` — default re-export of `solid2`
 - `src/spec/packageExports/` — published-types consumer check

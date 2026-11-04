@@ -46,12 +46,14 @@ as needed.
 
 ```ts
 // .storybook/main.ts
-import { defineMain } from "storybook-solidjs-vite";
+import { defineMain } from "storybook-solidjs-vite/node";
 
 export default defineMain({
   framework: { name: "storybook-solidjs-vite" },
 });
 ```
+
+`storybook-solidjs-vite/node` is the Node-only entry for `main.ts`, which `storybook automigrate csf-factories` writes. Importing `defineMain` from the package root works too.
 
 ```ts
 // .storybook/preview.tsx
@@ -170,6 +172,40 @@ While Storybook runs (or in a static build):
 - **Debugger UI:** `http://localhost:6006/manifests/components.html` — browse manifests and generation errors/warnings
 - **Components JSON:** `http://localhost:6006/manifests/components.json`
 - **Docs JSON:** `http://localhost:6006/manifests/docs.json` (when MDX docs are present)
+
+### Portable stories
+
+[Portable stories](https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest) are Storybook stories which can be used in external environments, such as plain Vitest or Jest. Storybook normally composes a story and its annotations as part of the story pipeline. Outside Storybook, `composeStories` and `composeStory` do that for you.
+
+With `@storybook/addon-vitest` you do not need any of this: the addon runs your stories as tests and applies the project annotations itself. It throws if `setProjectAnnotations` runs in a setup file.
+
+Apply your preview once, in a setup file:
+
+```ts
+// vitest.setup.ts
+import { setProjectAnnotations } from "storybook-solidjs-vite";
+import preview from "./.storybook/preview";
+
+setProjectAnnotations(preview.composed); // CSF 3 preview: setProjectAnnotations([preview])
+```
+
+Then compose and run stories in a DOM environment (`jsdom` or `happy-dom`) with the Solid Vite plugin:
+
+```ts
+// src/Button.test.ts
+import { composeStories } from "storybook-solidjs-vite";
+import { expect, test } from "vitest";
+import * as stories from "./Button.stories";
+
+const { Primary } = composeStories(stories);
+
+test("renders the primary button", async () => {
+  await Primary.run(); // mounts into document.body and runs `play`
+  expect(document.body.querySelector("button")?.textContent).toBe("Button");
+});
+```
+
+CSF Next stories also work without composing: `await Primary.run()` straight from the stories file.
 
 ## 🎨 Decorators
 

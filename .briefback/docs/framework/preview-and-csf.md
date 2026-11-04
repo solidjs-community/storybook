@@ -31,10 +31,15 @@ Types mirror `@storybook/react`'s `preview.tsx`: `addons` is required (`PreviewA
 
 Root `definePreview` is bound to `preview-addon`, which the [preset](./preset-and-version.md) aliases to Solid 1 or 2.
 
+## Portable stories
+
+`src/preview/portable-stories.ts` mirrors `@storybook/react`'s `portable-stories.tsx`. `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` composes `preview-addon` and `renderer/docs`, the same pair `definePreview` adds. `composeStory` falls back to it when `setProjectAnnotations` has not run. Unlike React, `composeStories` types accept a module with no `default` (CSF Next) and map its `meta.story()` exports. Runtime test: `src/spec/preview/portable-stories.test.ts` (happy-dom).
+
 ## Key modules
 
 - `src/preview/public-api.ts`
 - `src/preview/define-preview.ts`
+- `src/preview/portable-stories.ts`
 - `src/index.ts`
 - `src/renderer/docs.ts`
 - `src/renderer/preview-addon.ts`
