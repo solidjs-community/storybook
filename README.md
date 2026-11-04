@@ -63,6 +63,8 @@ export default definePreview({
 });
 ```
 
+`addons` is required. Pass `[]` if you have none.
+
 ```ts
 // src/Button.stories.ts
 import preview from "../.storybook/preview";

@@ -8,8 +8,12 @@ const meta = preview.meta({
     tags: ['autodocs'],
     args: {
         variant: 'solid',
-        padding: 16,
     },
 });
 
-export const Default = meta.story({});
+// Meta args may only set keys shared by every union member, so `padding` is set per story.
+export const Default = meta.story({
+    args: {
+        padding: 16,
+    },
+});

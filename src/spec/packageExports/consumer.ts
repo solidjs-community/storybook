@@ -21,27 +21,38 @@ export const main: StorybookConfig = defineMain({
     framework: 'storybook-solidjs-vite',
 });
 
-export const preview = definePreview({});
-export const previewFromNext = definePreviewFromNext({});
+const legacyAddon = { parameters: { legacyAddon: true } };
 
-type ButtonProps = { label: string };
+export const preview = definePreview({ addons: [legacyAddon] });
+export const previewFromNext = definePreviewFromNext({ addons: [] });
+
+type ButtonProps = { label: string; size: 'sm' | 'lg' };
 
 export const meta = {
     component: (_props: ButtonProps) => null,
 } satisfies Meta<ButtonProps>;
 
 export const Default: StoryObj<typeof meta> = {
-    args: { label: 'Hello' },
+    args: { label: 'Hello', size: 'lg' },
 };
 
 const csfNextMeta = preview.meta({
     component: (_props: ButtonProps) => null,
-    args: { label: 'Hello' },
+    args: { size: 'sm' },
 });
 
 export const CsfNextPrimary = csfNextMeta.story({
     args: { label: 'Hello' },
 });
+
+export const CsfNextTyped = csfNextMeta.type<{ args: { icon: string } }>().story({
+    args: { label: 'Hello', icon: 'star' },
+});
+
+export const CsfNextTypedComponent = CsfNextTyped.Component;
+
+// @ts-expect-error label is required
+export const CsfNextMissing = csfNextMeta.story();
 
 export const sideEffectDecorator = createDecorator((storyFn) => storyFn());
 export const jsxDecorator = createJSXDecorator((storyFn) => storyFn());

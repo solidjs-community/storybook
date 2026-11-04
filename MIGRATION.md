@@ -50,6 +50,48 @@ New `create-storybook --type=solid` apps use CSF Next as well.
 
 Existing projects can still use CSF 3.
 
+### CSF Next types
+
+`SolidPreview`, `SolidMeta` and `SolidStory` now use Storybook 11's CSF Next types, the same way `@storybook/react` does. The [Storybook 11 CSF Next notes](https://storybook.js.org/docs/releases/migration-guide) apply to Solid as well.
+
+**`addons` is required in `definePreview()`.** Pass `[]` if you have none. Addon preview namespaces (`import * as addon from 'some-addon/preview'`) are accepted next to `definePreviewAddon` addons.
+
+```diff
+-export default definePreview({});
++export default definePreview({ addons: [] });
+```
+
+**Meta args no longer need `as const`.** `preview.meta()` remembers which args you set and checks each value against the component's props. `meta.input.args` is typed as the component declares those props.
+
+```diff
+ const meta = preview.meta({
+   component: Button,
+-  args: { variant: "primary" as const },
++  args: { variant: "primary" },
+ });
+```
+
+**Every key in meta args must be an arg.** That is a component prop, an arg of the meta's typed `render`, an arg read by one of its `decorators`, or an arg declared with `preview.type<{ args }>()`. This includes args passed as a variable or a spread. For union props, meta can only set props that every member has. Set the others in the story.
+
+```diff
+-const meta = preview.meta({
++const meta = preview.type<{ args: { theme: "light" | "dark" } }>().meta({
+   component: Button,
+   args: { label: "Hi", theme: "dark" },
+ });
+```
+
+**Use `mocked()` for the mock API on args.** An arg set to `fn()` in meta is typed as the component declares it. Wrap it in `mocked()` from `storybook/test` to call mock methods. Assertions such as `expect(args.onClick).toHaveBeenCalled()` work without it.
+
+```diff
+-args.getUsers.mockResolvedValue(users);
++mocked(args.getUsers).mockResolvedValue(users);
+```
+
+**`meta.type<S>()` returns a `SolidMeta`.** It adds args to the stories made from that meta only, and keeps `story.Component`.
+
+**Type parameters changed.** The second type argument of `SolidMeta` is now the union of arg names set in meta, not the meta input type. `DefinePreviewInput` takes `PreviewAddonEntry[]`. If you wrote these types by hand, use `ReturnType<typeof preview.meta>` or let TypeScript infer them.
+
 ### Controls and Docs
 
 No action. They still work by default.
