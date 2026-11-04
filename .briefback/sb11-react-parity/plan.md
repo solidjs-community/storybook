@@ -189,11 +189,11 @@ Separately, `internal_getArgTypesData` joins `process.cwd()` with paths that add
 
 **This stage:** React exports `setProjectAnnotations`, `composeStory`, `composeStories` and `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS`, wired to its renderer defaults, so plain Vitest/Jest/Playwright CT can render stories. Storybook's `csf-factories` codemod writes `import { defineMain } from '<framework>/node'`, and our package has no `./node` subpath. Add both. The portable layer follows `code/renderers/react/src/portable-stories.tsx`, using the active Solid renderer annotations through `preview-addon`.
 
-- [ ] Complete
-  - [ ] `setProjectAnnotations`, `composeStory`, `composeStories`, `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` exported from the package root, typed for Solid.
-  - [ ] `composeStories(stories)` renders a Solid story into a container in a Vitest test, with `play` running.
-  - [ ] `exports["./node"]` points at `src/node.ts` / `dist/node.js`, with types.
-  - [ ] Changeset.
+- [x] Complete
+  - [x] `setProjectAnnotations`, `composeStory`, `composeStories`, `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` exported from the package root, typed for Solid.
+  - [x] `composeStories(stories)` renders a Solid story into a container in a Vitest test, with `play` running.
+  - [x] `exports["./node"]` points at `src/node.ts` / `dist/node.js`, with types.
+  - [x] Changeset.
 
 **Files**
 
@@ -203,6 +203,8 @@ Separately, `internal_getArgTypesData` joins `process.cwd()` with paths that add
 - `tsdown.config.ts`: entry, if needed
 - `src/spec/packageExports/consumer.ts`, `src/spec/packageExports/publicTypes.test.ts`: `./node` and portable types
 - `src/spec/preview/portable-stories.test.ts`: create, runtime test
+
+**Scope change:** the root export gets a `browser` condition before `node`, so Vitest DOM environments load the preview entry. `composeStories` also types CSF Next modules. Solid 1 in plain Vitest needs a user alias + `server.deps.inline` (README).
 
 **Done when:** a Vitest test calls `composeStories` on a CSF 3 stories module and a CSF Next one and renders both, and `storybook-solidjs-vite/node` resolves under `nodenext` and `bundler`.
 **Verify:** `bun run typecheck && bun run test && bun run build`
@@ -277,7 +279,7 @@ Update `.briefback/docs/framework/*` so they describe the new behavior. Mark `.b
 - [ ] Complete
   - [ ] `bun run check-docgen` passes. `bun run test:lab` passes.
   - [ ] `examples/solid1` `build-storybook` succeeds with the preset loaded.
-  - [ ] `.briefback/docs/framework/*` updated. The old handoff is marked done.
+  - [x] `.briefback/docs/framework/*` updated. The old handoff is marked done.
   - [ ] Lint clean.
 
 **Files**
@@ -285,6 +287,12 @@ Update `.briefback/docs/framework/*` so they describe the new behavior. Mark `.b
 - `.briefback/docs/framework/{canvas-renderer,docgen,manifests-and-snippets,preview-and-csf,package-surface,preset-and-version}.md`
 - `.briefback/sb11-estree-csf-tools/handoff.md`
 - `README.md`: anything stale
+
+**Status (2026-11-04):**
+
+- Remaining: regenerate `examples/solid1/bun.lock` (it still records `next` → `11.0.0-alpha.6`, so CI `--frozen-lockfile` fails until it is refreshed). Run `cd examples/solid1 && bun install --minimum-release-age=0` on a good connection. Delete `examples/*/node_modules` first, because the `file:../..` copy nests other examples' `node_modules`.
+- Remaining: lab `check-docgen`, `test:lab`, and the cold-cache `optimizeViteDeps` run after stages 6 and 8. The last local lab build and `check-docgen` passed after stage 7.
+- Lint cannot check `.ts` here: typescript-eslint rejects TypeScript 7. This predates this work. `--fix` only reindents `tsconfig.json` and `skills-lock.json`.
 
 **Done when:** every lab and solid1 check passes on beta.0, and the docs match the code.
 **Verify:** `bun run lint && bun run build && bun run check-docgen && bun run test:lab && (cd examples/solid1 && bun run build-storybook)`
