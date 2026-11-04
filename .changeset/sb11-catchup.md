@@ -26,7 +26,7 @@
 
 ### Storybook 11 peers
 
-- Peer `storybook` is `^11.0.0` only (including 11 prereleases). Vite peer is `^6.3 || ^7 || ^8`.
+- Peer `storybook` is `^11.0.0-beta.0 || ^11.0.0`. Vite peer is `^6.3 || ^7 || ^8`.
 - CLI template stories import `.storybook/preview` (CSF Next). Register `@storybook/addon-docs` via `definePreview` in that file.
 
 ### Breaking
