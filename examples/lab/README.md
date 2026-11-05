@@ -24,7 +24,7 @@ Each folder is a different extraction/runtime path. If two folders would catch t
 | `src/scenarios/html-attributes`     | Docgen / HTML attributes     | `extends JSX.HTMLAttributes` — always `class`/`style`; other inherited DOM only if set in args                                        |
 | `src/scenarios/jsx-directives`      | Docgen / JSX directives      | `use:` / `prop:` namespaces must not become Controls ([#56](https://github.com/solidjs-community/storybook/issues/56))                |
 | `src/scenarios/utility-types`       | Docgen / Utility types       | `Pick` / `Omit` resolution                                                                                                            |
-| `src/scenarios/package-import`      | Docgen / Package import      | Component imported by package name from a linked workspace package (`packages/design-system-button`), not a relative path            |
+| `src/scenarios/package-import`      | Docgen / Package import      | Component from `node_modules`, not project source                                                                                     |
 | `src/scenarios/subcomponents`       | Docgen / Subcomponents       | `meta.subcomponents`                                                                                                                  |
 | `src/scenarios/inline-docs`         | Docs / Inline canvas         | Autodocs inline vs iframe                                                                                                             |
 | `src/scenarios/interactions`        | Tests / Play                 | CSF 3 `play()` (legacy format on purpose)                                                                                             |

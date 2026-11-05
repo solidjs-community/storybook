@@ -145,7 +145,7 @@ const scenarios: Scenario[] = [
         storyId: 'docgen-package-import--default',
         storyTitle: 'Docgen/Package import',
         storyName: 'Default',
-        componentFilePath: 'packages/design-system-button/index.tsx',
+        componentFilePath: 'node_modules/@design-system/button/index.tsx',
         componentExportName: 'Button',
         expectedProps: ['label', 'size'],
     },

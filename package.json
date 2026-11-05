@@ -98,18 +98,15 @@
         "src/**/*",
         "template/**/*"
     ],
-    "workspaces": [
-        "examples/*",
-        "examples/lab/packages/*"
-    ],
     "scripts": {
         "prepare": "simple-git-hooks",
         "prepack": "bun run build",
         "build": "bun --bun tsdown",
         "dev": "bun --bun tsdown --watch",
+        "stage": "bun scripts/stage-package.ts",
         "typecheck": "bun ./node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
-        "lab": "bun run build && cd examples/lab && bun run storybook",
-        "lab:solid1": "cd examples/solid1 && bun run storybook",
+        "lab": "bun run build && bun run stage && cd examples/lab && bun install && bun run storybook",
+        "lab:solid1": "bun run build && bun run stage && cd examples/solid1 && bun install && bun run storybook",
         "test": "vitest run --passWithNoTests",
         "test:lab": "cd examples/lab && bun run test",
         "check-docgen": "cd examples/lab && bun run build-storybook && bun run check-docgen",
