@@ -14,5 +14,7 @@ The target is Storybook 11 at parity with `@storybook/react` / `@storybook/react
 | [Canvas renderer](./canvas-renderer.md)               | Mount-once canvas, stores, play, version shells  |
 | [Docgen](./docgen.md)                                 | LanguageService props for Controls, Docs, MCP    |
 | [Manifests and snippets](./manifests-and-snippets.md) | Manifest stub, story docs and “Show code”        |
+| [React parity](./react-parity.md)                     | What matches React, deliberate differences, gaps |
+| [Examples and CI](./examples-and-ci.md)               | Staged package for examples, preset check, CI    |
 
-Playgrounds: `examples/lab` (Solid 2), `examples/solid1` (Solid 1). Their `build-storybook` runs `scripts/build-storybook.ts`, which fails the build when the preset does not load. `bun run check-docgen` exercises the docgen worker against a lab static build.
+Playgrounds: `examples/lab` (Solid 2), `examples/solid1` (Solid 1). They install a staged copy of the package; see [examples and CI](./examples-and-ci.md).
