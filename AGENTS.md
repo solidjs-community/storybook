@@ -2,9 +2,9 @@
 
 Storybook framework adapter for SolidJS on Vite. Supports Solid 1 and Solid 2.
 
-Larger than a quick fix: follow the [Briefback](https://briefback.dev) skill in `.agents/skills/briefback/` (Research → Grill → Plan → Stage → Review → Commit). Working notes go in `.briefback/<feature>/`; finished work becomes pages in `.briefback/docs/`.
+Larger than a quick fix: follow @BRIEFBACK.md.
 
-Do not edit `.agents/skills/briefback/`. It is pinned in `skills-lock.json` (source `reforma-ai/briefback`).
+[Briefback](https://briefback.dev) is installed in `.agents/skills/briefback/`. Do not edit `BRIEFBACK.md` or the skill by hand; refresh both with `npx @reforma/briefback@latest update`.
 
 ## Layout
 

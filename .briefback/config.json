@@ -1,8 +1,8 @@
 {
-    "version": 1,
-    "components": [
-        "skills",
-        "workflow",
-        "agents"
-    ]
+  "version": 1,
+  "components": [
+    "skills",
+    "workflow",
+    "agents"
+  ]
 }
