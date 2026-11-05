@@ -2,9 +2,13 @@ import { Button } from './Button';
 import './header.css';
 
 export interface HeaderProps {
+    /** The signed-in user, if any */
     user?: { name: string } | undefined;
+    /** Called when the user clicks Log in */
     onLogin: () => void;
+    /** Called when the user clicks Log out */
     onLogout: () => void;
+    /** Called when the user clicks Sign up */
     onCreateAccount: () => void;
 }
 

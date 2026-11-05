@@ -1,5 +1,4 @@
-import { createComponent, createRoot, createSignal } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createComponent, createRoot, createSignal, createStore } from 'solid-js';
 import { definePreviewAddon } from 'storybook/internal/csf';
 import { describe, expect, it } from 'vitest';
 
@@ -18,7 +17,7 @@ const definePreview = createSolidDefinePreview(definePreviewAddon({
 
 describe('Story.Component', () => {
     it('updates when props change and keeps the component mounted', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let mounts = 0;
         let readLabel = () => '';
 
@@ -55,7 +54,7 @@ describe('Story.Component', () => {
     });
 
     it('keeps meta args when a prop is omitted', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let readLabel = () => '';
 
         const Counter = (props: { label?: string }) => {
@@ -77,7 +76,7 @@ describe('Story.Component', () => {
     });
 
     it('tracks props for each mounted instance', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         const readLabel: Array<() => string> = [];
 
         const Counter = (props: { label?: string }) => {
@@ -116,7 +115,7 @@ describe('Story.Component', () => {
     });
 
     it('still runs story decorators and follows props through them', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let readLabel = () => '';
         let decoratorRuns = 0;
         const userDecorator = (storyFn: (context: { args: { label?: string } }) => unknown, context: { args: { label?: string } }) => {
@@ -157,7 +156,7 @@ describe('Story.Component', () => {
     });
 
     it('reads args from a custom render when those args change', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let readLabel = () => '';
         const Story = preview.meta({
             args: { label: 'from args' },
@@ -187,7 +186,7 @@ describe('Story.Component', () => {
     });
 
     it('lets story args override meta args and keeps the rest from meta', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let readLabel = () => '';
         let readHint = () => '';
 
@@ -213,7 +212,7 @@ describe('Story.Component', () => {
     });
 
     it('lets component props override story args', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let readLabel = () => '';
         let readHint = () => '';
         const Story = preview.meta({
@@ -248,7 +247,7 @@ describe('Story.Component', () => {
     });
 
     it('snapshots args from meta.story and ignores later changes', () => {
-        const preview = definePreview({});
+        const preview = definePreview({ addons: [] });
         let readLabel = () => '';
         const Counter = (props: { label?: string }) => {
             readLabel = () => props.label ?? '';
@@ -270,7 +269,9 @@ describe('Story.Component', () => {
             createComponent(stored.Component, {});
             expect(readLabel()).toBe('from store');
 
-            setStoreArgs({ label: 'updated' });
+            setStoreArgs((store) => {
+                store.label = 'updated';
+            });
 
             expect(readLabel()).toBe('from store');
             dispose();

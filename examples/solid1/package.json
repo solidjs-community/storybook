@@ -1,0 +1,22 @@
+{
+    "name": "storybook-solidjs-solid1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "storybook": "storybook dev -p 6007",
+        "build-storybook": "bun ../../scripts/build-storybook.ts"
+    },
+    "dependencies": {
+        "solid-js": "^1.9.15",
+        "storybook-solidjs-vite": "file:../../.pack/storybook-solidjs-vite"
+    },
+    "devDependencies": {
+        "@storybook/addon-docs": "^11.0.0-beta.0",
+        "@tailwindcss/vite": "^4.3.3",
+        "storybook": "^11.0.0-beta.0",
+        "tailwindcss": "^4.3.3",
+        "typescript": "^7.0.2",
+        "vite": "^8.2.2",
+        "vite-plugin-solid": "^2.11.14"
+    }
+}

@@ -1,3 +1,5 @@
+import { extractComponentJsDocInfo } from 'storybook/internal/component-meta';
+
 import {
     collectComponentProperties,
     collectDiscriminatedUnionIfConditions,
@@ -27,28 +29,6 @@ function extractDefaultValueFromJsDoc(
     }
 
     return { value };
-}
-
-function extractComponentJsDocTags(
-    checker: ts.TypeChecker,
-    symbol: ts.Symbol
-): SolidComponentDoc['jsDocTags'] {
-    const tags = symbol.getJsDocTags(checker);
-
-    if (tags.length === 0) {
-        return undefined;
-    }
-
-    const grouped: Record<string, string[]> = {};
-
-    for (const tag of tags) {
-        const value = tag.text?.map(part => part.text).join('').trim() ?? '';
-
-        grouped[tag.name] ??= [];
-        grouped[tag.name]!.push(value);
-    }
-
-    return grouped;
 }
 
 function extractDestructuringDefaultValue(
@@ -101,9 +81,11 @@ export function serializeComponentDoc(
     {
         sourceFile,
         resolvedComponent,
+        referencedArgNames,
     }: {
         sourceFile: ts.SourceFile;
         resolvedComponent: ResolvedComponent;
+        referencedArgNames?: ReadonlySet<string>;
     }
 ): SolidComponentDoc | undefined {
     const { componentRef, propsType, symbol } = resolvedComponent;
@@ -127,7 +109,7 @@ export function serializeComponentDoc(
     const props: Record<string, SerializedProp> = {};
 
     for (const prop of allProperties) {
-        if (!shouldIncludeComponentProp(prop, sourceFile, hasInterfaceHeritage, bulkExcluded)) {
+        if (!shouldIncludeComponentProp(prop, sourceFile, hasInterfaceHeritage, bulkExcluded, referencedArgNames)) {
             continue;
         }
 
@@ -171,15 +153,15 @@ export function serializeComponentDoc(
     const displayName = componentRef.member
         ? componentRef.componentName
         : (exportSymbol?.getName() ?? componentRef.componentName);
-    const description = typescript.displayPartsToString(resolved.getDocumentationComment(checker));
-    const jsDocTags = extractComponentJsDocTags(checker, resolved);
+    const { description, jsDocTags } = extractComponentJsDocInfo(typescript, checker, resolved);
+    const hasJsDocTags = Object.keys(jsDocTags).length > 0;
 
     return {
         displayName,
         exportName,
         filePath: componentRef.path ?? sourceFile.fileName,
         ...(description ? { description } : {}),
-        ...(jsDocTags ? { jsDocTags } : {}),
+        ...(hasJsDocTags ? { jsDocTags } : {}),
         props,
     };
 }

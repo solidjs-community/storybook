@@ -1,9 +1,21 @@
 import ts from '@typescript/typescript6';
+import { createRequire } from 'node:module';
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { cwd } from 'node:process';
 
 import { SolidComponentMetaProject } from '../../internal/componentManifest/solidComponentMeta/SolidComponentMetaProject';
+
+const require = createRequire(import.meta.url);
+const legacySolidTypesRoot = join(dirname(require.resolve('solid-js-legacy/package.json')), 'types');
+
+/** Docgen unit fixtures target Solid 1 JSX types even when the repo default is Solid 2. */
+function legacySolidJsTypePaths(): Record<string, string[]> {
+    return {
+        'solid-js': [join(legacySolidTypesRoot, 'index.d.ts')],
+        'solid-js/*': [join(legacySolidTypesRoot, '*')],
+    };
+}
 
 /** Legacy prefix when temp dirs were created in the repo root. */
 export const SPEC_TEMP_PREFIX = '.solid-spec-';
@@ -69,6 +81,20 @@ export function defaultCompilerOptions(): ts.CompilerOptions {
     return {
         strict: true,
         jsx: ts.JsxEmit.Preserve,
+        esModuleInterop: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ES2020,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        paths: legacySolidJsTypePaths(),
+    };
+}
+
+export function solid2CompilerOptions(): ts.CompilerOptions {
+    return {
+        strict: true,
+        jsx: ts.JsxEmit.Preserve,
+        jsxImportSource: '@solidjs/web',
         esModuleInterop: true,
         skipLibCheck: true,
         target: ts.ScriptTarget.ES2020,

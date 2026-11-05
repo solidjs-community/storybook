@@ -23,10 +23,7 @@ import type { SetOptional, Simplify } from 'type-fest';
  */
 export const IS_SOLID_JSX_FLAG = '__isJSX';
 
-/**
- * Meta `args` when `preview.meta()` omits `args`. Matches `@storybook/react`'s `{}` sentinel:
- * `keyof` is `never`, so `AddMocks` does not match every component prop key.
- */
+/** Story input of `meta.story()` called with no argument. Matches `@storybook/react`'s `{}`. */
 export type EmptyMetaArgs = { [Key in never]: never };
 
 // This performs a downcast to function types that are mocks, when a mock fn is given to meta args.

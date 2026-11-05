@@ -34,6 +34,7 @@ export default antfu(
             // CLI scaffolds — validated in consumer projects after init
             'template/**',
             '**/storybook-static/**',
+            '.pack/**',
         ],
     },
     {

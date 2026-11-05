@@ -2,9 +2,9 @@
 
 Storybook framework adapter for SolidJS on Vite. Supports Solid 1 and Solid 2.
 
-Larger than a quick fix: follow @AGENTFLOW.md ([AgentFlow](https://github.com/reforma-dev/agentflow)).
+Larger than a quick fix: follow @BRIEFBACK.md.
 
-Do not edit `AGENTFLOW.md`. Refresh it with `npx @reforma/agentflow@latest update`.
+[Briefback](https://briefback.dev) is installed in `.agents/skills/briefback/`. Do not edit `BRIEFBACK.md` or the skill by hand; refresh both with `npx @reforma/briefback@latest update`.
 
 ## Layout
 
@@ -15,6 +15,7 @@ Do not edit `AGENTFLOW.md`. Refresh it with `npx @reforma/agentflow@latest updat
 - `src/spec/` — Vitest tests
 - `examples/lab` — Solid 2 playground and integration checks
 - `examples/solid1` — Solid 1 playground
+- `examples/*` install the package from `.pack/storybook-solidjs-vite` (`bun run build && bun run stage`, then `bun install` in the example). Never point them at `file:../..` (bun copies the whole repo and nests `node_modules`) or add root `workspaces` (Changesets then refuses to version the root package).
 - `template/` — files copied by `create-storybook --type=solid`
 
 Published package: `storybook-solidjs-vite`. Consume via `bun` (`packageManager` in `package.json`).
@@ -37,9 +38,9 @@ Verify with the smallest command that covers the change. Renderer/docgen work us
 
 - Match nearby code. Do not add a new abstraction when an existing one fits.
 - JSX decorators for stories must use `createJSXDecorator` so they do not remount on args/globals updates. Side-effect-only decorators use `createDecorator`.
-- Default docgen injects `__docgenInfo` via the Vite `solidComponentMetaPlugin`. If `features.experimentalDocgenServer` is on, skip the inject and use the docgen worker instead.
-- `framework.options.docgen: false` disables the Vite docgen inject.
-- The preset injects `vite-plugin-solid` when the user's Vite config does not already include a Solid plugin.
+- Docgen runs on the Storybook server (`features.docgenServer`, on by default). There is no Vite `__docgenInfo` inject.
+- `framework.options.docgen: false` turns off `docgenServer` from this preset.
+- User Vite config must include the Solid Vite plugin (`@solidjs/vite-plugin` for Solid 2, `vite-plugin-solid` for Solid 1). This package does not inject it.
 - Commits: conventional (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `ci`, `perf`, `revert`) via commitlint.
 - User-facing changes: add a changeset (`bun run changelog`).
 - Do not commit `dist/`. `prepack` builds it.

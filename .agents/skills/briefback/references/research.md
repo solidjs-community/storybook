@@ -42,6 +42,7 @@ when continuing the same research.
 - links to every topic page
 - the important files, modules, or sources
 - open questions that research could not answer
+- material assumptions and coverage limits: paths not read or behavior not run
 
 Split detailed findings by domain, module, flow, or independent question. Each
 topic page owns one coherent area and must make sense when attached to a chat on
@@ -65,15 +66,33 @@ When the question is about an existing project:
 
 1. Read the nearest project guide (`AGENTS.md` or equivalent) and the
    repository's exploration rules.
-2. Try the current behavior when possible.
+2. Read the relevant README sections, build or deploy config, dependencies,
+   and tests. Try the current behavior when possible.
 3. Find the entry points, public interfaces, modules, and data flow.
-4. Follow the important path end to end. Verify call graph guesses with text
-   search.
+4. Follow the important path end to end: where input enters, what validates it,
+   what is stored, and what leaves. Include relevant callers, error paths, and
+   background work. Verify call graph guesses against the current source.
 5. Record exact file paths and symbol names with one line explaining each role.
 6. Capture constraints, gotchas, and existing APIs that later work should reuse.
 
+When concurrency, performance, or shared state matters to the question, establish
+expected load and process boundaries from docs and config. Separate evidence
+from assumptions; do not judge the design against hypothetical scale.
+
+For a broad area, go deeper where mistakes would cost most: authorization,
+money, data writes, background jobs, or state shared across processes. Stay
+within the question instead of reading every file or turning research into an
+unsolicited audit. Record what you did not inspect or could not run.
+
+For a reported defect, confirm a concrete input or situation, trace the path,
+and explain the consequence with source locations. Label unverified concerns
+as open questions. Before calling code unused, check callers, tests, config,
+and dynamic or string references. Record documented tradeoffs and their limits
+so later work can judge whether those limits still hold.
+
 Do not dump search results or source code. Explain how the pieces connect.
-Separate what you observed from what you inferred.
+Separate what you observed from what you inferred. Use plain language and
+explain unfamiliar terms when needed.
 
 ## Research a technology
 
@@ -129,6 +148,10 @@ A catalog dump is not research. Every item must help answer the question.
 ## Open questions
 
 - <unanswered question>
+
+## Assumptions and limits
+
+- <material assumption, unexamined path, or behavior not run>
 ```
 
 Use only the sections that fit the topic.
@@ -141,7 +164,7 @@ notes:
 1. How does this area work?
 2. Where are the important files, modules, or sources?
 3. What constraints will affect the work?
-4. What is still unknown?
+4. What is still unknown, assumed, or unexamined?
 
 Print the path to `index.md` and a short takeaway. Do not paste the full notes
 into the reply.

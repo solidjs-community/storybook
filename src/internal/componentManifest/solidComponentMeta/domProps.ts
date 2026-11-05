@@ -1,33 +1,8 @@
 import type ts from '@typescript/typescript6';
 
-const INHERITED_DOM_PROP_ALLOWLIST = new Set([
-    'accesskey',
-    'aria-controls',
-    'aria-current',
-    'aria-describedby',
-    'aria-disabled',
-    'aria-expanded',
-    'aria-hidden',
-    'aria-label',
-    'aria-labelledby',
-    'aria-live',
+const ALWAYS_INHERITED_DOM_PROPS = new Set([
     'class',
-    'contenteditable',
-    'dir',
-    'draggable',
-    'hidden',
-    'id',
-    'inert',
-    'inputmode',
-    'lang',
-    'popover',
-    'role',
-    'slot',
-    'spellcheck',
     'style',
-    'tabIndex',
-    'title',
-    'translate',
 ]);
 
 function isDomLibrarySource(fileName: string) {
@@ -52,28 +27,79 @@ function isSolidJsxOnlyPropName(name: string) {
         || name.startsWith('oncapture:');
 }
 
-function isAllowlistedInheritedDomProp(name: string) {
+function namesMatchCaseInsensitive(names: ReadonlySet<string>, propName: string) {
+    if (names.has(propName)) {
+        return true;
+    }
+
+    const lower = propName.toLowerCase();
+
+    for (const name of names) {
+        if (name.toLowerCase() === lower) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function shouldIncludeInheritedDomProp(
+    name: string,
+    referencedArgNames?: ReadonlySet<string>
+) {
     if (isEventHandlerPropName(name)) {
         return false;
     }
 
-    if (name.startsWith('data-')) {
+    if (namesMatchCaseInsensitive(ALWAYS_INHERITED_DOM_PROPS, name)) {
         return true;
     }
 
-    return INHERITED_DOM_PROP_ALLOWLIST.has(name);
+    return referencedArgNames !== undefined && namesMatchCaseInsensitive(referencedArgNames, name);
 }
 
 function isPropDeclaredInSource(prop: ts.Symbol, sourceFile: ts.SourceFile) {
     return prop.declarations?.some(declaration => declaration.getSourceFile() === sourceFile) ?? false;
 }
 
-export function propsTypeHasInterfaceHeritage(typescript: typeof ts, propsType: ts.Type) {
-    if (propsType.isUnion()) {
+const DOM_ATTRIBUTES_TYPE_NAMES = new Set([
+    'ElementAttributes',
+    'HTMLAttributes',
+    'MathMLAttributes',
+    'SVGAttributes',
+    'SvgSVGAttributes',
+]);
+
+function isIntersectionType(typescript: typeof ts, type: ts.Type): type is ts.IntersectionType {
+    return (type.flags & typescript.TypeFlags.Intersection) !== 0;
+}
+
+function typeHasDomInterfaceHeritage(
+    typescript: typeof ts,
+    type: ts.Type,
+    seen: Set<ts.Type>
+): boolean {
+    if (seen.has(type)) {
         return false;
     }
 
-    const symbol = propsType.getSymbol() ?? propsType.aliasSymbol;
+    seen.add(type);
+
+    if (type.isUnion()) {
+        return false;
+    }
+
+    if (isIntersectionType(typescript, type)) {
+        return type.types.some(part => typeHasDomInterfaceHeritage(typescript, part, seen));
+    }
+
+    const symbol = type.getSymbol() ?? type.aliasSymbol;
+    const name = symbol?.getName();
+
+    if (name && DOM_ATTRIBUTES_TYPE_NAMES.has(name)) {
+        return true;
+    }
+
     const declaration = symbol?.declarations?.find(typescript.isInterfaceDeclaration);
 
     if (!declaration) {
@@ -85,11 +111,16 @@ export function propsTypeHasInterfaceHeritage(typescript: typeof ts, propsType: 
     ) ?? false;
 }
 
+export function propsTypeHasInterfaceHeritage(typescript: typeof ts, propsType: ts.Type) {
+    return typeHasDomInterfaceHeritage(typescript, propsType, new Set());
+}
+
 export function shouldIncludeComponentProp(
     prop: ts.Symbol,
     sourceFile: ts.SourceFile,
     hasInterfaceHeritage: boolean,
-    bulkExcluded: Set<string>
+    bulkExcluded: Set<string>,
+    referencedArgNames?: ReadonlySet<string>
 ) {
     const propName = prop.getName();
 
@@ -105,7 +136,7 @@ export function shouldIncludeComponentProp(
         const declaration = prop.declarations?.[0];
 
         if (declaration && isDomLibrarySource(declaration.getSourceFile().fileName)) {
-            return isAllowlistedInheritedDomProp(propName);
+            return shouldIncludeInheritedDomProp(propName, referencedArgNames);
         }
 
         return true;

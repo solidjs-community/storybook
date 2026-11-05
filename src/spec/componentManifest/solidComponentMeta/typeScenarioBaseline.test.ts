@@ -86,7 +86,7 @@ describe('design system type patterns', () => {
         }, tempDirs);
     });
 
-    it('does not infer enum controls from Record literal keys', () => {
+    it('keeps Record value props as object control', () => {
         expectScenario('Record literal keys', {
             files: {
                 'Example.tsx': `
@@ -102,6 +102,39 @@ describe('design system type patterns', () => {
                     rcmName: 'Record<"a" | "b", string>',
                     control: 'object',
                 },
+            ],
+        }, tempDirs);
+    });
+
+    it('maps keyof Record literal union to radio options', () => {
+        expectScenario('keyof Record literal union', {
+            files: {
+                'Example.tsx': `
+                    interface Props { key: keyof Record<'a' | 'b', string>; }
+                    export function Example(props: Props) { return null; }
+                `,
+            },
+            entryFile: 'Example.tsx',
+            exportName: 'Example',
+            expectations: [
+                { prop: 'key', rcmName: 'enum', control: 'radio' },
+            ],
+        }, tempDirs);
+    });
+
+    it('maps aliased keyof Record literal union to radio options', () => {
+        expectScenario('aliased keyof Record', {
+            files: {
+                'Example.tsx': `
+                    type Key = keyof Record<'sm' | 'lg', number>;
+                    interface Props { size: Key; }
+                    export function Example(props: Props) { return null; }
+                `,
+            },
+            entryFile: 'Example.tsx',
+            exportName: 'Example',
+            expectations: [
+                { prop: 'size', rcmName: 'enum', control: 'radio' },
             ],
         }, tempDirs);
     });
@@ -209,7 +242,6 @@ describe('solid JSX & DOM props', () => {
             entryFile: 'Button.tsx',
             exportName: 'Button',
             expectations: [
-                { prop: 'id', rcmName: 'string', control: 'text' },
                 { prop: 'class', rcmName: 'string', control: 'text' },
                 { prop: 'label', rcmName: 'string', control: 'text' },
             ],

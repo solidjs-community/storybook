@@ -4,9 +4,9 @@ import {
     ErrorBoundary,
     onCleanup,
     onMount,
-} from 'solid-js';
-import { reconcile, createStore as solidCreateStore } from 'solid-js/store';
-import { render as solidRender } from 'solid-js/web';
+} from 'solid-js-legacy';
+import { reconcile, createStore as solidCreateStore } from 'solid-js-legacy/store';
+import { render as solidRender } from 'solid-js-legacy/web';
 import { definePreviewAddon } from 'storybook/internal/csf';
 
 import { createApplyDecorators } from './shared/apply-decorators';
@@ -15,12 +15,13 @@ import { createDefaultRender } from './shared/default-render';
 import { createMount } from './shared/mount';
 import { createRenderToCanvas } from './shared/render-to-canvas';
 import { createStoryState } from './shared/story-store';
+import { decorators } from './shared/test-syntax-guard';
 
 import type { ProjectAnnotations, Renderer } from 'storybook/internal/types';
 import type { SolidComponent } from '../preview/public-api';
 import type { SolidRendererRuntime } from './shared/render-to-canvas';
 
-const SOLID_RENDERER_ID = 'solid' as const;
+const SOLID_RENDERER_ID = 'solid1' as const;
 
 if (global.window) {
     global.window.STORYBOOK_ENV = SOLID_RENDERER_ID;
@@ -44,8 +45,8 @@ const storyStore = createStoryState(createStore);
 
 const runtime: SolidRendererRuntime = {
     storyStore,
-    createComponent,
-    render: solidRender,
+    createComponent: createComponent as SolidRendererRuntime['createComponent'],
+    render: solidRender as SolidRendererRuntime['render'],
 };
 
 const applyDecorators = createApplyDecorators({ storyStore });
@@ -53,7 +54,7 @@ const mount = createMount(runtime);
 const render = createDefaultRender(runtime.createComponent);
 const renderToCanvas = createRenderToCanvas({
     ...runtime,
-    createStoryApp: ({ Story, storyContext, showMain, showException, storyId }) => {
+    createStoryApp: ({ Story, showMain, showException, storyId }) => {
         const App: SolidComponent = () => {
             onMount(() => {
                 showMain();
@@ -64,18 +65,13 @@ const renderToCanvas = createRenderToCanvas({
                 storyStore.setRendered(storyId, false);
             });
 
-
-            if (storyContext?.parameters?.['__isPortableStory']) {
-                return createComponent(() => Story(), {});
-            }
-
-            return createComponent(ErrorBoundary, {
+            return createComponent(ErrorBoundary as any, {
                 fallback: (err: Error) => {
                     showException(err);
 
                     return err as any;
                 },
-                children: createComponent(() => Story(), {}),
+                children: createComponent((() => Story()) as any, {}),
             });
         };
 
@@ -86,6 +82,7 @@ const renderToCanvas = createRenderToCanvas({
 const previewAddon = definePreviewAddon({
     applyDecorators,
     beforeAll,
+    decorators,
     mount,
     parameters,
     render,
@@ -95,6 +92,7 @@ const previewAddon = definePreviewAddon({
 export {
     applyDecorators,
     beforeAll,
+    decorators,
     mount,
     parameters,
     previewAddon,

@@ -6,9 +6,9 @@ See also: [modules index](./modules.md), [preview and CSF](./preview-and-csf.md)
 
 ## Shared vs versioned
 
-Orchestration lives in `src/renderer/shared/`. Version files (`solid-next.ts`, `solid-legacy.ts`) only supply Solid APIs and the story shell (error boundary / settled hooks).
+Orchestration lives in `src/renderer/shared/`. Version files (`solid2.ts`, `solid1.ts`) only supply Solid APIs and the story shell (error boundary / settled hooks).
 
-Each version registers a preview addon with: `renderToCanvas`, default `render`, `applyDecorators`, play `mount`, `beforeAll`, and `parameters.renderer`. Both set `window.STORYBOOK_ENV` to that renderer id when `window` exists.
+Each version registers a preview addon with: `renderToCanvas`, default `render`, `applyDecorators`, `decorators`, play `mount`, `beforeAll`, and `parameters.renderer`. Both set `window.STORYBOOK_ENV` to that renderer id when `window` exists. The same addon backs [portable stories](./preview-and-csf.md#portable-stories) outside Storybook, through `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS`.
 
 ## Mount once
 
@@ -40,15 +40,17 @@ JSX decorators that close over non-reactive values will go stale; they must read
 
 ## Version shells
 
-|                       | Solid 2 (`solid-next`)  | Solid 1 (`solid-legacy`)                  |
-| --------------------- | ----------------------- | ----------------------------------------- |
-| Render                | `@solidjs/web`          | `solid-js-legacy/web`                     |
-| Errors / settled      | `Errored` + `onSettled` | `ErrorBoundary` + `onMount` / `onCleanup` |
-| `parameters.renderer` | `solid-next`            | `solid`                                   |
+|                                         | Solid 2 (`solid2`)      | Solid 1 (`solid1`)                        |
+| --------------------------------------- | ----------------------- | ----------------------------------------- |
+| Render                                  | `@solidjs/web`          | `solid-js-legacy/web`                     |
+| Errors / settled                        | `Errored` + `onSettled` | `ErrorBoundary` + `onMount` / `onCleanup` |
+| `parameters.renderer` / `STORYBOOK_ENV` | `solid2`                | `solid1`                                  |
 
-`definePreview` always imports `solid-legacy`; on Solid 2 the preset aliases that import to `solid-next`. Preview annotations also pick the entry from `resolveSolidRendererEntry`.
+`definePreview` imports `preview-addon`; the preset aliases that (and the inactive major) onto the active renderer. Preview annotations also pick the entry from `resolveSolidRendererEntry`.
 
 ## Interaction tests and docs defaults
+
+`decorators` (`shared/test-syntax-guard.ts`) holds React's `test-fn` guard: a `.test()` story throws when `FEATURES.experimentalTestSyntax` is off. This preset turns the flag on by default, so only users who set it to `false` hit it.
 
 `beforeAll` wraps `storybook/test` async play steps with a macrotask so Solid can flush. Missing `storybook/test` is a no-op.
 
@@ -56,6 +58,6 @@ JSX decorators that close over non-reactive values will go stale; they must read
 
 ## Key modules and tests
 
-- `src/renderer/solid-next.ts`, `src/renderer/solid-legacy.ts`
+- `src/renderer/solid2.ts`, `src/renderer/solid1.ts`
 - `src/renderer/shared/*`
 - `src/spec/renderer/*`

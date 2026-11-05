@@ -1,7 +1,15 @@
 import { createLanguage, FileMap, type SourceScript } from '@volar/language-core';
 import { createLanguageServiceHost, resolveFileLanguageId } from '@volar/typescript';
+import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
+import {
+    type FileChange,
+    type FileSnapshotCache,
+    ProgramBackedProject,
+    ProjectFileTracker,
+} from 'storybook/internal/component-meta';
 
+import { collectCsfArgNamesFromSource } from '../collectCsfArgNames';
 import {
     resolveFromComponentFile,
     resolveFromMetaComponent,
@@ -12,36 +20,34 @@ import {
 import type ts from '@typescript/typescript6';
 import type { ComponentRef, SolidComponentDoc, StoryExtractionEntry } from '../types';
 
-function arrayItemsEqual(a: string[], b: string[]) {
-    if (a.length !== b.length) {
-        return false;
-    }
-
-    const set = new Set(a);
-
-    for (const file of b) {
-        if (!set.has(file)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-export class SolidComponentMetaProject {
-    private readonly ls: ts.LanguageService;
-    private projectVersion = 0;
-    private shouldCheckRootFiles = false;
+/**
+ * One TypeScript LanguageService per tsconfig, shaped like React's `ComponentMetaProject`. Core's
+ * `ProgramBackedProject` answers the manager's membership and lifecycle questions and its
+ * `ProjectFileTracker` owns snapshot freshness; this class builds the Volar-backed service and
+ * runs the Solid prop extraction.
+ */
+export class SolidComponentMetaProject extends ProgramBackedProject<ts.IScriptSnapshot, ts.SourceFile | undefined> {
+    protected readonly service: ts.LanguageService;
+    protected readonly files: ProjectFileTracker<ts.IScriptSnapshot>;
     private entries: StoryExtractionEntry[] = [];
     private warmupTimer: ReturnType<typeof setTimeout> | undefined;
 
     constructor(
         private readonly typescript: typeof ts,
-        private commandLine: ts.ParsedCommandLine,
+        private readonly commandLine: ts.ParsedCommandLine,
         readonly configFileName: string | undefined,
-        private readonly fsFileSnapshots: Map<string, [number | undefined, ts.IScriptSnapshot | undefined]>,
-        private readonly getCommandLineFn?: () => ts.ParsedCommandLine
+        fsFileSnapshots: FileSnapshotCache<ts.IScriptSnapshot>,
+        getCommandLineFn?: () => ts.ParsedCommandLine
     ) {
+        super();
+        this.files = new ProjectFileTracker(
+            typescript,
+            commandLine,
+            fsFileSnapshots,
+            text => typescript.ScriptSnapshot.fromString(text),
+            getCommandLineFn
+        );
+
         const language = createLanguage(
             [{ getLanguageId: fileName => resolveFileLanguageId(fileName) }],
             new FileMap(typescript.sys.useCaseSensitiveFileNames) as Map<string, SourceScript<string>>,
@@ -50,25 +56,7 @@ export class SolidComponentMetaProject {
                     return;
                 }
 
-                const cache = fsFileSnapshots.get(fileName);
-                const modifiedTime = typescript.sys.getModifiedTime?.(fileName)?.valueOf();
-                let snapshot: ts.IScriptSnapshot | undefined;
-
-                if (!cache || cache[0] !== modifiedTime) {
-                    if (typescript.sys.fileExists(fileName)) {
-                        const text = typescript.sys.readFile(fileName);
-
-                        snapshot = text !== undefined ? typescript.ScriptSnapshot.fromString(text) : undefined;
-                    }
-                    else {
-                        snapshot = undefined;
-                    }
-
-                    fsFileSnapshots.set(fileName, [modifiedTime, snapshot]);
-                }
-                else {
-                    snapshot = cache[1];
-                }
+                const snapshot = this.files.getSnapshot(fileName);
 
                 if (snapshot) {
                     language.scripts.set(fileName, snapshot);
@@ -87,16 +75,8 @@ export class SolidComponentMetaProject {
             ),
             getCompilationSettings: () => this.commandLine.options,
             getProjectReferences: () => this.commandLine.projectReferences,
-            getProjectVersion: () => {
-                this.checkRootFilesUpdate();
-
-                return this.projectVersion.toString();
-            },
-            getScriptFileNames: () => {
-                this.checkRootFilesUpdate();
-
-                return this.commandLine.fileNames;
-            },
+            getProjectVersion: () => this.files.getProjectVersion(),
+            getScriptFileNames: () => this.files.getScriptFileNames(),
         };
 
         // Volar is typed against `typescript`; we always pass @typescript/typescript6 (same API shape).
@@ -108,96 +88,25 @@ export class SolidComponentMetaProject {
             projectHost as never
         );
 
-        this.ls = typescript.createLanguageService(languageServiceHost as never);
+        this.service = typescript.createLanguageService(languageServiceHost as never);
     }
 
-    dispose() {
+    getCommandLine(): ts.ParsedCommandLine {
+        return this.commandLine;
+    }
+
+    /** Cancels the warmup the base does not know about. */
+    override dispose() {
         clearTimeout(this.warmupTimer);
-        this.ls.dispose();
+        super.dispose();
     }
 
-    ensureFiles(fileNames: string[]) {
-        let added = false;
+    /** Re-extracts the last story batch in the background after a change, so the next request is warm. */
+    override onFilesChanged(changes: FileChange[]) {
+        const program = this.service.getProgram();
+        const versionMoved = this.files.onFilesChanged(changes, fileName => !!program?.getSourceFile(fileName));
 
-        for (const fileName of fileNames) {
-            if (!this.commandLine.fileNames.includes(fileName)) {
-                this.commandLine.fileNames.push(fileName);
-                added = true;
-            }
-        }
-
-        if (added) {
-            this.projectVersion++;
-        }
-    }
-
-    checkRootFilesUpdate() {
-        if (!this.shouldCheckRootFiles || !this.getCommandLineFn) {
-            return;
-        }
-
-        this.shouldCheckRootFiles = false;
-
-        const newCommandLine = this.getCommandLineFn();
-
-        if (!arrayItemsEqual(newCommandLine.fileNames, this.commandLine.fileNames)) {
-            this.commandLine.fileNames = newCommandLine.fileNames;
-            this.projectVersion++;
-        }
-    }
-
-    ensureFresh(fileNames: string[]) {
-        let stale = false;
-
-        for (const fileName of fileNames) {
-            const cache = this.fsFileSnapshots.get(fileName);
-
-            if (!cache) {
-                continue;
-            }
-
-            const currentMtime = this.typescript.sys.getModifiedTime?.(fileName)?.valueOf();
-
-            if (cache[0] !== currentMtime) {
-                this.fsFileSnapshots.delete(fileName);
-                stale = true;
-            }
-        }
-
-        if (stale) {
-            this.projectVersion++;
-        }
-    }
-
-    onFilesChanged(changes: Array<{ filePath: string; type: 'changed' | 'created' | 'deleted' }>) {
-        for (const { filePath } of changes) {
-            this.fsFileSnapshots.delete(filePath);
-        }
-
-        const oldVersion = this.projectVersion;
-        const program = this.ls.getProgram();
-
-        for (const { filePath, type } of changes) {
-            if (type === 'changed') {
-                if (program?.getSourceFile(filePath)) {
-                    this.projectVersion++;
-                }
-            }
-            else if (type === 'deleted') {
-                if (program?.getSourceFile(filePath)) {
-                    this.projectVersion++;
-                }
-
-                this.shouldCheckRootFiles = true;
-                break;
-            }
-            else if (type === 'created') {
-                this.shouldCheckRootFiles = true;
-                break;
-            }
-        }
-
-        if (this.projectVersion !== oldVersion && this.entries.length > 0) {
+        if (versionMoved && this.entries.length > 0) {
             clearTimeout(this.warmupTimer);
             this.warmupTimer = setTimeout(() => {
                 try {
@@ -220,10 +129,10 @@ export class SolidComponentMetaProject {
                 : [entry.storyPath]
         );
 
-        this.ensureFiles(allFiles);
-        this.ensureFresh(allFiles);
+        this.files.ensureFiles(allFiles);
+        this.files.ensureFresh(allFiles);
 
-        const program = this.ls.getProgram();
+        const program = this.service.getProgram();
 
         if (!program) {
             return;
@@ -304,9 +213,19 @@ export class SolidComponentMetaProject {
                     serializationContextByComponentPath.set(componentPath, serializationContext);
                 }
 
+                let referencedArgNames: Set<string> | undefined;
+
+                try {
+                    referencedArgNames = collectCsfArgNamesFromSource(readFileSync(entry.storyPath, 'utf8'));
+                }
+                catch {
+                    referencedArgNames = undefined;
+                }
+
                 const doc = serializeComponentDoc(this.typescript, checker, {
                     sourceFile: serializationContext.sourceFile,
                     resolvedComponent,
+                    ...(referencedArgNames ? { referencedArgNames } : {}),
                 });
 
                 if (doc) {
@@ -329,11 +248,15 @@ export class SolidComponentMetaProject {
         }
     }
 
-    extractFromComponentFile(componentPath: string, exportName: string): SolidComponentDoc | undefined {
-        this.ensureFiles([componentPath]);
-        this.ensureFresh([componentPath]);
+    extractFromComponentFile(
+        componentPath: string,
+        exportName: string,
+        referencedArgNames?: ReadonlySet<string>
+    ): SolidComponentDoc | undefined {
+        this.files.ensureFiles([componentPath]);
+        this.files.ensureFresh([componentPath]);
 
-        const program = this.ls.getProgram();
+        const program = this.service.getProgram();
 
         if (!program) {
             return undefined;
@@ -367,14 +290,15 @@ export class SolidComponentMetaProject {
         return serializeComponentDoc(this.typescript, checker, {
             sourceFile,
             resolvedComponent: resolved,
+            ...(referencedArgNames ? { referencedArgNames } : {}),
         });
     }
 
     extractAllExportsFromFile(componentPath: string): SolidComponentDoc[] {
-        this.ensureFiles([componentPath]);
-        this.ensureFresh([componentPath]);
+        this.files.ensureFiles([componentPath]);
+        this.files.ensureFresh([componentPath]);
 
-        const program = this.ls.getProgram();
+        const program = this.service.getProgram();
 
         if (!program) {
             return [];
@@ -408,15 +332,5 @@ export class SolidComponentMetaProject {
         }
 
         return docs;
-    }
-
-    getSourceFilePaths() {
-        const program = this.ls.getProgram();
-
-        return program
-            ? program.getSourceFiles()
-                .map(sf => sf.fileName.replace(/\\/g, '/'))
-                .filter(f => !f.includes('node_modules'))
-            : [];
     }
 }

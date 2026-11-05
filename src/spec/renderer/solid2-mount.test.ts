@@ -1,9 +1,9 @@
-import { createMemo, createRoot } from 'solid-js-next';
+import { createMemo, createRoot } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 
-import { mount } from '../../renderer/solid-next';
+import { mount } from '../../renderer/solid2';
 
-// `@solidjs/web` imports `solid-js`, which is Solid 1 in this package.
+// Skip a real DOM render. The assertion only reads the reactive args.
 vi.mock('@solidjs/web', () => ({
     render: () => () => {},
 }));

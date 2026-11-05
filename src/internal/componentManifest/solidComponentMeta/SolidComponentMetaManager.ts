@@ -1,10 +1,13 @@
 import ts from '@typescript/typescript6';
-import { watch } from 'node:fs';
 import * as path from 'node:path';
-import { getHeapStatistics } from 'node:v8';
+import {
+    ComponentMetaManager,
+    type ComponentMetaProjectFactory,
+    type FileSnapshotCache,
+} from 'storybook/internal/component-meta';
 import { logger } from 'storybook/internal/node-logger';
 
-import { findTsConfigForFile } from './findTsConfigForFile';
+import { findTsConfigForFile, parseTsConfig } from './findTsConfigForFile';
 import { SolidComponentMetaProject } from './SolidComponentMetaProject';
 
 import type { SolidComponentDoc, StoryExtractionEntry } from '../types';
@@ -17,49 +20,77 @@ const DEFAULT_INFERRED_OPTIONS: ts.CompilerOptions = {
     jsx: ts.JsxEmit.Preserve,
 };
 
-/** Recycle shared TS programs once heap usage crosses this fraction of the V8 heap limit. */
-const RECYCLE_HEAP_PRESSURE_RATIO = 0.7;
+/**
+ * Builds Solid projects for core's manager. Every project shares one mtime-cached snapshot map,
+ * which is dropped on heap-pressure recycle and on dispose.
+ */
+function createSolidProjectFactory(
+    typescript: typeof ts
+): ComponentMetaProjectFactory<SolidComponentMetaProject, ts.ParsedCommandLine> {
+    const fsFileSnapshots: FileSnapshotCache<ts.IScriptSnapshot> = new Map();
 
-export class SolidComponentMetaManager {
-    private readonly configProjects = new Map<string, SolidComponentMetaProject>();
-    private readonly fsFileSnapshots = new Map<string, [number | undefined, ts.IScriptSnapshot | undefined]>();
-    private inferredProject: SolidComponentMetaProject | undefined;
-    private watching = false;
-    private readonly watchersByDir = new Map<string, ReturnType<typeof watch>>();
-    private readonly heapRecycleThresholdBytes: number;
-    private hasWarnedHeapRecycle = false;
+    return {
+        parseCommandLine: (tsconfig) => {
+            const commandLine = parseTsConfig(typescript, tsconfig);
+
+            if (!commandLine) {
+                throw new Error(`Cannot read ${ tsconfig }`);
+            }
+
+            return commandLine;
+        },
+        createConfiguredProject: (commandLine, tsconfig, getCommandLine) => new SolidComponentMetaProject(
+            typescript,
+            commandLine,
+            tsconfig,
+            fsFileSnapshots,
+            getCommandLine
+        ),
+        createInferredProject: () => new SolidComponentMetaProject(
+            typescript,
+            { options: { ...DEFAULT_INFERRED_OPTIONS }, fileNames: [], errors: [] },
+            undefined,
+            fsFileSnapshots
+        ),
+        recycle: () => fsFileSnapshots.clear(),
+        dispose: () => fsFileSnapshots.clear(),
+    };
+}
+
+/**
+ * The base's project cache, which Solid's tsconfig lookup fills instead of the base's own lookup.
+ * Core keeps it private and has no hook for tsconfig selection. Optional so that, if core renames
+ * it, docgen degrades to core's lookup instead of crashing; a spec pins that it still exists.
+ */
+interface ConfiguredProjectCache {
+    getOrCreateConfiguredProject?(tsconfig: string): SolidComponentMetaProject | null;
+}
+
+/**
+ * Solid specialization of core's `ComponentMetaManager`, which owns the project cache, file
+ * watching and heap-pressure recycling. Only the tsconfig lookup stays ours: the closest tsconfig
+ * that includes the file, directly or through project references, else the closest one. Core's
+ * lookup falls back to an inferred project instead, which drops the user's `paths` and JSX options.
+ */
+export class SolidComponentMetaManager extends ComponentMetaManager<SolidComponentMetaProject, ts.ParsedCommandLine> {
+    private readonly ts: typeof ts;
 
     /**
      * @param recycleHeapPressureRatio Fraction of the V8 heap limit at which programs are recycled.
      *   Pass `Infinity` in tests to disable; pass `0` to recycle after every extract.
      */
-    constructor(
-        private readonly typescript: typeof ts,
-        recycleHeapPressureRatio = RECYCLE_HEAP_PRESSURE_RATIO
-    ) {
-        this.heapRecycleThresholdBytes = Math.floor(
-            getHeapStatistics().heap_size_limit * recycleHeapPressureRatio
-        );
+    constructor(typescript: typeof ts, recycleHeapPressureRatio?: number) {
+        super(typescript, createSolidProjectFactory(typescript), recycleHeapPressureRatio);
+        this.ts = typescript;
     }
 
-    dispose() {
-        for (const watcher of this.watchersByDir.values()) {
-            watcher.close();
-        }
+    override getProjectForFile(fileName: string): SolidComponentMetaProject {
+        const tsconfig = findTsConfigForFile(this.ts, fileName);
+        const project = tsconfig
+            ? (this as unknown as ConfiguredProjectCache).getOrCreateConfiguredProject?.(tsconfig)
+            : undefined;
 
-        this.watchersByDir.clear();
-        this.disposeProjects();
-        this.fsFileSnapshots.clear();
-    }
-
-    getProjectForFile(fileName: string) {
-        const tsconfig = findTsConfigForFile(this.typescript, fileName);
-
-        if (tsconfig) {
-            return this.getOrCreateConfiguredProject(tsconfig) ?? this.getOrCreateInferredProject(fileName);
-        }
-
-        return this.getOrCreateInferredProject(fileName);
+        return project ?? super.getProjectForFile(fileName);
     }
 
     batchExtract(entries: StoryExtractionEntry[]) {
@@ -89,10 +120,15 @@ export class SolidComponentMetaManager {
         this.recycleProjectsIfHeapPressured();
     }
 
-    extractFromComponentFile(componentPath: string, exportName: string): SolidComponentDoc | undefined {
+    extractFromComponentFile(
+        componentPath: string,
+        exportName: string,
+        referencedArgNames?: ReadonlySet<string>
+    ): SolidComponentDoc | undefined {
         const doc = this.getProjectForFile(componentPath).extractFromComponentFile(
             path.resolve(componentPath),
-            exportName
+            exportName,
+            referencedArgNames
         );
 
         this.recycleProjectsIfHeapPressured();
@@ -108,160 +144,6 @@ export class SolidComponentMetaManager {
         this.recycleProjectsIfHeapPressured();
 
         return docs;
-    }
-
-    startWatching() {
-        if (this.watching) {
-            return;
-        }
-
-        this.watching = true;
-
-        const watchedDirs = new Set<string>();
-
-        for (const project of [...this.configProjects.values(), this.inferredProject].filter(Boolean)) {
-            for (const filePath of project!.getSourceFilePaths()) {
-                watchedDirs.add(path.dirname(filePath));
-            }
-        }
-
-        for (const dir of watchedDirs) {
-            this.watchDirectory(dir);
-        }
-    }
-
-    private watchDirectory(dir: string) {
-        const normalized = path.normalize(dir);
-
-        if (this.watchersByDir.has(normalized)) {
-            return;
-        }
-
-        try {
-            const watcher = watch(normalized, { recursive: true }, (_event, filename) => {
-                if (!filename) {
-                    return;
-                }
-
-                const filePath = path.join(normalized, filename.toString());
-                const project = this.getProjectForFile(filePath);
-
-                project.onFilesChanged([{ filePath, type: 'changed' }]);
-            });
-
-            this.watchersByDir.set(normalized, watcher);
-        }
-        catch(error) {
-            logger.debug(`[solidComponentMeta] Failed to watch directory ${ normalized }: ${ String(error) }`);
-        }
-    }
-
-    private getOrCreateConfiguredProject(tsconfigPath: string) {
-        const existing = this.configProjects.get(tsconfigPath);
-
-        if (existing) {
-            return existing;
-        }
-
-        try {
-            const config = this.typescript.readConfigFile(tsconfigPath, this.typescript.sys.readFile);
-
-            if (config.error) {
-                return undefined;
-            }
-
-            const commandLine = this.typescript.parseJsonConfigFileContent(
-                config.config,
-                this.typescript.sys,
-                path.dirname(tsconfigPath),
-                {},
-                tsconfigPath
-            );
-
-            const project = new SolidComponentMetaProject(
-                this.typescript,
-                commandLine,
-                tsconfigPath,
-                this.fsFileSnapshots,
-                () => {
-                    const refreshed = this.typescript.readConfigFile(tsconfigPath, this.typescript.sys.readFile);
-
-                    return this.typescript.parseJsonConfigFileContent(
-                        refreshed.config,
-                        this.typescript.sys,
-                        path.dirname(tsconfigPath),
-                        {},
-                        tsconfigPath
-                    );
-                }
-            );
-
-            this.configProjects.set(tsconfigPath, project);
-
-            return project;
-        }
-        catch(error) {
-            logger.debug(`[solidComponentMeta] Failed to parse tsconfig ${ tsconfigPath }: ${ String(error) }`);
-
-            return undefined;
-        }
-    }
-
-    private getOrCreateInferredProject(fileName: string) {
-        if (this.inferredProject) {
-            return this.inferredProject;
-        }
-
-        const commandLine = this.typescript.parseJsonConfigFileContent(
-            DEFAULT_INFERRED_OPTIONS,
-            this.typescript.sys,
-            path.dirname(path.resolve(fileName))
-        );
-
-        this.inferredProject = new SolidComponentMetaProject(
-            this.typescript,
-            commandLine,
-            undefined,
-            this.fsFileSnapshots
-        );
-
-        return this.inferredProject;
-    }
-
-    /**
-     * Drop LanguageServices when heap usage approaches the V8 limit so the next extract rebuilds
-     * instead of OOMing the docgen worker — same approach as React's ComponentMetaManager.
-     */
-    private recycleProjectsIfHeapPressured() {
-        if (this.configProjects.size === 0 && !this.inferredProject) {
-            return;
-        }
-
-        if (process.memoryUsage().heapUsed < this.heapRecycleThresholdBytes) {
-            return;
-        }
-
-        if (!this.hasWarnedHeapRecycle) {
-            this.hasWarnedHeapRecycle = true;
-            const heapLimitMb = Math.round(getHeapStatistics().heap_size_limit / (1024 * 1024));
-
-            logger.warn(
-                `storybook-solidjs-vite recycled its TypeScript program after heap pressure (~${ heapLimitMb } MB) to avoid an out-of-memory crash. Docs/Controls may hitch briefly. If this repeats, raise Node's limit, e.g. NODE_OPTIONS="--max-old-space-size=${ heapLimitMb * 2 }"`
-            );
-        }
-
-        this.disposeProjects();
-        this.fsFileSnapshots.clear();
-    }
-
-    private disposeProjects() {
-        for (const project of this.configProjects.values()) {
-            project.dispose();
-        }
-
-        this.configProjects.clear();
-        this.inferredProject?.dispose();
-        this.inferredProject = undefined;
     }
 }
 
