@@ -272,7 +272,7 @@ See [Migration Guide](./MIGRATION.md) for 9 → 10 and 10 → 11.
 
 Issues and PRs welcome — [open an issue](https://github.com/solidjs-community/storybook/issues) or submit a pull request.
 
-For any agent-driven changes, follow [AgentFlow](https://github.com/reforma-dev/agentflow).
+For any agent-driven changes, follow [Briefback](https://briefback.dev).
 
 ## 📖 License
 
