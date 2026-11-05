@@ -70,7 +70,7 @@ React lists `react`, `react-dom/client`, `react-dom/test-utils` and `react/jsx-r
 - The user's Solid plugin already pre-bundles the runtime in `serve` (dev and Vitest). `@solidjs/vite-plugin` 3.0.0-next adds `solid-js`, `@solidjs/web` and `solid-js/refresh`. `vite-plugin-solid` 2.11 adds `solid-js`, `solid-js/web`, `solid-js/store`, `solid-js/html` and `solid-js/h`. Both add Solid packages found by `vitefu`. Compiled JSX imports `@solidjs/web` / `solid-js/web`, which is in that list.
 - builder-vite's optimize-deps plugin adds every preview annotation, including our renderer entry, to `optimizeDeps.entries`. The scanner crawls it even though `storybook-solidjs-vite` itself is excluded.
 
-Pending: a cold-cache (`node_modules/.vite` removed) lab Vitest browser run has not been done yet to confirm there is no dependency-optimization reload.
+Confirmed 2026-11-05: a lab Vitest browser run from a fresh install (no `node_modules/.vite`) passed with no dependency re-optimization or reload.
 
 This package never injects the Solid Vite plugin (`@solidjs/vite-plugin` / `vite-plugin-solid`); the user’s Vite config owns that. There is no Vite `__docgenInfo` plugin on this branch.
 

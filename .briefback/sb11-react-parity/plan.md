@@ -247,10 +247,10 @@ Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` i
 - a decision on `optimizeViteDeps`. Mirror React only when a cold-cache lab Vitest browser run shows a dependency-optimization reload. Otherwise record why Solid does not need it;
 - making the lab build fail loudly when Storybook prints "Failed to load preset", since it exits 0.
 
-- [ ] Complete
+- [x] Complete
   - [x] `template/cli/{js,ts}` Button/Header/Page components carry prop JSDoc (`@param` in JS, doc comments in TS) like React's templates. Stories unchanged (CSF Next).
   - [x] A `test-fn` story with `experimentalTestSyntax` off throws React's error.
-  - [ ] `optimizeViteDeps` added for Solid runtime entries if a cold Vitest browser run reloads. Otherwise the reason is recorded in `.briefback/docs/framework/preset-and-version.md`.
+  - [x] `optimizeViteDeps` added for Solid runtime entries if a cold Vitest browser run reloads. Otherwise the reason is recorded in `.briefback/docs/framework/preset-and-version.md`.
   - [x] Lab `build-storybook` fails on "Failed to load preset".
 
 **Files**
@@ -261,7 +261,7 @@ Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` i
 - `examples/lab/package.json`, `examples/lab/scripts/*`: preset-load check
 - `src/spec/renderer/*.test.ts`: guard test
 
-**Scope change:** the preset-load wrapper lives in root `scripts/build-storybook.ts` and is shared by `examples/lab` and `examples/solid1`. The guard uses `createDecorator`. `optimizeViteDeps` is not added (Solid ships ESM, Solid Vite plugins prebundle the runtime); the cold-cache lab Vitest run is pending for stage 9.
+**Scope change:** the preset-load wrapper lives in root `scripts/build-storybook.ts` and is shared by `examples/lab` and `examples/solid1`. The guard uses `createDecorator`. `optimizeViteDeps` is not added (Solid ships ESM, Solid Vite plugins prebundle the runtime); a cold-cache lab Vitest run confirmed no reload (2026-11-05).
 
 **Done when:** the template components document every prop, the guard has a test, the optimizeViteDeps decision is recorded, and a broken preset fails the lab build.
 **Verify:** `bun run typecheck && bun run test && bun run lab:build-check` (or the script added for it)
@@ -276,11 +276,11 @@ Core also ships `extractDeclaredSubcomponents` / `createMetaComponentResolver` i
 
 Update `.briefback/docs/framework/*` so they describe the new behavior. Mark `.briefback/sb11-estree-csf-tools/handoff.md` resolved.
 
-- [ ] Complete
-  - [ ] `bun run check-docgen` passes. `bun run test:lab` passes.
-  - [ ] `examples/solid1` `build-storybook` succeeds with the preset loaded.
+- [x] Complete
+  - [x] `bun run check-docgen` passes. `bun run test:lab` passes.
+  - [x] `examples/solid1` `build-storybook` succeeds with the preset loaded.
   - [x] `.briefback/docs/framework/*` updated. The old handoff is marked done.
-  - [ ] Lint clean.
+  - [x] Lint clean.
 
 **Files**
 
@@ -288,11 +288,12 @@ Update `.briefback/docs/framework/*` so they describe the new behavior. Mark `.b
 - `.briefback/sb11-estree-csf-tools/handoff.md`
 - `README.md`: anything stale
 
-**Status (2026-11-04):**
+**Status (2026-11-05):** done.
 
-- Remaining: regenerate `examples/solid1/bun.lock` (it still records `next` → `11.0.0-alpha.6`, so CI `--frozen-lockfile` fails until it is refreshed). Run `cd examples/solid1 && bun install --minimum-release-age=0` on a good connection. Delete `examples/*/node_modules` first, because the `file:../..` copy nests other examples' `node_modules`.
-- Remaining: lab `check-docgen`, `test:lab`, and the cold-cache `optimizeViteDeps` run after stages 6 and 8. The last local lab build and `check-docgen` passed after stage 7.
-- Lint cannot check `.ts` here: typescript-eslint rejects TypeScript 7. This predates this work. `--fix` only reindents `tsconfig.json` and `skills-lock.json`.
+- `examples/solid1/bun.lock` regenerated on beta.0. `bun install --frozen-lockfile` passes there.
+- Lab `test` (10 files, 12 tests) passed from a fresh install with no Vite cache, with no dependency reload. Root `check-docgen` passed (18 checks OK, preset loaded). solid1 `build-storybook` passed.
+- Lint cannot check `.ts`: typescript-eslint rejects TypeScript 7. This predates this work.
+- Local example installs: delete `examples/*/node_modules` first. The `file:../..` copy includes the other example's `node_modules`, and repeated installs nest it.
 
 **Done when:** every lab and solid1 check passes on beta.0, and the docs match the code.
 **Verify:** `bun run lint && bun run build && bun run check-docgen && bun run test:lab && (cd examples/solid1 && bun run build-storybook)`
