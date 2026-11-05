@@ -4,17 +4,37 @@
  * Storybook logs "Failed to load preset" and still exits 0, so a broken
  * `storybook-solidjs-vite` preset would ship a static build without our renderer.
  *
- * Runs `storybook build` from the current directory's `node_modules/.bin`.
+ * Runs `storybook build` from the nearest `node_modules/.bin` at or above the
+ * current directory (workspaces hoist the bin to the repo root).
  * Used by `build-storybook` in `examples/lab` and `examples/solid1`.
  */
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import type { Readable, Writable } from 'node:stream';
 
 const PRESET_LOAD_FAILURE = 'Failed to load preset';
 
-const storybookBin = path.join(process.cwd(), 'node_modules/.bin/storybook');
+function findStorybookBin(dir: string): string | undefined {
+    const bin = path.join(dir, 'node_modules/.bin/storybook');
+
+    if (existsSync(bin)) {
+        return bin;
+    }
+
+    const parent = path.dirname(dir);
+
+    return parent === dir ? undefined : findStorybookBin(parent);
+}
+
+const storybookBin = findStorybookBin(process.cwd());
+
+if (!storybookBin) {
+    console.error(`FAIL: no node_modules/.bin/storybook at or above ${ process.cwd() }`);
+    process.exit(1);
+}
+
 const child = spawn(storybookBin, ['build', ...process.argv.slice(2)], {
     stdio: ['inherit', 'pipe', 'pipe'],
 });
@@ -43,6 +63,10 @@ forward(child.stderr, process.stderr);
 
 const exitCode = await new Promise<number>((resolve) => {
     child.on('close', code => resolve(code ?? 1));
+    child.on('error', (error) => {
+        console.error(`FAIL: could not start ${ storybookBin }: ${ error.message }`);
+        resolve(1);
+    });
 });
 
 if (presetLoadFailed) {
