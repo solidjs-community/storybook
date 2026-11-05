@@ -2,9 +2,9 @@
 
 Storybook framework adapter for SolidJS on Vite. Supports Solid 1 and Solid 2.
 
-Larger than a quick fix: follow @AGENTFLOW.md ([AgentFlow](https://github.com/reforma-dev/agentflow)).
+Larger than a quick fix: follow the [Briefback](https://briefback.dev) skill in `.agents/skills/briefback/` (Research → Grill → Plan → Stage → Review → Commit). Working notes go in `.briefback/<feature>/`; finished work becomes pages in `.briefback/docs/`.
 
-Do not edit `AGENTFLOW.md`. Refresh it with `npx @reforma/agentflow@latest update`.
+Do not edit `.agents/skills/briefback/`. It is pinned in `skills-lock.json` (source `reforma-ai/briefback`).
 
 ## Layout
 
