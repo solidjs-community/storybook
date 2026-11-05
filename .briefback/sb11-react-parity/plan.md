@@ -47,7 +47,7 @@
 
 PR #76 already ports those readers to Storybook's ESTree `csf-tools`. Bring its commits in unchanged, as Kasper's work, then move every package to beta.0 and raise the peer floor. Also fix the one typecheck error that `next` already has, so the baseline is green.
 
-- [ ] Complete
+- [x] Complete
   - [x] PR #76 commits `5802df9^..1ebd879` cherry-picked onto `next`, authorship kept. The canary-pin commit is not taken.
   - [x] Root `storybook` and `@storybook/builder-vite` at `11.0.0-beta.0`. `examples/lab` (`storybook`, `@storybook/addon-docs`, `@storybook/addon-vitest`) and `examples/solid1` (`storybook`, `@storybook/addon-docs`) at `11.0.0-beta.0`. Lockfiles updated.
   - [x] Peer `storybook: ^11.0.0-beta.0 || ^11.0.0`. Changeset notes the new floor.
