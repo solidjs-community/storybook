@@ -293,7 +293,7 @@ Update `.briefback/docs/framework/*` so they describe the new behavior. Mark `.b
 - `examples/solid1/bun.lock` regenerated on beta.0. `bun install --frozen-lockfile` passes there.
 - Lab `test` (10 files, 12 tests) passed from a fresh install with no Vite cache, with no dependency reload. Root `check-docgen` passed (18 checks OK, preset loaded). solid1 `build-storybook` passed.
 - Lint cannot check `.ts`: typescript-eslint rejects TypeScript 7. This predates this work.
-- Local example installs: delete `examples/*/node_modules` first. The `file:../..` copy includes the other example's `node_modules`, and repeated installs nest it.
+- Example installs (resolved 2026-11-05): `examples/*` are now bun workspaces of the root, so one root `bun install` links the package instead of copying the repo (no more nested `node_modules`). Example lockfiles are gone; CI installs once. `files` no longer has `**/*.d.ts`, which packed example `.d.ts` files.
 
 **Done when:** every lab and solid1 check passes on beta.0, and the docs match the code.
 **Verify:** `bun run lint && bun run build && bun run check-docgen && bun run test:lab && (cd examples/solid1 && bun run build-storybook)`

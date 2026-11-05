@@ -93,11 +93,14 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
-        "**/*.d.ts",
         "README.md",
         "dist/**/*",
         "src/**/*",
         "template/**/*"
+    ],
+    "workspaces": [
+        "examples/*",
+        "examples/lab/packages/*"
     ],
     "scripts": {
         "prepare": "simple-git-hooks",

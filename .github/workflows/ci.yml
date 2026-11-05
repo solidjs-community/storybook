@@ -30,12 +30,6 @@ jobs:
             - name: Unit tests
               run: bun run test
 
-            - name: Install lab dependencies
-              working-directory: examples/lab
-              env:
-                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
-              run: bun install --frozen-lockfile
-
             - name: Install Playwright Chromium
               working-directory: examples/lab
               run: bunx playwright install chromium --with-deps
@@ -46,12 +40,6 @@ jobs:
             - name: Vitest browser tests (lab)
               working-directory: examples/lab
               run: bun run test
-
-            - name: Install Solid 1 lab dependencies
-              working-directory: examples/solid1
-              env:
-                  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
-              run: bun install --frozen-lockfile
 
             - name: Build Solid 1 lab
               working-directory: examples/solid1

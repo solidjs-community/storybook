@@ -15,6 +15,7 @@ Do not edit `AGENTFLOW.md`. Refresh it with `npx @reforma/agentflow@latest updat
 - `src/spec/` — Vitest tests
 - `examples/lab` — Solid 2 playground and integration checks
 - `examples/solid1` — Solid 1 playground
+- `examples/*` are bun workspaces of the root package: run `bun install` at the root only, never inside an example.
 - `template/` — files copied by `create-storybook --type=solid`
 
 Published package: `storybook-solidjs-vite`. Consume via `bun` (`packageManager` in `package.json`).
