@@ -2,7 +2,7 @@
 "storybook-solidjs-vite": major
 ---
 
-### CSF Next types on Storybook 11's meta-args model
+### CSF 4 types on Storybook 11's meta-args model
 
 `SolidPreview`, `SolidMeta` and `SolidStory` now build on core's `MetaInput`, `MetaTypes`, `StoryArgs`, `TypedMetaArgKeys` and `PreviewAddonEntry`, like `@storybook/react`.
 
@@ -13,4 +13,4 @@
 - **Breaking:** `definePreview()` requires `addons`. Pass `[]` if you have none. Addon preview namespaces are accepted.
 - **Breaking:** the second type argument of `SolidMeta` is the union of arg names set in meta, not the meta input type.
 
-See `MIGRATION.md` → "CSF Next types".
+See `MIGRATION.md` → "CSF 4 types".

@@ -13,7 +13,7 @@
 
 ## ✨ Features
 
-- 🤝 Near feature parity with Storybook for React
+- 🤝 Feature parity with Storybook for React
 - 🔀 Solid 1 and Solid 2 support
 - 🏭 [Type-safe stories](#csf-4) with CSF 4 (`preview.meta()` / `meta.story()`); CSF 3 still works
 - 📚 [Agent-ready docgen](#docgen): props in Controls and Docs, the [components manifest](https://storybook.js.org/docs/ai/manifests) ([debugger](#components-manifest-debugger)) and [Storybook MCP](#mcp)
@@ -37,7 +37,7 @@ Open the URL shown in the terminal.
 
 Add the Solid plugin to your `vite.config.ts`: `@solidjs/vite-plugin` for Solid 2 or `vite-plugin-solid@^2` for Solid 1. Storybook uses your Vite config, so the plugin must be there.
 
-Choose CSF 4 or CSF 3 to configure Storybook and write your first story.
+Choose CSF 4 (previously called CSF Next) or CSF 3 to configure Storybook and write your first story.
 
 ### CSF 4
 
@@ -128,6 +128,20 @@ export default {
 ### Code snippets
 
 **Show code** blocks and the Code panel show how to use your component with the story's args. These JSX examples are generated automatically when [docgen](#docgen) is enabled.
+
+To make them follow the controls as you change args, turn on Storybook's experimental live snippets:
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from "storybook-solidjs-vite";
+
+export default {
+  framework: "storybook-solidjs-vite",
+  features: {
+    experimentalLiveServerSnippets: true,
+  },
+} satisfies StorybookConfig;
+```
 
 To show the original story source instead:
 

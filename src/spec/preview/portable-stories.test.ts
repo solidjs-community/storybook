@@ -8,11 +8,11 @@ import {
     setProjectAnnotations,
 } from '../../index';
 import { played } from './fixtures/Button';
-import * as csfNextStories from './fixtures/Button.csf-next.stories';
+import * as csf4Stories from './fixtures/Button.csf4.stories';
 import * as csf3Stories from './fixtures/Button.stories';
 
-// `definePreview` in the CSF Next fixture sets `globalProjectAnnotations` on import, like a real
-// CSF Next project. CSF 3 tests clear it to run on the Solid defaults alone.
+// `definePreview` in the CSF 4 fixture sets `globalProjectAnnotations` on import, like a real
+// CSF 4 project. CSF 3 tests clear it to run on the Solid defaults alone.
 function resetProjectAnnotations() {
     Reflect.deleteProperty(globalThis, 'globalProjectAnnotations');
     Reflect.deleteProperty(globalThis, 'defaultProjectAnnotations');
@@ -38,7 +38,7 @@ describe('portable stories', () => {
 
             return composeStories(csf3Stories);
         }, 'CSF 3 primary'],
-        ['CSF Next', () => composeStories(csfNextStories), 'CSF Next primary'],
+        ['CSF 4', () => composeStories(csf4Stories), 'CSF 4 primary'],
     ] as const)('composeStories renders a %s story and runs play', async(_name, compose, label) => {
         const { Primary, Secondary } = compose();
         const canvasElement = document.createElement('div');

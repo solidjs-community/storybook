@@ -1,8 +1,8 @@
 # Storybook SolidJS lab
 
-Checklist for docgen, autodocs, interactions, and CSF Next tests. **Solid 2**. For Solid 1 / `solid1`, see [`examples/solid1`](../solid1).
+Checklist for docgen, autodocs, interactions, and CSF 4 tests. **Solid 2**. For Solid 1 / `solid1`, see [`examples/solid1`](../solid1).
 
-New scenarios: CSF Next (`preview.meta()` + `meta.story()`). Sidebar is grouped by **pipeline**, not by fake design-system names.
+New scenarios: CSF 4 (`preview.meta()` + `meta.story()`). Sidebar is grouped by **pipeline**, not by fake design-system names.
 
 ## Scripts
 
@@ -28,6 +28,6 @@ Each folder is a different extraction/runtime path. If two folders would catch t
 | `src/scenarios/subcomponents`       | Docgen / Subcomponents       | `meta.subcomponents`                                                                                                                  |
 | `src/scenarios/inline-docs`         | Docs / Inline canvas         | Autodocs inline vs iframe                                                                                                             |
 | `src/scenarios/interactions`        | Tests / Play                 | CSF 3 `play()` (legacy format on purpose)                                                                                             |
-| `src/scenarios/testing`             | Tests / Story.test           | CSF Next `story.test()` + `fn()`                                                                                                      |
+| `src/scenarios/testing`             | Tests / Story.test           | CSF 4 `story.test()` + `fn()`                                                                                                      |
 
 Dropped: **Badge** (subset of All types) and **KitchenSink** (same matrix, worse name).

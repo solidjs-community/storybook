@@ -4,13 +4,13 @@ import { Button, recordPlay } from './Button';
 const preview = definePreview({ addons: [] });
 
 const meta = preview.meta({
-    title: 'Portable/CSFNext',
+    title: 'Portable/CSF4',
     component: Button,
     args: { label: 'From meta' },
 });
 
 export const Primary = meta.story({
-    args: { label: 'CSF Next primary', primary: true },
+    args: { label: 'CSF 4 primary', primary: true },
     play: async(context) => {
         recordPlay(context);
     },

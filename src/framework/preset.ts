@@ -58,7 +58,7 @@ export function isDocgenProviderEnabled(
 }
 
 /**
- * Enable the components manifest, docgen server, and CSF Next test syntax by default.
+ * Enable the components manifest, docgen server, and CSF 4 test syntax by default.
  * `framework.options.docgen: false` turns off `docgenServer` so Controls /
  * Docs / manifest stop using the Solid component-meta worker.
  *

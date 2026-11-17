@@ -1,4 +1,4 @@
-// Type tests for CSF Next, adapted from `@storybook/react`'s `csf-factories.test.tsx`
+// Type tests for CSF 4, adapted from `@storybook/react`'s `csf-factories.test.tsx`
 // and `@storybook/react-vite`'s `define-preview.test.ts`. `bun run typecheck` checks
 // the types; Vitest runs the few runtime assertions.
 import { createComponent } from 'solid-js';

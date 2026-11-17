@@ -44,7 +44,7 @@ describe('testSyntaxGuard', () => {
         expect(runGuard(['dev', 'test'])).toBe('story');
     });
 
-    it('is registered by both renderer entries and their CSF Next preview addons', () => {
+    it('is registered by both renderer entries and their CSF 4 preview addons', () => {
         for (const entry of [solid1, solid2]) {
             expect(entry.decorators).toContain(testSyntaxGuard);
             expect(entry.previewAddon.decorators).toContain(testSyntaxGuard);

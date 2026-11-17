@@ -185,7 +185,7 @@ it('objectInvalidAttr only', () => {
     );
 });
 
-it('cSF Next preview.meta story with args', () => {
+it('CSF 4 preview.meta story with args', () => {
     const input = dedent`
         import { fn } from 'storybook/test';
         import preview from '../../.storybook/preview';

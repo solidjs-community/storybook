@@ -48,33 +48,33 @@ export const Default: StoryObj<typeof meta> = {
     args: { label: 'Hello', size: 'lg' },
 };
 
-const csfNextMeta = preview.meta({
+const csf4Meta = preview.meta({
     component: (_props: ButtonProps) => null,
     args: { size: 'sm' },
 });
 
-export const CsfNextPrimary = csfNextMeta.story({
+export const Csf4Primary = csf4Meta.story({
     args: { label: 'Hello' },
 });
 
-export const CsfNextTyped = csfNextMeta.type<{ args: { icon: string } }>().story({
+export const Csf4Typed = csf4Meta.type<{ args: { icon: string } }>().story({
     args: { label: 'Hello', icon: 'star' },
 });
 
-export const CsfNextTypedComponent = CsfNextTyped.Component;
+export const Csf4TypedComponent = Csf4Typed.Component;
 
 // @ts-expect-error label is required
-export const CsfNextMissing = csfNextMeta.story();
+export const Csf4Missing = csf4Meta.story();
 
 export const projectAnnotations = setProjectAnnotations([preview.composed, { parameters: { a: 1 } }]);
 export const defaultAnnotations = INTERNAL_DEFAULT_PROJECT_ANNOTATIONS;
 
 const portableStories = composeStories({ default: meta, Default });
-const csfNextPortableStories = composeStories({ CsfNextPrimary, CsfNextTyped });
+const csf4PortableStories = composeStories({ Csf4Primary, Csf4Typed });
 
 export const PortableDefault = portableStories.Default;
 export const PortableDefaultArgs: Partial<ButtonProps> = PortableDefault.args;
-export const PortableCsfNext = csfNextPortableStories.CsfNextPrimary;
+export const PortableCsf4 = csf4PortableStories.Csf4Primary;
 export const PortableSingle = composeStory(Default, meta);
 export const portableRun: Promise<void> = PortableSingle.run();
 
@@ -91,7 +91,7 @@ export type ConsumerRenderer = SolidRenderer;
 export type ConsumerDefinePreview = SolidDefinePreview;
 export type ConsumerSolidPreview = ReturnType<typeof definePreview>;
 export type ConsumerSolidMeta = ReturnType<(typeof preview)['meta']>;
-export type ConsumerSolidStory = typeof CsfNextPrimary;
+export type ConsumerSolidStory = typeof Csf4Primary;
 
 export type {
     SolidMeta,

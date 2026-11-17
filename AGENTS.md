@@ -10,7 +10,7 @@ Larger than a quick fix: follow @BRIEFBACK.md.
 
 - `src/framework/` — Storybook preset / public config API
 - `src/renderer/` — canvas render, decorators, Solid 1 vs Solid 2
-- `src/preview/` — `definePreview` / CSF Next preview
+- `src/preview/` — `definePreview` / CSF 4 preview
 - `src/internal/` — docgen, component manifest, code snippets
 - `src/spec/` — Vitest tests
 - `examples/lab` — Solid 2 playground and integration checks

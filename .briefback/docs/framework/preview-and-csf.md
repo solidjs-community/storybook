@@ -1,6 +1,6 @@
 # Preview types and CSF
 
-Public preview types, CSF 3 helpers, decorator markers, and CSF Next `definePreview`.
+Public preview types, CSF 3 helpers, decorator markers, and CSF 4 `definePreview`.
 
 See also: [modules index](./modules.md), [canvas renderer](./canvas-renderer.md).
 
@@ -23,17 +23,17 @@ See also: [modules index](./modules.md), [canvas renderer](./canvas-renderer.md)
 | `createJSXDecorator` | Decorator returns JSX — run once per story mount (`__isJSX`) |
 | `createDecorator`    | Side effects only — run every update                         |
 
-## CSF Next
+## CSF 4
 
 `createSolidDefinePreview` wraps Storybook’s CSF `definePreview`, always composing the Solid renderer addon and docs annotations, then user addons. `meta.story()` adds `story.Component` for JSX composition.
 
-Types mirror `@storybook/react`'s `preview.tsx`: `addons` is required (`PreviewAddonEntry[]`, so namespaces work), `preview.meta()` takes core's `MetaInput` and tracks the meta's arg keys (`TMetaArgKeys`), story overloads use `StoryArgs` (args the meta did not set are required in the story), `preview.type<R>()` adds args the component does not declare, and `meta.type<S>()` returns a `SolidMeta` that keeps the `.story()` overloads and `story.Component`. Unlike React, the args overload of `SolidMeta.story` has no `Simplify<>` around its constraint: under `exactOptionalPropertyTypes` it fails `Story`'s `TInput` constraint. Type tests: `src/spec/preview/csf-factories.test.ts`, plus the published-types consumer in `src/spec/packageExports/consumer.ts`. The user-facing changes are in `MIGRATION.md` → "CSF Next types".
+Types mirror `@storybook/react`'s `preview.tsx`: `addons` is required (`PreviewAddonEntry[]`, so namespaces work), `preview.meta()` takes core's `MetaInput` and tracks the meta's arg keys (`TMetaArgKeys`), story overloads use `StoryArgs` (args the meta did not set are required in the story), `preview.type<R>()` adds args the component does not declare, and `meta.type<S>()` returns a `SolidMeta` that keeps the `.story()` overloads and `story.Component`. Unlike React, the args overload of `SolidMeta.story` has no `Simplify<>` around its constraint: under `exactOptionalPropertyTypes` it fails `Story`'s `TInput` constraint. Type tests: `src/spec/preview/csf-factories.test.ts`, plus the published-types consumer in `src/spec/packageExports/consumer.ts`. The user-facing changes are in `MIGRATION.md` → "CSF 4 types".
 
 Root `definePreview` is bound to `preview-addon`, which the [preset](./preset-and-version.md) aliases to Solid 1 or 2.
 
 ## Portable stories
 
-`src/preview/portable-stories.ts` mirrors `@storybook/react`'s `portable-stories.tsx`. `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` composes `preview-addon` and `renderer/docs`, the same pair `definePreview` adds. `composeStory` falls back to it when `setProjectAnnotations` has not run. Unlike React, `composeStories` types accept a module with no `default` (CSF Next) and map its `meta.story()` exports. Outside Storybook nothing aliases `preview-addon`, so Solid 1 projects add that alias (plus `server.deps.inline`) to their Vitest config; the README shows it. Runtime test: `src/spec/preview/portable-stories.test.ts` (happy-dom).
+`src/preview/portable-stories.ts` mirrors `@storybook/react`'s `portable-stories.tsx`. `INTERNAL_DEFAULT_PROJECT_ANNOTATIONS` composes `preview-addon` and `renderer/docs`, the same pair `definePreview` adds. `composeStory` falls back to it when `setProjectAnnotations` has not run. Unlike React, `composeStories` types accept a module with no `default` (CSF 4) and map its `meta.story()` exports. Outside Storybook nothing aliases `preview-addon`, so Solid 1 projects add that alias (plus `server.deps.inline`) to their Vitest config; the README shows it. Runtime test: `src/spec/preview/portable-stories.test.ts` (happy-dom).
 
 ## Key modules
 

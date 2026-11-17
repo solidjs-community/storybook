@@ -45,13 +45,13 @@ export default {
 
 ### Stories
 
-New `create-storybook --type=solid` apps use [CSF Next](./README.md#csf-next) stories. Existing projects can still use CSF 3.
+The `create-storybook --type=solid` story templates now use [CSF 4](./README.md#csf-4) (previously called CSF Next): `preview.meta()` and `meta.story()`. They need a CSF 4 `.storybook/preview` (`definePreview`). If `create-storybook` wrote a CSF 3 `main.ts` and `preview.tsx` next to them, run `npx storybook automigrate csf-factories` to convert the project. Existing CSF 3 projects keep working.
 
 `storybook automigrate csf-factories` writes `import { defineMain } from 'storybook-solidjs-vite/node'` in `.storybook/main.ts`. That subpath is new in 11.x; importing `defineMain` from the package root still works.
 
-### CSF Next types
+### CSF 4 types
 
-`SolidPreview`, `SolidMeta` and `SolidStory` now use Storybook 11's CSF Next types, the same way `@storybook/react` does. The [Storybook 11 CSF Next notes](https://storybook.js.org/docs/releases/migration-guide) apply to Solid as well.
+`SolidPreview`, `SolidMeta` and `SolidStory` now use Storybook 11's CSF 4 types, the same way `@storybook/react` does. The [Storybook 11 CSF 4 notes](https://storybook.js.org/docs/releases/migration-guide) apply to Solid as well.
 
 **`addons` is required in `definePreview()`.** Pass `[]` if you have none. Addon preview namespaces (`import * as addon from 'some-addon/preview'`) are accepted next to `definePreviewAddon` addons.
 

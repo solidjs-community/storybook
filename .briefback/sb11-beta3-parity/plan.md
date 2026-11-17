@@ -99,7 +99,7 @@
 
 **Done when:** in the lab, changing a control updates Show code without the "does not follow" warning.
 **Verify:** `bun run typecheck && bun run test && bun run build && bun run stage && bun run check-docgen`, lab `bun run test`
-**Commits:** None yet.
+**Commits:** `15b32af` feat: live code snippets that follow the controls
 
 ## Stage 4 — Solid 2 stable and Vitest 5
 
@@ -107,9 +107,9 @@
 
 **This stage:** match what `create-storybook` gives new users: Solid 2.0.0, `@solidjs/vite-plugin` 3.0.0, Vitest 5.
 
-- [ ] Complete
-  - [ ] Root devDependencies: `solid-js`, `@solidjs/web` `^2.0.0`, Vitest 5, `@vitest/coverage-v8` 5
-  - [ ] Lab: Solid `^2.0.0`, `@solidjs/vite-plugin` `^3.0.0`, Vitest 5 packages
+- [x] Complete
+  - [x] Root devDependencies: `solid-js`, `@solidjs/web` `^2.0.0`, Vitest 5, `@vitest/coverage-v8` 5
+  - [x] Lab: Solid `^2.0.0`, `@solidjs/vite-plugin` `^3.0.0`, Vitest 5 packages
 
 **Files**
 
@@ -117,7 +117,7 @@
 
 **Done when:** root tests and lab tests pass on the new versions.
 **Verify:** `bun run typecheck && bun run test`, lab `bun run test`, `bun run check-docgen`
-**Commits:** None yet.
+**Commits:** `e0f60bf` chore: test against Solid 2.0, @solidjs/vite-plugin 3.0 and Vitest 5
 
 ## Stage 5 — CSF 4 naming and docs
 
@@ -125,11 +125,12 @@
 
 **This stage:** finish the rename from the [naming inventory](./research/naming-csf4.md), fix `MIGRATION.md`'s claim that `create-storybook` scaffolds CSF 4 for Solid today, and refresh the framework docs to beta.3.
 
-- [ ] Complete
-  - [ ] Inventory sites renamed (prose, internal identifiers, fixture `Button.csf4.stories.ts`)
-  - [ ] `MIGRATION.md` scaffold claim corrected
-  - [ ] `react-parity.md` and other framework docs at beta.3
-  - [ ] User's README "Feature parity" edit included
+- [x] Complete
+  - [x] Inventory sites renamed (prose, internal identifiers, fixture `Button.csf4.stories.ts`)
+  - [x] `MIGRATION.md` scaffold claim corrected
+  - [x] `react-parity.md` and other framework docs at beta.3
+  - [x] User's README "Feature parity" edit included
+  - [x] README documents `experimentalLiveServerSnippets`
 
 **Files**
 

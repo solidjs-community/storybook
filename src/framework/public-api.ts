@@ -35,7 +35,7 @@ interface StorybookConfigFramework {
     };
     features?: StorybookConfigBase['features'] & {
         /**
-         * Enable the experimental `.test` function in CSF Next
+         * Enable the experimental `.test` function in CSF 4
          *
          * @see https://storybook.js.org/docs/10/api/main-config/main-config-features#experimentalTestSyntax
          */

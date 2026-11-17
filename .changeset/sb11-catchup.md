@@ -12,8 +12,8 @@
 
 ### Testing
 
-- `examples/lab` wires `@storybook/addon-vitest` (Playwright browser mode). New scenarios use CSF Next (`preview.meta()` + `meta.story().test()`); legacy CSF 3 scenarios remain for `badge` and `Counter` (`play`).
-- CLI scaffold (`template/cli`) uses CSF Next with a `.test()` on every story; `experimentalTestSyntax` is on by default from the framework preset.
+- `examples/lab` wires `@storybook/addon-vitest` (Playwright browser mode). New scenarios use CSF 4 (`preview.meta()` + `meta.story().test()`); legacy CSF 3 scenarios remain for `badge` and `Counter` (`play`).
+- CLI scaffold (`template/cli`) uses CSF 4 with a `.test()` on every story; `experimentalTestSyntax` is on by default from the framework preset.
 - Root scripts: `test:lab`, `check-docgen`.
 - CI (`.github/workflows/ci.yml`): build, unit tests, lab docgen check, Vitest browser tests.
 
@@ -27,7 +27,7 @@
 ### Storybook 11 peers
 
 - Peer `storybook` is `^11.0.0-beta.0 || ^11.0.0`. Vite peer is `^6.3 || ^7 || ^8`.
-- CLI template stories import `.storybook/preview` (CSF Next). Register `@storybook/addon-docs` via `definePreview` in that file.
+- CLI template stories import `.storybook/preview` (CSF 4). Register `@storybook/addon-docs` via `definePreview` in that file.
 
 ### Breaking
 

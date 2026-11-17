@@ -108,11 +108,11 @@ export function composeStory<TArgs extends Args = Args>(
     );
 }
 
-/** A stories module. `default` is optional so CSF Next modules (`meta.story()` exports) fit. */
+/** A stories module. `default` is optional so CSF 4 modules (`meta.story()` exports) fit. */
 type PortableStoriesModule = Partial<Store_CSFExports<SolidRenderer, any>> & Record<string, unknown>;
 
 /** Composed `meta.story()` exports. Core's `StoriesWithPartialProps` only maps CSF 1-3 exports. */
-type ComposedCsfNextStories<TModule> = {
+type ComposedCsf4Stories<TModule> = {
     [K in keyof TModule as TModule[K] extends { readonly _tag: 'Story' } ? K : never]:
     TModule[K] extends { composed: { args: infer TArgs } }
         ? ComposedStoryFn<SolidRenderer, Partial<TArgs>>
@@ -141,7 +141,7 @@ type ComposedCsfNextStories<TModule> = {
  * });
  * ```
  *
- * Unlike `@storybook/react`, the module may omit `export default`, as CSF Next stories files do.
+ * Unlike `@storybook/react`, the module may omit `export default`, as CSF 4 stories files do.
  * The meta then comes from the `meta.story()` exports.
  *
  * @param csfExports - E.g. (import * as stories from './Button.stories')
@@ -158,5 +158,5 @@ export function composeStories<TModule extends PortableStoriesModule>(
     return composedStories as unknown as Omit<
         StoriesWithPartialProps<SolidRenderer, TModule>,
         keyof Store_CSFExports
-    > & ComposedCsfNextStories<TModule>;
+    > & ComposedCsf4Stories<TModule>;
 }

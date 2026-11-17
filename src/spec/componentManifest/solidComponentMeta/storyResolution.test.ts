@@ -137,10 +137,10 @@ describe('cSF 3 meta.component → docgen', () => {
     });
 });
 
-describe('cSF Next preview.meta → docgen', () => {
+describe('CSF 4 preview.meta → docgen', () => {
     it('matches direct extract for meta.story with args', async() => {
         await expectStoryMatchesDirectExtract({
-            label: 'CSF Next args-only',
+            label: 'CSF 4 args-only',
             files: {
                 'preview.ts': previewStub,
                 'Button.tsx': buttonComponent,
@@ -170,7 +170,7 @@ describe('cSF Next preview.meta → docgen', () => {
 
     it('matches direct extract when meta.story uses render JSX', async() => {
         await expectStoryMatchesDirectExtract({
-            label: 'CSF Next render JSX',
+            label: 'CSF 4 render JSX',
             files: {
                 'preview.ts': previewStub,
                 'Button.tsx': buttonComponent,
