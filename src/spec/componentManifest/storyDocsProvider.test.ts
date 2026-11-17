@@ -1,5 +1,6 @@
 import { join, relative } from 'node:path';
 import { getComponentIdFromEntry } from 'storybook/internal/common';
+import { stripHoles } from 'storybook/internal/docs-tools';
 import { dedent } from 'ts-dedent';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -60,12 +61,14 @@ describe('experimental_storyDocsProvider', () => {
             id: 'example-button--local',
             name: 'Local',
             snippet: `const Local = () => <Button label={prefix + '!'} />;`,
+            template: expect.any(Array),
             warning: 'Incomplete snippet: `prefix` could not be resolved statically.',
         });
         expect(payload?.stories['example-button--self-contained']).toEqual({
             id: 'example-button--self-contained',
             name: 'Self Contained',
             snippet: 'const SelfContained = () => <Button label="Hi" />;',
+            template: expect.any(Array),
         });
     });
 
@@ -100,6 +103,7 @@ describe('experimental_storyDocsProvider', () => {
             description: 'A button that starts something.',
             summary: 'Starts something.',
             snippet: 'const Go = () => <Button label="Go" onClick={onGo} />;',
+            template: expect.any(Array),
         });
     });
 
@@ -129,11 +133,13 @@ describe('experimental_storyDocsProvider', () => {
             id: 'example-button--derived',
             name: 'Derived',
             snippet: 'const Derived = () => <Button label="Mine" size="lg" />;',
+            template: expect.any(Array),
         });
         expect(payload?.stories['example-button--alias']).toEqual({
             id: 'example-button--alias',
             name: 'Alias',
             snippet: 'const Alias = () => <Button label="Alias" />;',
+            template: expect.any(Array),
         });
     });
 
@@ -178,7 +184,25 @@ describe('experimental_storyDocsProvider', () => {
         });
     });
 
-    it('serves no snippets or imports when experimentalCodeExamples is false', async() => {
+    it('serves each snippet with the template it is printed from', async() => {
+        const payload = await storyDocs({
+            'Button.tsx': BUTTON,
+            'Button.stories.tsx': dedent`
+                import { Button } from './Button';
+
+                export default { title: 'Example/Button', component: Button };
+
+                export const Primary = { args: { label: 'Go' } };
+            `,
+        });
+        const story = payload?.stories['example-button--primary'];
+
+        expect(story?.snippet).toBe('const Primary = () => <Button label="Go" />;');
+        expect(story?.template && stripHoles(story.template)).toBe(story?.snippet);
+        expect(story?.template).toContainEqual({ kind: 'attr', arg: 'label', text: ' label="Go"', space: ' ' });
+    });
+
+    it('serves no snippets, templates or imports when experimentalCodeExamples is false', async() => {
         const payload = await storyDocs(
             {
                 'Button.tsx': BUTTON,

@@ -70,7 +70,7 @@
 
 **Done when:** manifests report `solid-component-meta`, payloads have `renderer: 'solid'`, and docgen off yields no engine.
 **Verify:** `bun run typecheck && bun run test && bun run build && bun run stage && bun run check-docgen`
-**Commits:** None yet.
+**Commits:** `752a0f7` fix: report the Solid docgen engine and reuse one manager for ghost stories
 
 ## Stage 3 — Live snippets
 
@@ -78,13 +78,13 @@
 
 **This stage:** port React's live snippets (#37170). `getCodeSnippet` also returns a `SnippetTemplate` with Solid hole places; the story-docs provider adds it to each `StoryDoc` when code examples are on; the preview sets `parameters.docs.source.printHole` under `docgenServer`. Raise the peer to `^11.0.0-beta.3 || ^11.0.0`.
 
-- [ ] Complete
-  - [ ] Shared Solid snippet value printers (attribute, attributes, children)
-  - [ ] `getCodeSnippet` returns `template`; `stripHoles(template) === snippet`
-  - [ ] Story docs carry `template` when code examples are on
-  - [ ] Preview `printHole` under `docgenServer`
-  - [ ] Peer floor raised; lab enables `experimentalLiveServerSnippets`
-  - [ ] Ported template tests and a changeset
+- [x] Complete
+  - [x] Shared Solid snippet value printers (attribute, attributes, children)
+  - [x] `getCodeSnippet` returns `template`; `stripHoles(template) === snippet`
+  - [x] Story docs carry `template` when code examples are on
+  - [x] Preview `printHole` under `docgenServer`
+  - [x] Peer floor raised; lab enables `experimentalLiveServerSnippets`
+  - [x] Ported template tests and a changeset
 
 **Files**
 

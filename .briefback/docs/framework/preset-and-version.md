@@ -6,9 +6,14 @@ See also: [modules index](./modules.md), [package surface](./package-surface.md)
 
 ## Storybook version
 
-Peer: `storybook: ^11.0.0-beta.0 || ^11.0.0`. `@storybook/builder-vite` is a dependency at `^11.0.0-beta.0`.
+Peer: `storybook: ^11.0.0-beta.3 || ^11.0.0`. `@storybook/builder-vite` is a dependency at `^11.0.0-beta.3`.
 
-`11.0.0-beta.0` is the floor because it is the first release with storybookjs/storybook#36613: `storybook/internal/babel` is gone and `CsfFile` exposes ESTree, with the `csf-tools` helpers our snippet, manifest and docgen readers import (`createStoryArgsResolver`, `createStoryReferenceResolver`, `unresolvedWarning`, …). On earlier 11 prereleases those named imports do not exist, so the preset fails to load.
+The floor comes from two upstream changes:
+
+- `11.0.0-beta.0` brought storybookjs/storybook#36613: `storybook/internal/babel` is gone and `CsfFile` exposes ESTree, with the `csf-tools` helpers our snippet, manifest and docgen readers import (`createStoryArgsResolver`, `createStoryReferenceResolver`, `unresolvedWarning`, …). On earlier 11 prereleases those named imports do not exist, so the preset fails to load.
+- `11.0.0-beta.2` brought live snippets (#37170): `storybook/internal/docs-tools` exports `createHoleMarks`, `stripHoles`, `withHoleSpace`, `printValue` and the `SnippetTemplate` types that [snippets](./manifests-and-snippets.md#live-snippets) use.
+
+We test against `beta.3` and do not support older betas.
 
 ### Preset-load build check
 

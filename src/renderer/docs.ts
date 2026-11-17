@@ -3,6 +3,8 @@ import {
     extractComponentDescription,
 } from 'storybook/internal/docs-tools';
 
+import { printHole } from './print-hole';
+
 import type { ArgTypesEnhancer } from 'storybook/internal/types';
 import type { SolidRenderer } from '../preview/public-api';
 
@@ -12,6 +14,9 @@ export const controlMatchers = {
     date: /Date$/,
 } as const;
 
+// Story docs come from the docgen server, whose templates `printHole` fills as controls change.
+const useStaticServiceSnippets = 'FEATURES' in globalThis && globalThis.FEATURES?.docgenServer;
+
 export const parameters = {
     controls: {
         matchers: controlMatchers,
@@ -19,6 +24,7 @@ export const parameters = {
     docs: {
         story: { inline: true },
         extractComponentDescription,
+        ...(useStaticServiceSnippets ? { source: { printHole } } : {}),
     },
 };
 

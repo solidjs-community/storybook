@@ -63,9 +63,9 @@ function readStories(csf: CsfFile, snippetOf?: (storyExport: string) => Partial<
 }
 
 /**
- * Story docs for one CSF file: each story's snippet, description and summary, and the import block
- * core prepends to every snippet. Without `codeExamples` the stories carry no snippets and the
- * payload no imports.
+ * Story docs for one CSF file: each story's snippet with its template, description and summary, and
+ * the import block core prepends to every snippet. Without `codeExamples` the stories carry no
+ * snippets or templates and the payload no imports.
  */
 async function buildStoryDocs(
     importPath: string,
@@ -98,7 +98,8 @@ async function buildStoryDocs(
 
         argImports.push(...snippet.imports);
 
-        return { snippet: snippet.code, ...(warning ? { warning } : {}) };
+        // Core keeps the template only under `features.experimentalLiveServerSnippets`.
+        return { snippet: snippet.snippet, template: snippet.template, ...(warning ? { warning } : {}) };
     });
     const packageName = getImportablePackageName(component?.path, storyPath);
     // An arg value that kept the name another module gave it only compiles once the import block
