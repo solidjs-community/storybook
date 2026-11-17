@@ -10,7 +10,7 @@ For most projects, start with the **Vitest addon**. It turns your stories into b
 | --- | --- | --- |
 | [Vitest addon](#vitest-addon-recommended) | Run stories and their interactions automatically in a real browser | Recommended starting point |
 | [Portable stories in Vitest](#portable-stories-in-vitest) | Reuse stories in an existing test suite or write custom assertions | Supported alternative |
-| [Render a story as a component](#render-a-story-as-a-component) | Control mounting yourself in a CSF Next component test | Advanced |
+| [Render a story as a component](#render-a-story-as-a-component) | Control mounting yourself in a CSF 4 component test | Advanced |
 | [Jest](#jest) | Keep an existing Jest suite and its transforms | Requires custom setup |
 | [Storybook test runner](#storybook-test-runner) | Test a running or published Storybook | Older alternative |
 | [Playwright or Cypress](#playwright-or-cypress) | Drive a running Storybook with an existing browser test suite | Custom integration |
@@ -74,7 +74,7 @@ export const Increments: Story = {
 };
 ```
 
-`play` also works with CSF Next. Alternatively, attach a named test with `.test`:
+`play` also works with CSF 4. Alternatively, attach a named test with `.test`:
 
 ```ts
 // src/Counter.stories.ts
@@ -95,7 +95,7 @@ Increments.test("increments the counter", async ({ canvas, userEvent }) => {
 });
 ```
 
-The [CSF Next `.test` API](https://storybook.js.org/docs/api/csf/csf-next) is experimental. This adapter enables `experimentalTestSyntax` by default. Use `play` if you prefer the established API.
+The [CSF 4 `.test` API](https://storybook.js.org/docs/11/writing-stories/csf/api#storytest) is experimental. This adapter enables `experimentalTestSyntax` by default. Use `play` if you prefer the established API.
 
 See [Storybook interaction tests](https://storybook.js.org/docs/writing-tests/interaction-testing) for mocks, queries, and async assertions. Solid JSX decorators still need [`createJSXDecorator`](./README.md#createjsxdecorator).
 
@@ -133,7 +133,7 @@ A simulated DOM is useful for DOM assertions and interactions. For layout, real 
 
 ### Apply your preview
 
-For **CSF Next**, the preview already contains the project and addon annotations. Register its initialization hook:
+For **CSF 4**, the preview already contains the project and addon annotations. Register its initialization hook:
 
 ```ts
 // vitest.setup.ts
@@ -160,7 +160,7 @@ If CSF 3 stories depend on addon decorators or loaders, include those addons' pr
 
 ### Run stories
 
-With **CSF Next**, import a story directly:
+With **CSF 4**, import a story directly:
 
 ```ts
 // src/Button.test.ts
@@ -193,7 +193,7 @@ These tests use the Button stories from the [README](./README.md#configuration).
 
 Run once with `npx vitest run`, or use `npx vitest` to watch for changes.
 
-`composeStories` also accepts CSF Next modules. For a single CSF 3 story, use `composeStory(story, meta)`. To change args for one run, pass `await Primary.run({ args: { label: "Another label" } })`. See the [portable stories API](https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest) for annotations and other options.
+`composeStories` also accepts CSF 4 modules. For a single CSF 3 story, use `composeStory(story, meta)`. To change args for one run, pass `await Primary.run({ args: { label: "Another label" } })`. See the [portable stories API](https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest) for annotations and other options.
 
 ### Solid 1 in manual Vitest tests
 
@@ -221,7 +221,7 @@ export default defineConfig({
 
 ## Render a story as a component
 
-CSF Next exposes `Story.Component`, a Solid component with the story's args and decorators. Use it when your test needs to control mounting and prop updates. Use the same Solid plugin, renderer selection, and preview setup as the manual Vitest examples.
+CSF 4 exposes `Story.Component`, a Solid component with the story's args and decorators. Use it when your test needs to control mounting and prop updates. Use the same Solid plugin, renderer selection, and preview setup as the manual Vitest examples.
 
 For Solid 2:
 

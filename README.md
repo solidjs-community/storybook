@@ -13,18 +13,14 @@
 
 ## ✨ Features
 
-- Near feature parity with Storybook for React
-- Solid 1 and Solid 2 support
-- [Vite-powered builder](https://storybook.js.org/docs/builders/vite)
-- [TypeScript-first setup](https://storybook.js.org/docs/configure/integration/typescript)
-- Automatic props in [Controls and Docs](#docgen)
-- [Autodocs code snippets](#code-snippets) generated from your stories
-- [Components manifest](https://storybook.js.org/docs/ai/manifests) for AI agents ([debugger](#components-manifest-debugger))
-- [Storybook MCP](#mcp) support
-- [CSF Next](#csf-next) support
-- [Integrated testing](https://storybook.js.org/docs/writing-tests) (Vitest, Playwright)
-- [Portable stories](#portable-stories) for Vitest or Jest
-- [Storybook addon support](https://storybook.js.org/docs/addons)
+- 🤝 Near feature parity with Storybook for React
+- 🔀 Solid 1 and Solid 2 support
+- 🏭 [Type-safe stories](#csf-4) with CSF 4 (`preview.meta()` / `meta.story()`); CSF 3 still works
+- 📚 [Agent-ready docgen](#docgen): props in Controls and Docs, the [components manifest](https://storybook.js.org/docs/ai/manifests) ([debugger](#components-manifest-debugger)) and [Storybook MCP](#mcp)
+- 🧾 [Code snippets](#code-snippets) generated from your stories
+- 🧪 [Integrated testing](./TESTING.md) with the Vitest addon, plus [portable stories](#portable-stories) for Vitest or Jest
+- ⚡ [Vite-powered builder](https://storybook.js.org/docs/builders/vite) and a [TypeScript-first setup](https://storybook.js.org/docs/configure/integration/typescript)
+- 🧩 [Storybook addon support](https://storybook.js.org/docs/addons)
 
 ## 🚀 Getting Started
 
@@ -41,9 +37,9 @@ Open the URL shown in the terminal.
 
 Add the Solid plugin to your `vite.config.ts`: `@solidjs/vite-plugin` for Solid 2 or `vite-plugin-solid@^2` for Solid 1. Storybook uses your Vite config, so the plugin must be there.
 
-Choose CSF Next or CSF 3 to configure Storybook and write your first story.
+Choose CSF 4 or CSF 3 to configure Storybook and write your first story.
 
-### CSF Next
+### CSF 4
 
 ```ts
 // .storybook/main.ts
