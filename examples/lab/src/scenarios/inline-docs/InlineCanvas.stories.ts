@@ -35,7 +35,7 @@ export const Iframed = meta.story({
         docs: {
             story: {
                 inline: false,
-                iframeHeight: 120,
+                iframeHeight: '120px',
             },
         },
     },

@@ -39,6 +39,10 @@ jobs:
                   SKIP_INSTALL_SIMPLE_GIT_HOOKS: 'true'
               run: bun install --frozen-lockfile
 
+            - name: Typecheck lab
+              working-directory: examples/lab
+              run: bun run typecheck
+
             - name: Install Playwright Chromium
               working-directory: examples/lab
               run: bunx playwright install chromium --with-deps

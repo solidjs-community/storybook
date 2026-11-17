@@ -34,7 +34,7 @@ Storybook prints "Failed to load preset" and still exits 0. Both examples' `buil
 `.github/workflows/ci.yml`, in order:
 
 1. Root `bun install --frozen-lockfile`, `bun run build`, `bun run stage`, `bun run test`
-2. `examples/lab`: `bun install --frozen-lockfile`, Playwright Chromium, root `bun run check-docgen` (static build + docgen assertions), `bun run test` (Vitest browser)
+2. `examples/lab`: `bun install --frozen-lockfile`, `bun run typecheck`, Playwright Chromium, root `bun run check-docgen` (static build + docgen assertions), `bun run test` (Vitest browser)
 3. `examples/solid1`: `bun install --frozen-lockfile`, `bun run build-storybook`
 
 `release.yml` installs and builds the root only; `changeset version --snapshot next` and `changeset publish` see a single package.
