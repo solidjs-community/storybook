@@ -155,11 +155,11 @@
         "@changesets/cli": "^3.0.1",
         "@commitlint/cli": "^21.2.2",
         "@commitlint/config-conventional": "^21.2.2",
-        "@solidjs/web": "^2.0.0-rc.1",
+        "@solidjs/web": "^2.0.0",
         "@tsconfig/strictest": "^2.0.8",
         "@types/node": "^25.9.5",
         "@types/semver": "^7.8.0",
-        "@vitest/coverage-v8": "4.1.11",
+        "@vitest/coverage-v8": "^5.1.0",
         "es-toolkit": "^1.51.0",
         "eslint": "^10.9.0",
         "eslint-plugin-format": "^2.0.1",
@@ -167,7 +167,7 @@
         "happy-dom": "^21.0.4",
         "lint-staged": "^16.4.0",
         "simple-git-hooks": "^2.13.1",
-        "solid-js": "^2.0.0-rc.1",
+        "solid-js": "^2.0.0",
         "solid-js-legacy": "npm:solid-js@^1.9.15",
         "storybook": "^11.0.0-beta.3",
         "ts-dedent": "^2.2.0",
@@ -175,7 +175,7 @@
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
-        "vitest": "^4.1.11"
+        "vitest": "^5.1.0"
     },
     "engines": {
         "node": ">=22.12.0"
