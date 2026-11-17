@@ -36,4 +36,23 @@ describe('published package types', () => {
 
         expect(status, output).toBe(0);
     });
+
+    // Vitest always sets `node`; the Solid Vite plugin adds `browser` in a DOM test environment.
+    it('loads the preview entry under `browser` and the Node entry under `node`', () => {
+        const rootExports = (conditions: string[]) => {
+            const script = 'const m = await import("storybook-solidjs-vite"); console.log(Object.keys(m).join());';
+            const result = spawnSync('node', [...conditions, '--input-type=module', '-e', script], {
+                encoding: 'utf8',
+            });
+
+            expect(result.stderr).toBe('');
+
+            return result.stdout.trim().split(',');
+        };
+
+        expect(rootExports([])).toEqual(['defineMain']);
+        expect(rootExports(['--conditions=browser'])).toEqual(
+            expect.arrayContaining(['composeStories', 'definePreview', 'defineMain'])
+        );
+    });
 });

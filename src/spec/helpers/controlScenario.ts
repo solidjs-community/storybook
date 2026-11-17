@@ -96,6 +96,8 @@ export interface ScenarioOptions {
     maxPropCount?: number;
     absentProps?: string[];
     jsDocTags?: Record<string, string[]>;
+    compilerOptions?: ts.CompilerOptions;
+    referencedArgNames?: ReadonlySet<string> | readonly string[];
 }
 
 function toSbType(serialized: SerializedPropType, required: boolean) {
@@ -116,19 +118,28 @@ export function extractComponentDoc(options: {
     entryFile: string;
     exportName: string;
     tempDirs: string[];
+    compilerOptions?: ts.CompilerOptions;
+    referencedArgNames?: ReadonlySet<string> | readonly string[];
 }): SolidComponentDoc | undefined {
     const dir = createSpecTempDir(options.tempDirs);
 
     writeSpecFiles(dir, options.files);
 
     const commandLine: ts.ParsedCommandLine = {
-        options: defaultCompilerOptions(),
+        options: options.compilerOptions ?? defaultCompilerOptions(),
         fileNames: Object.keys(options.files).map(relativePath => join(dir, relativePath)),
         errors: [],
     };
 
     const project = new SolidComponentMetaProject(ts, commandLine, undefined, new Map());
-    const doc = project.extractFromComponentFile(join(dir, options.entryFile), options.exportName);
+    const referencedArgNames = options.referencedArgNames
+        ? new Set(options.referencedArgNames)
+        : undefined;
+    const doc = project.extractFromComponentFile(
+        join(dir, options.entryFile),
+        options.exportName,
+        referencedArgNames
+    );
 
     project.dispose();
 

@@ -211,7 +211,7 @@ describe('control type audit — discriminated unions', () => {
 
 describe('control type audit — extended patterns (documented behavior)', () => {
     it.each([
-        { prop: 'strNum', typeSource: 'string | number', expected: 'object' as const },
+        { prop: 'strNum', typeSource: 'string | number', expected: 'text' as const },
         { prop: 'bigintVal', typeSource: 'bigint', expected: 'object' as const },
         { prop: 'sym', typeSource: 'symbol', expected: 'none' as const },
         { prop: 'tuple', typeSource: '[string, number]', expected: 'object' as const },

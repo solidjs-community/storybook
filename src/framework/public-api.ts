@@ -9,7 +9,10 @@ type BuilderName = CompatibleString<'@storybook/builder-vite'>;
 
 export interface FrameworkOptions {
     builder?: BuilderOptions;
-    /** Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest). */
+    /**
+     * Set to `false` to disable Solid component-meta docgen (Controls, Docs, manifest).
+     * Turns off `features.docgenServer` from this framework preset.
+     */
     docgen?: false;
 }
 
@@ -32,18 +35,11 @@ interface StorybookConfigFramework {
     };
     features?: StorybookConfigBase['features'] & {
         /**
-         * Enable the experimental `.test` function in CSF Next
+         * Enable the experimental `.test` function in CSF 4
          *
          * @see https://storybook.js.org/docs/10/api/main-config/main-config-features#experimentalTestSyntax
          */
         experimentalTestSyntax?: boolean;
-        /**
-         * Serve docgen / story snippets from the server instead of injecting `__docgenInfo`
-         * into the preview. Core then writes the ref-based components manifest (`v: 1`).
-         *
-         * @see https://storybook.js.org/docs/api/main-config/main-config-features#experimentaldocgenserver
-         */
-        experimentalDocgenServer?: boolean;
     };
 }
 

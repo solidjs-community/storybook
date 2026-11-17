@@ -1,26 +1,9 @@
-import { accessSync } from 'node:fs';
+import { accessSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { types as t } from 'storybook/internal/babel';
+import { buildImportStatements, collectImportBindings, walk } from 'storybook/internal/csf-tools';
 
 import type { ComponentRef } from './types';
-
-interface CsfProgram {
-    traverse: (visitors: Record<string, unknown>) => void;
-    get: (key: string) => Array<{ isImportDeclaration: () => boolean; node: t.ImportDeclaration }>;
-    scope: { getBinding: (name: string) => { path: { isImportSpecifier?: () => boolean; isImportDefaultSpecifier?: () => boolean; isImportNamespaceSpecifier?: () => boolean } } | undefined };
-}
-
-function importedName(specifier: t.ImportSpecifier) {
-    if (t.isIdentifier(specifier.imported)) {
-        return specifier.imported.name;
-    }
-
-    return specifier.imported.value;
-}
-
-function isTypeSpecifier(specifier: t.Node) {
-    return t.isImportSpecifier(specifier) && specifier.importKind === 'type';
-}
+import type { CsfFile, ESTree, ESTreeNode, ImportBinding } from 'storybook/internal/csf-tools';
 
 function baseIdentifier(component: string) {
     return component.split('.')[0] ?? component;
@@ -81,61 +64,175 @@ export function resolvePackageComponentPath(storyFilePath: string, importId: str
     return undefined;
 }
 
+function findPackageJson(fromDir: string) {
+    let dir = resolve(fromDir);
+
+    while (true) {
+        const candidate = join(dir, 'package.json');
+
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+
+        const parent = dirname(dir);
+
+        if (parent === dir) {
+            return undefined;
+        }
+
+        dir = parent;
+    }
+}
+
+const ROOT_ENTRY_FIELDS = ['main', 'module', 'types', 'typings', 'browser'];
+
+// Whether the bare package name resolves: `exports` decides when present, the main fields otherwise.
+function hasRootEntry(pkg: Record<string, unknown>) {
+    const { exports } = pkg;
+
+    if (exports === undefined) {
+        return ROOT_ENTRY_FIELDS.some(field => field in pkg);
+    }
+
+    // A string, or an array of fallbacks, is the root entry itself.
+    if (typeof exports !== 'object' || Array.isArray(exports)) {
+        return true;
+    }
+
+    if (exports === null) {
+        return false;
+    }
+
+    // An object lists either subpaths (`"."`, `"./button"`) or conditions (`"import"`, `"default"`).
+    // Conditions describe the root.
+    const subpaths = Object.keys(exports).filter(key => key.startsWith('.'));
+
+    return subpaths.length === 0 || subpaths.includes('.');
+}
+
+/**
+ * Name of the package that owns the component, when stories can import the component by it. An
+ * app's own package (private, with no root entry) cannot be imported by name, so its components
+ * keep the import the story wrote. Without a component path the story file's package decides.
+ */
+export function getImportablePackageName(componentPath: string | undefined, storyFilePath: string) {
+    const nearestPkg = findPackageJson(dirname(componentPath ?? storyFilePath));
+
+    try {
+        if (!nearestPkg) {
+            return undefined;
+        }
+
+        const pkg = JSON.parse(readFileSync(nearestPkg, 'utf8')) as Record<string, unknown> | null;
+
+        if (typeof pkg !== 'object' || !pkg || typeof pkg['name'] !== 'string') {
+            return undefined;
+        }
+
+        const importable = pkg['private'] !== true || hasRootEntry(pkg);
+
+        return importable ? pkg['name'] : undefined;
+    }
+    catch {
+        return undefined;
+    }
+}
+
+/** `import { X } from '<packageName>'` for a component whose refs produced no import statement. */
+export function getFallbackImport(packageName: string | undefined, componentName: string | undefined) {
+    const exportName = componentName?.split('.').at(-1);
+
+    return packageName && exportName
+        ? buildImportStatements({
+            refs: [{ importId: packageName, importName: exportName, localImportName: exportName }],
+        }).join('\n')
+        : '';
+}
+
+/**
+ * Adds the `import X = require('…')` and `import X = NS.Y` bindings of a file to `bindings`. A
+ * `require` binds the whole module, like a namespace import. `NS.Y` resolves when `NS` is a
+ * namespace binding; otherwise it names something local and is left out.
+ */
+function addImportEqualsBindings(program: ESTree.Program, bindings: Map<string, ImportBinding>) {
+    for (const statement of program.body) {
+        const declaration = statement.type === 'ExportNamedDeclaration' ? statement.declaration : statement;
+
+        if (declaration?.type !== 'TSImportEqualsDeclaration' || declaration.importKind === 'type') {
+            continue;
+        }
+
+        const reference = declaration.moduleReference;
+
+        if (reference.type === 'TSExternalModuleReference') {
+            bindings.set(declaration.id.name, { importId: reference.expression.value, importName: '*' });
+        }
+        else if (reference.type === 'TSQualifiedName' && reference.left.type === 'Identifier') {
+            const namespace = bindings.get(reference.left.name);
+
+            if (namespace?.importName === '*') {
+                bindings.set(declaration.id.name, { importId: namespace.importId, importName: reference.right.name });
+            }
+        }
+    }
+}
+
 export async function getComponents({
     csf,
     storyFilePath,
     additionalComponentNames = [],
 }: {
-    csf: { _meta?: { component?: string }; _file: { path: CsfProgram } };
+    csf: CsfFile;
     storyFilePath: string;
     additionalComponentNames?: string[];
 }): Promise<ComponentRef[]> {
-    const program = csf._file.path;
     const componentSet = new Set<string>();
     const componentDepth = new Map<string, number>();
-    const localToImport = new Map<string, { importId: string; importName: string }>();
-    let jsxDepth = 0;
+    const localToImport = collectImportBindings(csf.program);
 
-    program.traverse({
-        JSXElement: {
-            enter() {
-                jsxDepth++;
-            },
-            exit() {
-                jsxDepth--;
-            },
-        },
-        JSXOpeningElement(path: { node: t.JSXOpeningElement }) {
-            const n = path.node.name;
-            let name: string | undefined;
+    addImportEqualsBindings(csf.program, localToImport);
+    // Number of JSX elements enclosing each node, counting the node itself when it is one.
+    const jsxDepth = new Map<ESTreeNode, number>();
 
-            if (t.isJSXIdentifier(n)) {
-                name = n.name;
+    walk(csf.program, (node, parent) => {
+        const depth = (parent ? (jsxDepth.get(parent) ?? 0) : 0) + (node.type === 'JSXElement' ? 1 : 0);
 
-                if (name && /[A-Z]/.test(name.charAt(0))) {
-                    componentSet.add(name);
-                }
-            }
-            else if (t.isJSXMemberExpression(n)) {
-                const jsxNameToString = (nm: t.JSXMemberExpression | t.JSXIdentifier): string => (
-                    t.isJSXIdentifier(nm)
-                        ? nm.name
-                        : `${ jsxNameToString(nm.object) }.${ jsxNameToString(nm.property) }`
-                );
+        jsxDepth.set(node, depth);
 
-                name = jsxNameToString(n);
+        if (node.type !== 'JSXOpeningElement') {
+            return;
+        }
+
+        const n = node.name;
+        let name: string | undefined;
+
+        if (n.type === 'JSXIdentifier') {
+            name = n.name;
+
+            if (name && /[A-Z]/.test(name.charAt(0))) {
                 componentSet.add(name);
             }
+        }
+        else if (n.type === 'JSXMemberExpression') {
+            const jsxNameToString = (nm: ESTree.JSXMemberExpression | ESTree.JSXIdentifier): string => (
+                nm.type === 'JSXIdentifier'
+                    ? nm.name
+                    : `${ jsxNameToString(nm.object) }.${ jsxNameToString(nm.property) }`
+            );
 
-            if (name) {
-                const depth = jsxDepth - 1;
-                const existing = componentDepth.get(name);
+            name = jsxNameToString(n);
+            componentSet.add(name);
+        }
 
-                if (existing === undefined || depth < existing) {
-                    componentDepth.set(name, depth);
-                }
+        if (name) {
+            // The opening element shares its JSXElement's depth, which counts that element itself.
+            const wrappingDepth = depth - 1;
+            const existing = componentDepth.get(name);
+
+            if (existing === undefined || wrappingDepth < existing) {
+                componentDepth.set(name, wrappingDepth);
             }
-        },
+        }
     });
 
     const metaComp = csf._meta?.component;
@@ -149,49 +246,17 @@ export async function getComponents({
     }
 
     const components = Array.from(componentSet).sort((a, b) => a.localeCompare(b));
-    const body = program.get('body');
-
-    for (const stmt of body) {
-        if (!stmt.isImportDeclaration()) {
-            continue;
-        }
-
-        const decl = stmt.node;
-
-        if (decl.importKind === 'type') {
-            continue;
-        }
-
-        for (const specifier of decl.specifiers ?? []) {
-            if (!('local' in specifier) || !specifier.local || isTypeSpecifier(specifier)) {
-                continue;
-            }
-
-            const importId = decl.source.value;
-
-            if (t.isImportDefaultSpecifier(specifier)) {
-                localToImport.set(specifier.local.name, { importId, importName: 'default' });
-            }
-            else if (t.isImportNamespaceSpecifier(specifier)) {
-                localToImport.set(specifier.local.name, { importId, importName: '*' });
-            }
-            else if (t.isImportSpecifier(specifier)) {
-                localToImport.set(specifier.local.name, {
-                    importId,
-                    importName: importedName(specifier),
-                });
-            }
-        }
-    }
 
     const isLocallyDefinedWithoutImport = (base: string) => {
-        const binding = program.scope.getBinding(base);
+        const binding = csf.editor.scopes.program.bindings.get(base);
 
-        return binding
-            ? !(binding.path.isImportSpecifier?.()
-                || binding.path.isImportDefaultSpecifier?.()
-                || binding.path.isImportNamespaceSpecifier?.())
-            : false;
+        if (!binding) {
+            return false;
+        }
+
+        // `import X = NS.Y` that leads to no module names something the file declares.
+        return binding.kind !== 'import'
+            || (binding.node.type === 'TSImportEqualsDeclaration' && !localToImport.has(base));
     };
 
     const filteredComponents = components.filter(c => !isLocallyDefinedWithoutImport(baseIdentifier(c)));
@@ -267,20 +332,16 @@ export async function getComponents({
     );
 }
 
+/**
+ * The component a story file documents: the one `meta.component` names, else, like React, the one
+ * the title names, preferring the outermost in the story JSX.
+ */
 export function findMatchingComponent(
     components: ComponentRef[],
     componentName: string | undefined,
     title: string
 ) {
-    if (!componentName) {
-        return undefined;
-    }
-
-    const exact = components.find(
-        c => c.componentName === componentName
-            || c.localImportName === componentName
-            || c.importName === componentName
-    );
+    const exact = componentName ? findExactComponentMatch(components, componentName) : undefined;
 
     if (exact) {
         return exact;
