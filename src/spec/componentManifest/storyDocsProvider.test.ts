@@ -30,13 +30,12 @@ function storyEntry(storyPath: string, title = 'Example/Button'): IndexEntry {
 }
 
 /** Story docs for `Button.stories.tsx` in a temp project made of `files`. */
-async function storyDocs(files: Record<string, string>, features: Record<string, unknown> = {}) {
+async function storyDocs(files: Record<string, string>) {
     const dir = createSpecTempDir(tempDirs);
 
     writeSpecFiles(dir, { 'package.json': JSON.stringify({ name: 'my-app', private: true }), ...files });
 
-    const options = { presets: { apply: async() => features } } as unknown as Options;
-    const provider = await experimental_storyDocsProvider(async() => undefined, options);
+    const provider = await experimental_storyDocsProvider(async() => undefined, {} as Options);
 
     return provider({ entry: storyEntry(join(dir, 'Button.stories.tsx')) });
 }
@@ -200,33 +199,6 @@ describe('experimental_storyDocsProvider', () => {
         expect(story?.snippet).toBe('const Primary = () => <Button label="Go" />;');
         expect(story?.template && stripHoles(story.template)).toBe(story?.snippet);
         expect(story?.template).toContainEqual({ kind: 'attr', arg: 'label', text: ' label="Go"', space: ' ' });
-    });
-
-    it('serves no snippets, templates or imports when experimentalCodeExamples is false', async() => {
-        const payload = await storyDocs(
-            {
-                'Button.tsx': BUTTON,
-                'Button.stories.tsx': dedent`
-                    import { Button } from './Button';
-
-                    export default { title: 'Example/Button', component: Button };
-
-                    /** The default button. */
-                    export const Primary = { args: { label: 'Go' } };
-                `,
-            },
-            { experimentalCodeExamples: false }
-        );
-
-        expect(payload).toMatchObject({ name: 'Button', path: expect.stringContaining('Button.stories.tsx') });
-        expect(payload).not.toHaveProperty('import');
-        expect(payload?.stories).toEqual({
-            'example-button--primary': {
-                id: 'example-button--primary',
-                name: 'Primary',
-                description: 'The default button.',
-            },
-        });
     });
 
     it('matches the component by title when meta has no component, like React', async() => {

@@ -33,13 +33,12 @@ The renderer preset (`src/renderer/index.ts`) exports `previewAnnotations` (the 
 On by default:
 
 - `componentsManifest`
-- `experimentalCodeExamples`
 - `docgenServer`
 - `experimentalTestSyntax`
 
 `framework.options.docgen: false` forces `docgenServer` off from this preset (Storybook then skips the docgen worker and story docs). The same opt-out is `isDocgenProviderEnabled`, which core reads when it defaults the flag.
 
-`experimentalTestSyntax` is on so `.test()` stories work. A user who sets it to `false` gets React's `test-fn` error from the renderer (see [canvas renderer](./canvas-renderer.md#interaction-tests-and-docs-defaults)). `experimentalCodeExamples: false` turns snippets off ([manifests and snippets](./manifests-and-snippets.md#experimentalcodeexamples)).
+`experimentalTestSyntax` is on so `.test()` stories work. A user who sets it to `false` gets React's `test-fn` error from the renderer (see [canvas renderer](./canvas-renderer.md#interaction-tests-and-docs-defaults)). `experimentalCodeExamples` is not set or read: it is a React-only flag that `docgenServer` supersedes (Storybook's `main-config-features` docs). Snippets go away only with docgen.
 
 ## Solid major detection
 

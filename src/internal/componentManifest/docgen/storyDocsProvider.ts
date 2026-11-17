@@ -37,7 +37,7 @@ function readEntry(entry: StoryDocsProviderInput['entry']) {
  * Each story's description and summary, plus the fields `snippetOf` adds. A story whose docs throw
  * carries the error instead.
  */
-function readStories(csf: CsfFile, snippetOf?: (storyExport: string) => Partial<StoryDoc>) {
+function readStories(csf: CsfFile, snippetOf: (storyExport: string) => Partial<StoryDoc>) {
     return Object.fromEntries(
         Object.entries(csf._stories).map(([storyExport, story]): [string, StoryDoc] => {
             const name = story.name ?? storyNameFromExport(storyExport);
@@ -50,7 +50,7 @@ function readStories(csf: CsfFile, snippetOf?: (storyExport: string) => Partial<
                     name,
                     ...(description ? { description } : {}),
                     ...(summary ? { summary } : {}),
-                    ...snippetOf?.(storyExport),
+                    ...snippetOf(storyExport),
                 }];
             }
             catch(error) {
@@ -64,25 +64,15 @@ function readStories(csf: CsfFile, snippetOf?: (storyExport: string) => Partial<
 
 /**
  * Story docs for one CSF file: each story's snippet with its template, description and summary, and
- * the import block core prepends to every snippet. Without `codeExamples` the stories carry no
- * snippets or templates and the payload no imports.
+ * the import block core prepends to every snippet.
  */
-async function buildStoryDocs(
-    importPath: string,
-    title: string,
-    id: string,
-    codeExamples: boolean
-): Promise<StoryDocsPayload> {
+async function buildStoryDocs(importPath: string, title: string, id: string): Promise<StoryDocsPayload> {
     const storyPath = join(process.cwd(), importPath);
     const storyFile = readFileSync(storyPath, 'utf8');
     const csf = loadCsf(storyFile, { makeTitle: () => title, fileName: storyPath }).parse();
     const componentName = csf._meta?.component;
     // Like React: without `meta.component` the name is the last title segment, spaces removed.
     const base = { id, name: componentName ?? title.split('/').at(-1)!.replace(/\s+/g, ''), path: importPath };
-
-    if (!codeExamples) {
-        return { ...base, stories: readStories(csf) };
-    }
 
     const allComponents = await getComponents({
         csf,
@@ -112,11 +102,7 @@ async function buildStoryDocs(
     return { ...base, ...(imports ? { import: imports } : {}), stories };
 }
 
-export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(next, options) => {
-    // `features.experimentalCodeExamples: false` turns snippets off; descriptions are still served.
-    const features = await options.presets?.apply('features');
-    const codeExamples = features?.experimentalCodeExamples !== false;
-
+export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(next) => {
     return async(input) => {
         const { importPath, title, id } = readEntry(input.entry);
 
@@ -127,7 +113,7 @@ export const experimental_storyDocsProvider: StoryDocsProviderPreset = async(nex
         let ours: StoryDocsPayload | undefined;
 
         try {
-            ours = await buildStoryDocs(importPath, title, id, codeExamples);
+            ours = await buildStoryDocs(importPath, title, id);
         }
         catch {
             ours = undefined;

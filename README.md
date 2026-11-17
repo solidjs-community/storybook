@@ -143,20 +143,6 @@ export default {
 } satisfies StorybookConfig;
 ```
 
-To show the original story source instead:
-
-```ts
-// .storybook/main.ts
-import type { StorybookConfig } from "storybook-solidjs-vite";
-
-export default {
-  framework: "storybook-solidjs-vite",
-  features: {
-    experimentalCodeExamples: false,
-  },
-} satisfies StorybookConfig;
-```
-
 ## 🤖 AI tools
 
 ### MCP

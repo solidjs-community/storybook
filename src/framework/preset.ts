@@ -73,7 +73,6 @@ export const features: PresetProperty<'features', StorybookConfig> = async(
 
     return {
         componentsManifest: true,
-        experimentalCodeExamples: true,
         experimentalTestSyntax: true,
         ...existing,
         docgenServer: docgenEnabled,

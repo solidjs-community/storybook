@@ -97,7 +97,7 @@ No action. They still work by default, now from the Storybook server instead of 
 
 To turn them off: `framework.options.docgen: false`. That also turns off **Show code** snippets.
 
-`features.experimentalCodeExamples: false` still turns snippets off; story descriptions stay.
+`features.experimentalCodeExamples` no longer does anything, as in `@storybook/react`: the docgen server generates snippets for every story. Remove it from `.storybook/main.ts`. To turn snippets off, turn docgen off as above.
 
 `.test()` stories throw when `features.experimentalTestSyntax` is `false`, as in `@storybook/react`. The flag is on by default, so this only matters if you turned it off.
 

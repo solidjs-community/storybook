@@ -26,9 +26,9 @@ Core's `ComponentsManifest['meta']['docgen']` union does not list `'solid-compon
 
 `description` and `summary` (`@summary`) come from story JSDoc via core's `extractStoryJSDocInfo`. A story whose docs throw carries `error` instead of failing the file.
 
-### `experimentalCodeExamples`
+### No snippet switch
 
-On by default from the [preset](./preset-and-version.md). With `features.experimentalCodeExamples: false`, stories carry no `snippet` or `template`, the payload no `import`, and component resolution is skipped. Descriptions and summaries are still served. This differs from React (checked at beta.3), whose story-docs provider ignores the flag.
+Like React, every story gets a snippet and template. `features.experimentalCodeExamples` is not read: Storybook documents it as a React-only flag that `docgenServer` supersedes. The only way to drop snippets is `framework.options.docgen: false`, which turns off story docs entirely.
 
 ### Snippets
 
