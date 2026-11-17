@@ -367,6 +367,15 @@ function landingOffset(code: string, offset: number, edits: Edit[]): number {
  * returns whether there were any. A read of an arg the story does not set is kept as written, and
  * only marked.
  */
+/** An attribute's name as written, with Solid's namespace (`use:tooltip`); `null` for a spread. */
+function attributeName(a: Node): string | null {
+    if (a.type !== 'JSXAttribute') {
+        return null;
+    }
+
+    return a.name.type === 'JSXNamespacedName' ? `${ a.name.namespace.name }:${ a.name.name.name }` : a.name.name;
+}
+
 function rewriteJsx(
     code: string,
     node: E.JSXElement | E.JSXFragment,
@@ -390,7 +399,7 @@ function rewriteJsx(
             changed = true;
 
             const existing = new Set(
-                attrs.flatMap(a => (a.type === 'JSXAttribute' && a.name.type === 'JSXIdentifier' ? [a.name.name] : []))
+                attrs.flatMap(a => attributeName(a) ?? [])
             );
             const injected = injectedNames(merged, existing);
             const pieces = injectedAttributes(merged, existing, printAt(attrs[firstSpread]!.start), mark).join(' ')
@@ -435,11 +444,12 @@ function rewriteJsx(
         const lastSpread = attrs.findLastIndex(isArgsSpread);
 
         attrs.forEach((a, index) => {
-            if (a.type !== 'JSXAttribute' || a.name.type !== 'JSXIdentifier') {
+            const name = attributeName(a);
+
+            if (a.type !== 'JSXAttribute' || name === null) {
                 return;
             }
 
-            const name = a.name.name;
             const key = a.value?.type === 'JSXExpressionContainer' ? getArgsMemberKey(a.value.expression) : null;
             const arg = index < lastSpread ? name : key;
 

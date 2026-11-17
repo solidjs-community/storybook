@@ -50,7 +50,7 @@ Ported from React's #37170. `getCodeSnippet` prints the snippet once with core's
 - `value`: the arg as an expression (core's `printValue`)
 - `attrs`: the args a control set, as attributes, except the ones the element already writes
 
-`snippet-values.ts` holds only printers and type imports, so the preview bundle gets no server code. Solid's namespaced attributes (`on:click`, `use:tooltip`, `prop:value`) pass the attribute-name check. A namespaced attribute that reads an arg (`use:tooltip={args.label}`) is kept as written and is not a hole.
+`snippet-values.ts` holds only printers and type imports, so the preview bundle gets no server code. Solid's namespaced attributes (`on:click`, `use:tooltip`, `prop:value`) are attributes like any other: a namespaced arg prints as one, and one that reads an arg (`use:tooltip={args.label}`) is filled and becomes a hole. React has no namespaced attributes, so this part has no upstream counterpart.
 
 In the preview, `src/renderer/docs.ts` sets `parameters.docs.source.printHole` (`src/renderer/print-hole.ts`) when `FEATURES.docgenServer` is on. Core fills the template once args differ from the story's initial args, and only under `features.experimentalLiveServerSnippets` (off by default; the lab turns it on). Values a snippet cannot print (DOM nodes, functions) make core fall back to the static snippet with its own warning.
 

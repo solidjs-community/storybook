@@ -909,7 +909,7 @@ describe('template', () => {
         );
     });
 
-    it('prints a Solid namespaced arg as an attribute, and keeps a namespaced attribute that reads an arg', () => {
+    it('prints a Solid namespaced arg as an attribute, and fills a namespaced attribute that reads an arg', () => {
         const code = withCSF4(dedent`
             export const S = meta.story({
               args: { 'label': 'Go', 'prop:title': 'T' },
@@ -919,10 +919,28 @@ describe('template', () => {
         const initialArgs = { 'children': 'Click me', 'label': 'Go', 'prop:title': 'T' };
 
         expect(snippetOf(code)).toBe(
-            'const S = (args) => <Button label="Go" prop:title="T" use:tooltip={args.label}>Click me</Button>;'
+            'const S = () => <Button label="Go" prop:title="T" use:tooltip="Go">Click me</Button>;'
         );
         expect(fill(code, initialArgs, { ...initialArgs, 'prop:title': 'U', 'on:focus': 'f' })).toBe(
-            'const S = (args) => <Button label="Go" prop:title="U" on:focus="f" use:tooltip={args.label}>Click me</Button>;'
+            'const S = () => <Button label="Go" prop:title="U" on:focus="f" use:tooltip="Go">Click me</Button>;'
+        );
+        expect(fill(code, initialArgs, { ...initialArgs, label: 'Stop' })).toBe(
+            'const S = () => <Button label="Stop" prop:title="T" use:tooltip="Stop">Click me</Button>;'
+        );
+    });
+
+    it('does not repeat a namespaced attribute that a later args spread also sets', () => {
+        const code = withCSF4(dedent`
+            export const S = meta.story({
+              args: { 'label': 'Go', 'prop:title': 'T' },
+              render: (args) => <Button prop:title="Fixed" {...args} />,
+            });
+        `);
+        const initialArgs = { 'children': 'Click me', 'label': 'Go', 'prop:title': 'T' };
+
+        expect(snippetOf(code)).toBe('const S = () => <Button prop:title="T" label="Go">Click me</Button>;');
+        expect(fill(code, initialArgs, { ...initialArgs, 'prop:title': 'U' })).toBe(
+            'const S = () => <Button prop:title="U" label="Go">Click me</Button>;'
         );
     });
 });
