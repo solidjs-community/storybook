@@ -6,9 +6,11 @@ See also: [modules index](./modules.md), [docgen](./docgen.md).
 
 ## Components manifest
 
-With `docgenServer` on (default), `generateComponentManifests` returns an empty `components` map and keeps `meta.docgen: 'react-component-meta'`. Storybook core builds the ref-based `v: 1` manifest from docgen / story-docs snapshots.
+With `docgenServer` on (default), `generateComponentManifests` returns an empty `components` map with `meta.docgen: 'solid-component-meta'` (`DOCGEN_ENGINE`). Storybook core builds the ref-based `v: 1` manifest from docgen / story-docs snapshots. With `docgenServer` off it returns the incoming manifests unchanged, like Vue, Svelte and Web Components.
 
-Engine id reported to the UI is `react-component-meta` (`MANIFEST_DOCGEN_ENGINE`); internal name is `solid-component-meta`.
+Core's `ComponentsManifest['meta']['docgen']` union does not list `'solid-component-meta'`, so the value is cast. Nothing in core switches on the id; MCP reads props from the payload's `reactComponentMeta` field, which we keep. Docgen payloads also carry `renderer: 'solid'` (a badge in the components debugger), as Vue, Svelte and Web Components do.
+
+`internal_getArgTypesData` (addon-vitest ghost stories) uses one process-wide manager, `getSharedSolidComponentMetaManager`, like React's `getSharedComponentMetaManager`. The docgen server keeps its own manager in its worker.
 
 ## Story docs
 

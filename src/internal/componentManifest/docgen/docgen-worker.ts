@@ -78,6 +78,7 @@ function docPayload(
 		name,
 		path,
 		jsDocTags,
+		renderer: 'solid',
 		...(sourceImport ? { import: sourceImport } : {}),
 		...(description ? { description } : {}),
 		...(summary ? { summary } : {}),
@@ -114,6 +115,7 @@ function missingComponentPayload(options: {
 		name: componentName ?? title.split('/').at(-1)!.replace(/\s+/g, ''),
 		path: storyFilePath,
 		jsDocTags: {},
+		renderer: 'solid',
 		error: {
 			name: error.name,
 			message: `${ message }\n\n${ storyFilePath }:\n${ storyFile }`,
@@ -126,6 +128,7 @@ function missingSubcomponentPayload(declaredName: string, storyFilePath: string)
 		name: declaredName,
 		path: storyFilePath,
 		jsDocTags: {},
+		renderer: 'solid',
 		error: {
 			name: 'No component import found',
 			message: `No component file found for the "${ declaredName }" subcomponent.`,

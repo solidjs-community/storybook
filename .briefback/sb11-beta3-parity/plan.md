@@ -34,10 +34,10 @@
 
 **This stage:** move the root and both examples to `storybook` `^11.0.0-beta.3`. builder-vite beta.3 no longer brings `ts-dedent`, which two specs import, so declare it. The trial run showed no `src/` change is needed.
 
-- [ ] Complete
-  - [ ] Root `storybook`, `@storybook/builder-vite` at `^11.0.0-beta.3`; `ts-dedent` devDependency
-  - [ ] `examples/lab` and `examples/solid1` Storybook packages at `^11.0.0-beta.3`, lockfiles updated
-  - [ ] Changeset
+- [x] Complete
+  - [x] Root `storybook`, `@storybook/builder-vite` at `^11.0.0-beta.3`; `ts-dedent` devDependency
+  - [x] `examples/lab` and `examples/solid1` Storybook packages at `^11.0.0-beta.3`, lockfiles updated
+  - [x] Changeset
 
 **Files**
 
@@ -46,7 +46,7 @@
 
 **Done when:** root tests, lab `check-docgen` + Vitest and the solid1 build pass on beta.3.
 **Verify:** `bun run typecheck && bun run test && bun run build && bun run stage && bun run check-docgen`, lab `bun run test`, solid1 `bun run build-storybook`
-**Commits:** None yet.
+**Commits:** `75528a3` chore: build against Storybook 11.0.0-beta.3
 
 ## Stage 2 — Docgen engine fixes
 
@@ -54,12 +54,12 @@
 
 **This stage:** `internal_getArgTypesData` reuses one warm process-wide manager like React (#37141) instead of building a TypeScript program per call. `experimental_manifests` returns the existing manifests when `docgenServer` is off, like Vue/Svelte/WC. The manifest reports our own engine id and payloads carry `renderer: 'solid'`.
 
-- [ ] Complete
-  - [ ] `getArgTypesData` uses `getOrCreateSolidComponentMetaManager`
-  - [ ] `generateComponentManifests` passes `existingManifests` through when `docgenServer` is off
-  - [ ] `docgen: 'solid-component-meta'`
-  - [ ] `renderer: 'solid'` on docgen payloads
-  - [ ] Tests and a changeset
+- [x] Complete
+  - [x] `getArgTypesData` uses one shared manager (`getSharedSolidComponentMetaManager`)
+  - [x] `generateComponentManifests` passes `existingManifests` through when `docgenServer` is off
+  - [x] `docgen: 'solid-component-meta'`
+  - [x] `renderer: 'solid'` on docgen payloads
+  - [x] Tests and a changeset
 
 **Files**
 

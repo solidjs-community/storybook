@@ -86,6 +86,7 @@ describe('docgen worker payload', () => {
             path: importPath,
             description: 'A clickable button.',
             summary: 'The primary action button.',
+            renderer: 'solid',
         });
         expect(payload?.error).toBeUndefined();
     });
@@ -122,6 +123,7 @@ describe('docgen worker payload', () => {
             name: 'Button',
             path: importPath,
             jsDocTags: {},
+            renderer: 'solid',
             error: { name: 'No component found' },
         });
         expect(payload?.error?.message).toContain(
@@ -167,6 +169,7 @@ describe('docgen worker payload', () => {
 
         expect(payload?.subcomponents?.['Icon']).toMatchObject({
             name: 'Icon',
+            renderer: 'solid',
             error: {
                 name: 'No component import found',
                 message: 'No component file found for the "Icon" subcomponent.',

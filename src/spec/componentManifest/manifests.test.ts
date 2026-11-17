@@ -1,9 +1,9 @@
+import { utimesSync } from 'node:fs';
 import { join } from 'node:path';
 import { invalidateProjectRootCache } from 'storybook/internal/common';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { generateComponentManifests, getArgTypesData } from '../../internal/componentManifest/manifests';
-import { MANIFEST_DOCGEN_ENGINE } from '../../internal/componentManifest/solidComponentMeta/SolidComponentMetaManager';
 import { cleanupSpecTempDirs, createSpecTempDir, writeSpecFiles } from '../helpers/tempProject';
 
 const tempDirs: string[] = [];
@@ -26,20 +26,24 @@ function writeButton() {
     return dir;
 }
 
+const manifestEntries = [{
+    id: 'example-button--primary',
+    title: 'Example/Button',
+    name: 'Primary',
+    importPath: 'this-file-does-not-exist.tsx',
+    type: 'story',
+    subtype: 'story',
+}];
+
+function withFeatures(features: Record<string, unknown>) {
+    return { apply: async() => features };
+}
+
 describe('generateComponentManifests', () => {
-    it('returns an empty stub with meta.docgen and does not read story files', async() => {
+    it('returns an empty stub with the Solid engine id and does not read story files', async() => {
         const result = await generateComponentManifests(
             { extra: true },
-            {
-                manifestEntries: [{
-                    id: 'example-button--primary',
-                    title: 'Example/Button',
-                    name: 'Primary',
-                    importPath: 'this-file-does-not-exist.tsx',
-                    type: 'story',
-                    subtype: 'story',
-                }],
-            }
+            { manifestEntries, presets: withFeatures({ docgenServer: true }) }
         );
 
         expect(result).toEqual({
@@ -48,11 +52,21 @@ describe('generateComponentManifests', () => {
                 v: 0,
                 components: {},
                 meta: {
-                    docgen: MANIFEST_DOCGEN_ENGINE,
+                    docgen: 'solid-component-meta',
                     durationMs: 0,
                 },
             },
         });
+    });
+
+    it('reports no engine when docgen is off', async() => {
+        const existing = { extra: true };
+        const result = await generateComponentManifests(
+            existing,
+            { manifestEntries, presets: withFeatures({ docgenServer: false }) }
+        );
+
+        expect(result).toBe(existing);
     });
 });
 
@@ -65,6 +79,28 @@ describe('getArgTypesData', () => {
         });
 
         expect(argTypes).toHaveProperty('label');
+    }, 30_000);
+
+    it('sees an edited component file on the next call', async() => {
+        const dir = writeButton();
+        const componentFilePath = join(dir, 'Button.tsx');
+
+        await getArgTypesData(null, { componentFilePath, componentExportName: 'Button' });
+
+        writeSpecFiles(dir, {
+            'Button.tsx': `
+                export function Button(props: { title: string }) {
+                    return null;
+                }
+            `,
+        });
+        // The shared manager re-reads a file when its mtime moves; do not depend on clock resolution.
+        utimesSync(componentFilePath, new Date(), new Date(Date.now() + 10_000));
+
+        const argTypes = await getArgTypesData(null, { componentFilePath, componentExportName: 'Button' });
+
+        expect(argTypes).toHaveProperty('title');
+        expect(argTypes).not.toHaveProperty('label');
     }, 30_000);
 
     it('resolves a relative component path against the project root', async() => {

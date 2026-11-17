@@ -147,27 +147,20 @@ export class SolidComponentMetaManager extends ComponentMetaManager<SolidCompone
     }
 }
 
-let watchManager: SolidComponentMetaManager | undefined;
+let sharedManager: SolidComponentMetaManager | undefined;
 
-export async function getOrCreateSolidComponentMetaManager(
-    watchMode = false
-): Promise<SolidComponentMetaManager | undefined> {
-    if (watchMode && watchManager) {
-        return watchManager;
-    }
-
-    // Always use the JS Compiler API from @typescript/typescript6 — independent of the
+/**
+ * Process-wide manager for `internal_getArgTypesData` (addon-vitest ghost stories), like React's
+ * `getSharedComponentMetaManager`: building a TypeScript program is expensive, so keep one warm
+ * instead of rebuilding it per call. The docgen server keeps its own manager in its worker.
+ */
+export function getSharedSolidComponentMetaManager(): SolidComponentMetaManager {
+    // Always use the JS Compiler API from @typescript/typescript6, independent of the
     // consumer's `typescript` peer (which may be TypeScript 7 without a programmatic API).
-    const instance = new SolidComponentMetaManager(ts);
+    sharedManager ??= new SolidComponentMetaManager(ts);
 
-    if (watchMode) {
-        watchManager = instance;
-    }
-
-    return instance;
+    return sharedManager;
 }
 
+/** Engine id reported in `meta.docgen` of the components manifest. */
 export const DOCGEN_ENGINE = 'solid-component-meta' as const;
-
-/** Storybook core manifest UI expects `react-component-meta` as the engine id. */
-export const MANIFEST_DOCGEN_ENGINE = 'react-component-meta' as const;

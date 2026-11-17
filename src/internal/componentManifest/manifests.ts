@@ -1,8 +1,9 @@
-import ts from '@typescript/typescript6';
 import { isAbsolute, join } from 'node:path';
 import { getProjectRoot } from 'storybook/internal/common';
 
-import { MANIFEST_DOCGEN_ENGINE, SolidComponentMetaManager } from './solidComponentMeta/SolidComponentMetaManager';
+import { DOCGEN_ENGINE, getSharedSolidComponentMetaManager } from './solidComponentMeta/SolidComponentMetaManager';
+
+import type { ComponentsManifest, StorybookConfigRaw } from 'storybook/internal/types';
 
 interface ManifestEntry {
     id: string;
@@ -17,7 +18,7 @@ interface ManifestEntry {
 
 export async function generateComponentManifests(
     existingManifests: Record<string, unknown> = {},
-    _options: {
+    options: {
         manifestEntries: ManifestEntry[];
         watch?: boolean;
         presets?: {
@@ -25,13 +26,21 @@ export async function generateComponentManifests(
         };
     }
 ) {
+    const features = await options.presets?.apply('features', {}) as StorybookConfigRaw['features'];
+
+    // Like Vue, Svelte and Web Components: with docgen off there is no engine to report.
+    if (!features?.docgenServer) {
+        return existingManifests;
+    }
+
     return {
         ...existingManifests,
         components: {
             v: 0,
             components: {},
             meta: {
-                docgen: MANIFEST_DOCGEN_ENGINE,
+                // Core's union does not list Solid yet; nothing in core switches on the id.
+                docgen: DOCGEN_ENGINE as unknown as NonNullable<ComponentsManifest['meta']>['docgen'],
                 durationMs: 0,
             },
         },
@@ -52,7 +61,7 @@ export async function getArgTypesData(
     }
 
     try {
-        const manager = new SolidComponentMetaManager(ts);
+        const manager = getSharedSolidComponentMetaManager();
         // addon-vitest passes Vite's absolute module id; other callers pass project-relative paths.
         const resolvedPath = isAbsolute(componentFilePath)
             ? componentFilePath
@@ -61,8 +70,6 @@ export async function getArgTypesData(
             resolvedPath,
             componentExportName ?? 'default'
         );
-
-        manager.dispose();
 
         if (!doc) {
             return null;
