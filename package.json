@@ -143,7 +143,7 @@
         }
     },
     "dependencies": {
-        "@storybook/builder-vite": "^11.0.0-beta.0",
+        "@storybook/builder-vite": "^11.0.0-beta.3",
         "@storybook/global": "^5.0.0",
         "@typescript/typescript6": "^6.0.2",
         "@volar/language-core": "^2.4.28",
@@ -169,7 +169,8 @@
         "simple-git-hooks": "^2.13.1",
         "solid-js": "^2.0.0-rc.1",
         "solid-js-legacy": "npm:solid-js@^1.9.15",
-        "storybook": "^11.0.0-beta.0",
+        "storybook": "^11.0.0-beta.3",
+        "ts-dedent": "^2.2.0",
         "tsdown": "^0.23.0",
         "type-fest": "^5.8.0",
         "typescript": "^7.0.2",
