@@ -140,4 +140,4 @@
 
 **Done when:** `grep -ri 'csf.\?next'` hits only kept ids, the `./next` export and `CHANGELOG.md`.
 **Verify:** `bun run typecheck && bun run test`
-**Commits:** None yet.
+**Commits:** `7b60357` docs: call the factory format CSF 4 everywhere and refresh the parity docs for beta.3
